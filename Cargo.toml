@@ -2,5 +2,9 @@
 name = "quote"
 version = "0.1.0"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
+license = "MIT/Apache-2.0"
+description = "Dead simple quasi-quoting"
+repository = "https://github.com/dtolnay/quote"
+include = ["Cargo.toml", "src/**/*.rs"]
 
 [dependencies]
