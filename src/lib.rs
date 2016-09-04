@@ -43,12 +43,7 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident # ( $first:ident ) $sep:tt * $($rest:tt)*) => {
-        for (_i, _v) in $first.iter().enumerate() {
-            if _i > 0 {
-                $tokens.append(stringify!($sep));
-            }
-            _v.to_tokens(&mut $tokens);
-        }
+        $tokens.append_separated($first, stringify!($sep));
         quote_each_token!($tokens $($rest)*);
     };
 
