@@ -24,6 +24,12 @@ impl ToTokens for str {
     }
 }
 
+impl ToTokens for String {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(&format!("{:?}", self));
+    }
+}
+
 macro_rules! impl_to_tokens_display {
     ($ty:ty) => {
         impl ToTokens for $ty {
