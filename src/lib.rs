@@ -23,7 +23,8 @@ macro_rules! quote_each_token {
     ($tokens:ident) => {};
 
     ($tokens:ident # ! $($rest:tt)*) => {
-        $tokens.append("#!");
+        $tokens.append("#");
+        $tokens.append("!");
         quote_each_token!($tokens $($rest)*);
     };
 
@@ -44,6 +45,14 @@ macro_rules! quote_each_token {
 
     ($tokens:ident # ( $first:ident ) $sep:tt * $($rest:tt)*) => {
         $tokens.append_separated($first, stringify!($sep));
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    ($tokens:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
+        $tokens.append("#");
+        $tokens.append("[");
+        quote_each_token!($tokens $($inner)*);
+        $tokens.append("]");
         quote_each_token!($tokens $($rest)*);
     };
 
