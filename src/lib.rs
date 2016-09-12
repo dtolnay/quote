@@ -2,7 +2,7 @@ mod tokens;
 pub use tokens::Tokens;
 
 mod to_tokens;
-pub use to_tokens::ToTokens;
+pub use to_tokens::{ToTokens, ByteStr};
 
 #[macro_export]
 macro_rules! quote {

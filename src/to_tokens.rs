@@ -30,6 +30,15 @@ impl ToTokens for String {
     }
 }
 
+#[derive(Debug)]
+pub struct ByteStr<'a>(pub &'a str);
+
+impl<'a> ToTokens for ByteStr<'a> {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(&format!("b{:?}", self.0));
+    }
+}
+
 macro_rules! impl_to_tokens_display {
     ($ty:ty) => {
         impl ToTokens for $ty {
