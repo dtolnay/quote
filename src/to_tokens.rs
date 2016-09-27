@@ -51,15 +51,61 @@ macro_rules! impl_to_tokens_display {
 
 impl_to_tokens_display!(Tokens);
 impl_to_tokens_display!(bool);
-impl_to_tokens_display!(i8);
-impl_to_tokens_display!(i16);
-impl_to_tokens_display!(i32);
-impl_to_tokens_display!(i64);
-impl_to_tokens_display!(isize);
-impl_to_tokens_display!(u8);
-impl_to_tokens_display!(u16);
-impl_to_tokens_display!(u32);
-impl_to_tokens_display!(u64);
-impl_to_tokens_display!(usize);
-impl_to_tokens_display!(f32);
-impl_to_tokens_display!(f64);
+
+macro_rules! impl_to_tokens_integer {
+    ($ty:ty) => {
+        impl ToTokens for $ty {
+            fn to_tokens(&self, tokens: &mut Tokens) {
+                tokens.append(&format!(concat!("{}", stringify!($ty)), self));
+            }
+        }
+    };
+}
+
+impl_to_tokens_integer!(i8);
+impl_to_tokens_integer!(i16);
+impl_to_tokens_integer!(i32);
+impl_to_tokens_integer!(i64);
+impl_to_tokens_integer!(isize);
+impl_to_tokens_integer!(u8);
+impl_to_tokens_integer!(u16);
+impl_to_tokens_integer!(u32);
+impl_to_tokens_integer!(u64);
+impl_to_tokens_integer!(usize);
+
+macro_rules! impl_to_tokens_floating {
+    ($ty:ty) => {
+        impl ToTokens for $ty {
+            fn to_tokens(&self, tokens: &mut Tokens) {
+                use std::num::FpCategory::*;
+                match self.classify() {
+                    Zero | Subnormal | Normal => {
+                        tokens.append(&format!(concat!("{}", stringify!($ty)), self));
+                    }
+                    Nan => {
+                        tokens.append("::");
+                        tokens.append("std");
+                        tokens.append("::");
+                        tokens.append(stringify!($ty));
+                        tokens.append("::");
+                        tokens.append("NAN");
+                    }
+                    Infinite => {
+                        tokens.append("::");
+                        tokens.append("std");
+                        tokens.append("::");
+                        tokens.append(stringify!($ty));
+                        tokens.append("::");
+                        if self.is_sign_positive() {
+                            tokens.append("INFINITY");
+                        } else {
+                            tokens.append("NEG_INFINITY");
+                        }
+                    }
+                }
+            }
+        }
+    };
+}
+impl_to_tokens_floating!(f32);
+impl_to_tokens_floating!(f64);
