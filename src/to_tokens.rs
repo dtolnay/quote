@@ -10,6 +10,12 @@ impl<'a, T: ToTokens> ToTokens for &'a T {
     }
 }
 
+impl<T: ToTokens> ToTokens for Box<T> {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        (**self).to_tokens(tokens);
+    }
+}
+
 impl<T: ToTokens> ToTokens for Option<T> {
     fn to_tokens(&self, tokens: &mut Tokens) {
         if let Some(ref t) = *self {
