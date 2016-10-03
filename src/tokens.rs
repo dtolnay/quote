@@ -14,6 +14,15 @@ impl Tokens {
         self.0.push(' ');
     }
 
+    pub fn append_all<T, I>(&mut self, iter: I)
+        where T: ToTokens,
+              I: IntoIterator<Item = T>
+    {
+        for token in iter {
+            token.to_tokens(self);
+        }
+    }
+
     pub fn append_separated<T, I>(&mut self, iter: I, sep: &str)
         where T: ToTokens,
               I: IntoIterator<Item = T>
@@ -23,6 +32,16 @@ impl Tokens {
                 self.append(sep);
             }
             token.to_tokens(self);
+        }
+    }
+
+    pub fn append_terminated<T, I>(&mut self, iter: I, term: &str)
+        where T: ToTokens,
+              I: IntoIterator<Item = T>
+    {
+        for token in iter {
+            token.to_tokens(self);
+            self.append(term);
         }
     }
 }
