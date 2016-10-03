@@ -28,15 +28,35 @@ macro_rules! quote_each_token {
         quote_each_token!($tokens $($rest)*);
     };
 
-    ($tokens:ident # ( $first:ident ) * $($rest:tt)*) => {
+    ($tokens:ident # ( & $first:ident ) * $($rest:tt)*) => {
         for _v in &$first {
             _v.to_tokens(&mut $tokens);
         }
         quote_each_token!($tokens $($rest)*);
     };
 
-    ($tokens:ident # ( $first:ident $sep:tt ) * $($rest:tt)*) => {
+    ($tokens:ident # ( & $first:ident $sep:tt ) * $($rest:tt)*) => {
         for _v in &$first {
+            _v.to_tokens(&mut $tokens);
+            $tokens.append(stringify!($sep));
+        }
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    ($tokens:ident # ( & $first:ident ) $sep:tt * $($rest:tt)*) => {
+        $tokens.append_separated(&$first, stringify!($sep));
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    ($tokens:ident # ( $first:ident ) * $($rest:tt)*) => {
+        for _v in $first {
+            _v.to_tokens(&mut $tokens);
+        }
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    ($tokens:ident # ( $first:ident $sep:tt ) * $($rest:tt)*) => {
+        for _v in $first {
             _v.to_tokens(&mut $tokens);
             $tokens.append(stringify!($sep));
         }

@@ -46,6 +46,17 @@ fn test_substitution() {
 fn test_iter() {
     let primes = vec![X, X, X, X];
 
+    assert_eq!("X X X X ", quote!(#(&primes)*).to_string());
+
+    assert_eq!("X , X , X , X , ", quote!(#(&primes,)*).to_string());
+
+    assert_eq!("X , X , X , X ", quote!(#(&primes),*).to_string());
+}
+
+#[test]
+fn test_iter_with_non_vec() {
+    let primes: &[X] = &[X, X, X, X];
+
     assert_eq!("X X X X ", quote!(#(primes)*).to_string());
 
     assert_eq!("X , X , X , X , ", quote!(#(primes,)*).to_string());
