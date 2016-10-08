@@ -135,9 +135,9 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident # ( $($inner:tt)* ) $sep:tt * $($rest:tt)*) => {
-        for (i, pounded_var_names!(nested_tuples_pat () $($inner)*))
+        for (_i, pounded_var_names!(nested_tuples_pat () $($inner)*))
         in pounded_var_names!(multi_zip_expr () $($inner)*).into_iter().enumerate() {
-            if i > 0 {
+            if _i > 0 {
                 $tokens.append(stringify!($sep));
             }
             quote_each_token!($tokens $($inner)*);
