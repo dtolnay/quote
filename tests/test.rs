@@ -162,3 +162,17 @@ fn test_floating() {
     );
     assert_eq!(expected, tokens.to_string());
 }
+
+#[test]
+fn test_char() {
+    let zero = '\x00';
+    let pound = '#';
+    let newline = '\n';
+    let heart = '\u{2764}';
+
+    let tokens = quote! {
+        #zero #pound #newline #heart
+    };
+    let expected = "'\\u{0}' '#' '\\n' '\u{2764}' ";
+    assert_eq!(expected, tokens.to_string());
+}

@@ -24,17 +24,19 @@ impl<T: ToTokens> ToTokens for Option<T> {
     }
 }
 
-impl ToTokens for str {
-    fn to_tokens(&self, tokens: &mut Tokens) {
-        tokens.append(&format!("{:?}", self));
-    }
+macro_rules! impl_to_tokens_debug {
+    ($ty:ty) => {
+        impl ToTokens for $ty {
+            fn to_tokens(&self, tokens: &mut Tokens) {
+                tokens.append(&format!("{:?}", self));
+            }
+        }
+    };
 }
 
-impl ToTokens for String {
-    fn to_tokens(&self, tokens: &mut Tokens) {
-        tokens.append(&format!("{:?}", self));
-    }
-}
+impl_to_tokens_debug!(str);
+impl_to_tokens_debug!(String);
+impl_to_tokens_debug!(char);
 
 #[derive(Debug)]
 pub struct ByteStr<'a>(pub &'a str);
