@@ -185,6 +185,16 @@ fn test_string() {
 }
 
 #[test]
+fn test_duplicate() {
+    let ch = 'x';
+
+    let tokens = quote!(#ch #ch);
+
+    let expected = "'x' 'x' ";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
 fn test_fancy_repetition() {
     let foo = vec!["a", "b"];
     let bar = vec![true, false];
