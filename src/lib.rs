@@ -19,6 +19,86 @@ macro_rules! quote {
 
 #[macro_export]
 #[doc(hidden)]
+macro_rules! pounded_var_names {
+    ($finish:ident ($($found:ident)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    };
+
+    ($finish:ident ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    };
+
+    ($finish:ident ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    };
+
+    ($finish:ident ($($found:ident)*) # $first:ident $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)* $first) $($rest)*)
+    };
+
+    ($finish:ident ($($found:ident)*) ( $($inner:tt)* ) $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    };
+
+    ($finish:ident ($($found:ident)*) [ $($inner:tt)* ] $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    };
+
+    ($finish:ident ($($found:ident)*) { $($inner:tt)* } $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    };
+
+    ($finish:ident ($($found:ident)*) $ignore:tt $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($rest)*)
+    };
+
+    ($finish:ident ()) => {
+        #"no variables in #(...)* repetition"
+    };
+
+    ($finish:ident ($($found:ident)*)) => {
+        $finish!(() $($found)*)
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! nested_tuples_pat {
+    (() $first:ident $($rest:ident)*) => {
+        nested_tuples_pat!(($first) $($rest)*)
+    };
+
+    (($pat:pat) $first:ident $($rest:ident)*) => {
+        nested_tuples_pat!((($pat, $first)) $($rest)*)
+    };
+
+    (($done:pat)) => {
+        $done
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! multi_zip_expr {
+    (() $single:ident) => {
+        $single
+    };
+
+    (() $first:ident $($rest:ident)*) => {
+        multi_zip_expr!(($first.into_iter()) $($rest)*)
+    };
+
+    (($zips:expr) $first:ident $($rest:ident)*) => {
+        multi_zip_expr!(($zips.zip($first)) $($rest)*)
+    };
+
+    (($done:expr)) => {
+        $done
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
 macro_rules! quote_each_token {
     ($tokens:ident) => {};
 
@@ -28,33 +108,22 @@ macro_rules! quote_each_token {
         quote_each_token!($tokens $($rest)*);
     };
 
-    ($tokens:ident # ( & $first:ident ) * $($rest:tt)*) => {
-        $tokens.append_all(&$first);
+    ($tokens:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
+        for pounded_var_names!(nested_tuples_pat () $($inner)*)
+        in pounded_var_names!(multi_zip_expr () $($inner)*) {
+            quote_each_token!($tokens $($inner)*);
+        }
         quote_each_token!($tokens $($rest)*);
     };
 
-    ($tokens:ident # ( & $first:ident $sep:tt ) * $($rest:tt)*) => {
-        $tokens.append_terminated(&$first, stringify!($sep));
-        quote_each_token!($tokens $($rest)*);
-    };
-
-    ($tokens:ident # ( & $first:ident ) $sep:tt * $($rest:tt)*) => {
-        $tokens.append_separated(&$first, stringify!($sep));
-        quote_each_token!($tokens $($rest)*);
-    };
-
-    ($tokens:ident # ( $first:ident ) * $($rest:tt)*) => {
-        $tokens.append_all($first);
-        quote_each_token!($tokens $($rest)*);
-    };
-
-    ($tokens:ident # ( $first:ident $sep:tt ) * $($rest:tt)*) => {
-        $tokens.append_terminated($first, stringify!($sep));
-        quote_each_token!($tokens $($rest)*);
-    };
-
-    ($tokens:ident # ( $first:ident ) $sep:tt * $($rest:tt)*) => {
-        $tokens.append_separated($first, stringify!($sep));
+    ($tokens:ident # ( $($inner:tt)* ) $sep:tt * $($rest:tt)*) => {
+        for (i, pounded_var_names!(nested_tuples_pat () $($inner)*))
+        in pounded_var_names!(multi_zip_expr () $($inner)*).into_iter().enumerate() {
+            if i > 0 {
+                $tokens.append(stringify!($sep));
+            }
+            quote_each_token!($tokens $($inner)*);
+        }
         quote_each_token!($tokens $($rest)*);
     };
 
