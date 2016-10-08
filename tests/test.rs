@@ -156,13 +156,31 @@ fn test_floating() {
 fn test_char() {
     let zero = '\x00';
     let pound = '#';
+    let quote = '"';
+    let apost = '\'';
     let newline = '\n';
     let heart = '\u{2764}';
 
     let tokens = quote! {
-        #zero #pound #newline #heart
+        #zero #pound #quote #apost #newline #heart
     };
-    let expected = "'\\u{0}' '#' '\\n' '\u{2764}' ";
+    let expected = "'\\u{0}' '#' '\"' '\\'' '\\n' '\u{2764}' ";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_str() {
+    let s = "a 'b \" c";
+    let tokens = quote!(#s);
+    let expected = "\"a 'b \\\" c\" ";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_string() {
+    let s = "a 'b \" c".to_string();
+    let tokens = quote!(#s);
+    let expected = "\"a 'b \\\" c\" ";
     assert_eq!(expected, tokens.to_string());
 }
 
