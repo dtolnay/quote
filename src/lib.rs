@@ -56,10 +56,6 @@ macro_rules! pounded_var_names {
         pounded_var_names!($finish ($($found)*) $($rest)*)
     };
 
-    ($finish:ident ()) => {
-        #"no variables in #(...)* repetition"
-    };
-
     ($finish:ident ($($found:ident)*)) => {
         $finish!(() $($found)*)
     };
@@ -73,6 +69,10 @@ macro_rules! pounded_var_names {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! nested_tuples_pat {
+    (()) => {
+        &()
+    };
+
     (() $first:ident $($rest:ident)*) => {
         nested_tuples_pat!(($first) $($rest)*)
     };
@@ -94,6 +94,10 @@ macro_rules! nested_tuples_pat {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! multi_zip_expr {
+    (()) => {
+        &[]
+    };
+
     (() $single:ident) => {
         $single
     };

@@ -210,3 +210,9 @@ fn test_nested_fancy_repetition() {
     let expected = "'a' 'b' 'c' , 'x' 'y' 'z' ";
     assert_eq!(expected, tokens.to_string());
 }
+
+#[test]
+fn test_empty_repetition() {
+    let tokens = quote!(#(a b)* #(c d),*);
+    assert_eq!("", tokens.to_string());
+}
