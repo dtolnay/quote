@@ -10,7 +10,7 @@ Quasi-quoting without a Syntex dependency, intended for use with [Macros
 
 ```toml
 [dependencies]
-quote = "0.2"
+quote = "0.3"
 ```
 
 ```rust
