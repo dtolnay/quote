@@ -17,6 +17,10 @@ macro_rules! quote {
     };
 }
 
+// Extract the names of all #metavariables and pass them to the $finish macro.
+//
+// in:   pounded_var_names!(then () a #b c #( #d )* #e)
+// out:  then!(() b d e)
 #[macro_export]
 #[doc(hidden)]
 macro_rules! pounded_var_names {
@@ -61,6 +65,11 @@ macro_rules! pounded_var_names {
     };
 }
 
+// in:   nested_tuples_pat!(() a b c d e)
+// out:  ((((a b) c) d) e)
+//
+// in:   nested_tuples_pat!(() a)
+// out:  a
 #[macro_export]
 #[doc(hidden)]
 macro_rules! nested_tuples_pat {
@@ -77,6 +86,11 @@ macro_rules! nested_tuples_pat {
     };
 }
 
+// in:   multi_zip_expr!(() a b c d e)
+// out:  a.into_iter().zip(b).zip(c).zip(d).zip(e)
+//
+// in:   multi_zip_iter!(() a)
+// out:  a
 #[macro_export]
 #[doc(hidden)]
 macro_rules! multi_zip_expr {
