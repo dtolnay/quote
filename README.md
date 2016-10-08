@@ -42,11 +42,11 @@ let tokens = quote! {
 };
 ```
 
-Repetition is done in one of three ways, similar to `macro_rules!` repetitions:
+Repetition is done using `#(...)*` or `#(...),*` very similar to `macro_rules!`:
 
-- `#(var)*` - no separators
-- `#(var),*` - the character before the asterisk is used as a separator
-- `#(var;)*` - the character before the close paren is used as a terminator
+- `#(#var)*` - no separators
+- `#(#var),*` - the character before the asterisk is used as a separator
+- `#( struct #var; )*` - the repetition can contain other things
 
 ## License
 

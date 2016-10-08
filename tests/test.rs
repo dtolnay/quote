@@ -44,24 +44,13 @@ fn test_substitution() {
 
 #[test]
 fn test_iter() {
-    let primes = vec![X, X, X, X];
+    let primes = &[X, X, X, X];
 
-    assert_eq!("X X X X ", quote!(#(&primes)*).to_string());
+    assert_eq!("X X X X ", quote!(#(#primes)*).to_string());
 
-    assert_eq!("X , X , X , X , ", quote!(#(&primes,)*).to_string());
+    assert_eq!("X , X , X , X , ", quote!(#(#primes,)*).to_string());
 
-    assert_eq!("X , X , X , X ", quote!(#(&primes),*).to_string());
-}
-
-#[test]
-fn test_iter_with_non_vec() {
-    let primes: &[X] = &[X, X, X, X];
-
-    assert_eq!("X X X X ", quote!(#(primes)*).to_string());
-
-    assert_eq!("X , X , X , X , ", quote!(#(primes,)*).to_string());
-
-    assert_eq!("X , X , X , X ", quote!(#(primes),*).to_string());
+    assert_eq!("X , X , X , X ", quote!(#(#primes),*).to_string());
 }
 
 #[test]
@@ -174,5 +163,32 @@ fn test_char() {
         #zero #pound #newline #heart
     };
     let expected = "'\\u{0}' '#' '\\n' '\u{2764}' ";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_fancy_repetition() {
+    let foo = vec!["a", "b"];
+    let bar = vec![true, false];
+
+    let tokens = quote! {
+        #(#foo: #bar),*
+    };
+
+    let expected = r#""a" : true , "b" : false "#;
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_nested_fancy_repetition() {
+    let nested = vec![vec!['a', 'b', 'c'], vec!['x', 'y', 'z']];
+
+    let tokens = quote! {
+        #(
+            #(#nested)*
+        ),*
+    };
+
+    let expected = "'a' 'b' 'c' , 'x' 'y' 'z' ";
     assert_eq!(expected, tokens.to_string());
 }
