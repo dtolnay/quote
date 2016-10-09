@@ -6,6 +6,10 @@ pub use to_tokens::{ToTokens, ByteStr};
 
 #[macro_export]
 macro_rules! quote {
+    () => {
+        $crate::Tokens::new()
+    };
+
     ($($tt:tt)+) => {
         {
             #[allow(unused_imports)]
