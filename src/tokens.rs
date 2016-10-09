@@ -10,7 +10,7 @@ impl Tokens {
     }
 
     pub fn append(&mut self, token: &str) {
-        if !self.0.is_empty() {
+        if !self.0.is_empty() && !token.is_empty() {
             self.0.push(' ');
         }
         self.0.push_str(token);
