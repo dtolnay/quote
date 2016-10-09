@@ -6,6 +6,7 @@ license = "MIT/Apache-2.0"
 description = "Dead simple quasi-quoting"
 repository = "https://github.com/dtolnay/quote"
 documentation = "https://dtolnay.github.io/quote/quote/"
+keywords = ["syn"]
 include = ["Cargo.toml", "src/**/*.rs"]
 
 [dependencies]
