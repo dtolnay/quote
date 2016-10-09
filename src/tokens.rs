@@ -10,8 +10,10 @@ impl Tokens {
     }
 
     pub fn append(&mut self, token: &str) {
+        if !self.0.is_empty() {
+            self.0.push(' ');
+        }
         self.0.push_str(token);
-        self.0.push(' ');
     }
 
     pub fn append_all<T, I>(&mut self, iter: I)

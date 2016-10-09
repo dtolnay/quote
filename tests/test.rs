@@ -26,7 +26,7 @@ fn test_quote_impl() {
             "fn to_tokens ( & self , tokens : & mut Tokens ) { ",
                 "( * * self ) . to_tokens ( tokens ) ",
             "} ",
-        "} "
+        "}"
     );
 
     assert_eq!(expected, tokens.to_string());
@@ -37,7 +37,7 @@ fn test_substitution() {
     let x = X;
     let tokens = quote!(#x <#x> (#x) [#x] {#x});
 
-    let expected = "X < X > ( X ) [ X ] { X } ";
+    let expected = "X < X > ( X ) [ X ] { X }";
 
     assert_eq!(expected, tokens.to_string());
 }
@@ -46,11 +46,11 @@ fn test_substitution() {
 fn test_iter() {
     let primes = &[X, X, X, X];
 
-    assert_eq!("X X X X ", quote!(#(#primes)*).to_string());
+    assert_eq!("X X X X", quote!(#(#primes)*).to_string());
 
-    assert_eq!("X , X , X , X , ", quote!(#(#primes,)*).to_string());
+    assert_eq!("X , X , X , X ,", quote!(#(#primes,)*).to_string());
 
-    assert_eq!("X , X , X , X ", quote!(#(#primes),*).to_string());
+    assert_eq!("X , X , X , X", quote!(#(#primes),*).to_string());
 }
 
 #[test]
@@ -88,21 +88,21 @@ fn test_advanced() {
     };
 
     let expected = concat!(
-        "struct SerializeWith < 'a , T >  where T : Serialize  { ",
-            "value : & 'a String  , ",
-            "phantom : :: std :: marker :: PhantomData < Cow < 'a , str >  > , ",
+        "struct SerializeWith < 'a , T > where T : Serialize { ",
+            "value : & 'a String , ",
+            "phantom : :: std :: marker :: PhantomData < Cow < 'a , str > > , ",
         "} ",
-        "impl < 'a , T >  :: serde :: Serialize for SerializeWith < 'a , T >  where T : Serialize  { ",
+        "impl < 'a , T > :: serde :: Serialize for SerializeWith < 'a , T > where T : Serialize { ",
             "fn serialize < S > ( & self , s : & mut S ) -> Result < ( ) , S :: Error > ",
                 "where S : :: serde :: Serializer ",
             "{ ",
-                "SomeTrait :: serialize_with  ( self . value , s ) ",
+                "SomeTrait :: serialize_with ( self . value , s ) ",
             "} ",
         "} ",
         "SerializeWith { ",
-            "value : self . x  , ",
-            "phantom : :: std :: marker :: PhantomData :: < Cow < 'a , str >  > , ",
-        "} "
+            "value : self . x , ",
+            "phantom : :: std :: marker :: PhantomData :: < Cow < 'a , str > > , ",
+        "}"
     );
 
     assert_eq!(expected, tokens.to_string());
@@ -125,7 +125,7 @@ fn test_integer() {
         #ii8 #ii16 #ii32 #ii64 #iisize
         #uu8 #uu16 #uu32 #uu64 #uusize
     };
-    let expected = "-1i8 -1i16 -1i32 -1i64 -1isize 1u8 1u16 1u32 1u64 1usize ";
+    let expected = "-1i8 -1i16 -1i32 -1i64 -1isize 1u8 1u16 1u32 1u64 1usize";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -147,7 +147,7 @@ fn test_floating() {
     };
     let expected = concat!(
         "2.71828f32 @ :: std :: f32 :: NAN @ :: std :: f32 :: INFINITY @ :: std :: f32 :: NEG_INFINITY ",
-        "2.71828f64 @ :: std :: f64 :: NAN @ :: std :: f64 :: INFINITY @ :: std :: f64 :: NEG_INFINITY ",
+        "2.71828f64 @ :: std :: f64 :: NAN @ :: std :: f64 :: INFINITY @ :: std :: f64 :: NEG_INFINITY",
     );
     assert_eq!(expected, tokens.to_string());
 }
@@ -164,7 +164,7 @@ fn test_char() {
     let tokens = quote! {
         #zero #pound #quote #apost #newline #heart
     };
-    let expected = "'\\u{0}' '#' '\"' '\\'' '\\n' '\u{2764}' ";
+    let expected = "'\\u{0}' '#' '\"' '\\'' '\\n' '\u{2764}'";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -172,7 +172,7 @@ fn test_char() {
 fn test_str() {
     let s = "a 'b \" c";
     let tokens = quote!(#s);
-    let expected = "\"a 'b \\\" c\" ";
+    let expected = "\"a 'b \\\" c\"";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -180,7 +180,7 @@ fn test_str() {
 fn test_string() {
     let s = "a 'b \" c".to_string();
     let tokens = quote!(#s);
-    let expected = "\"a 'b \\\" c\" ";
+    let expected = "\"a 'b \\\" c\"";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -190,7 +190,7 @@ fn test_duplicate() {
 
     let tokens = quote!(#ch #ch);
 
-    let expected = "'x' 'x' ";
+    let expected = "'x' 'x'";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -203,7 +203,7 @@ fn test_fancy_repetition() {
         #(#foo: #bar),*
     };
 
-    let expected = r#""a" : true , "b" : false "#;
+    let expected = r#""a" : true , "b" : false"#;
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -217,7 +217,7 @@ fn test_nested_fancy_repetition() {
         ),*
     };
 
-    let expected = "'a' 'b' 'c' , 'x' 'y' 'z' ";
+    let expected = "'a' 'b' 'c' , 'x' 'y' 'z'";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -233,6 +233,6 @@ fn test_variable_name_conflict() {
     // fine, if a little confusing when debugging.
     let _i = vec!['a', 'b'];
     let tokens = quote! { #(#_i),* };
-    let expected = "'a' , 'b' ";
+    let expected = "'a' , 'b'";
     assert_eq!(expected, tokens.to_string());
 }
