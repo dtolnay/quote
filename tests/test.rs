@@ -236,3 +236,9 @@ fn test_variable_name_conflict() {
     let expected = "'a' , 'b'";
     assert_eq!(expected, tokens.to_string());
 }
+
+#[test]
+fn test_empty_quote() {
+    let tokens = quote!();
+    assert_eq!("", tokens.to_string());
+}
