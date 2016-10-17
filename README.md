@@ -49,6 +49,16 @@ Repetition is done using `#(...)*` or `#(...),*` very similar to `macro_rules!`:
 - `#( struct #var; )*` - the repetition can contain other things
 - `#( #k => println!("{}", #v), )*` - even multiple interpolations
 
+The return type of `quote!` is `quote::Tokens`. Tokens can be interpolated into
+other quotes:
+
+```rust
+let t = quote! { /* ... */ };
+return quote! { /* ... */ #t /* ... */ };
+```
+
+Call `to_string()` on a Tokens to get a String of Rust code.
+
 ## License
 
 Licensed under either of
