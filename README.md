@@ -3,7 +3,7 @@ Dead Simple Rust Quasi-Quoting
 
 [![Build Status](https://api.travis-ci.org/dtolnay/quote.svg?branch=master)](https://travis-ci.org/dtolnay/quote)
 [![Latest Version](https://img.shields.io/crates/v/quote.svg)](https://crates.io/crates/quote)
-[![Rust Documentation](https://img.shields.io/crates/v/quote.svg?label=rustdoc)](https://dtolnay.github.io/quote/quote/)
+[![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://dtolnay.github.io/quote/quote/)
 
 Quasi-quoting without a Syntex dependency, intended for use with [Macros
 1.1](https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md).
