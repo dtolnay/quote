@@ -47,6 +47,7 @@ Repetition is done using `#(...)*` or `#(...),*` very similar to `macro_rules!`:
 - `#(#var)*` - no separators
 - `#(#var),*` - the character before the asterisk is used as a separator
 - `#( struct #var; )*` - the repetition can contain other things
+- `#( #k => println!("{}", #v), )*` - even multiple interpolations
 
 ## License
 
