@@ -1,7 +1,7 @@
 use super::ToTokens;
 use std::fmt::{self, Display};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Tokens(String);
 
 impl Tokens {
