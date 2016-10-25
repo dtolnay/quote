@@ -154,7 +154,7 @@ fn test_floating() {
 
 #[test]
 fn test_char() {
-    let zero = '\x00';
+    let zero = '\0';
     let pound = '#';
     let quote = '"';
     let apost = '\'';
@@ -164,7 +164,7 @@ fn test_char() {
     let tokens = quote! {
         #zero #pound #quote #apost #newline #heart
     };
-    let expected = "'\\u{0}' '#' '\"' '\\'' '\\n' '\u{2764}'";
+    let expected = "'\\0' '#' '\"' '\\'' '\\n' '\u{2764}'";
     assert_eq!(expected, tokens.to_string());
 }
 

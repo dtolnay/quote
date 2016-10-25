@@ -38,10 +38,10 @@ impl ToTokens for String {
 
 impl ToTokens for char {
     fn to_tokens(&self, tokens: &mut Tokens) {
-        if *self == '"' {
-            tokens.append("'\"'");
-        } else {
-            tokens.append(&format!("{:?}", self));
+        match *self {
+            '\0' => tokens.append(r"'\0'"),
+            '"' => tokens.append("'\"'"),
+            _ => tokens.append(&format!("{:?}", self)),
         }
     }
 }
