@@ -170,17 +170,25 @@ fn test_char() {
 
 #[test]
 fn test_str() {
-    let s = "a 'b \" c";
+    let s = "\0 a 'b \" c";
     let tokens = quote!(#s);
-    let expected = "\"a 'b \\\" c\"";
+    let expected = "\"\\0 a 'b \\\" c\"";
     assert_eq!(expected, tokens.to_string());
 }
 
 #[test]
 fn test_string() {
-    let s = "a 'b \" c".to_string();
+    let s = "\0 a 'b \" c".to_string();
     let tokens = quote!(#s);
-    let expected = "\"a 'b \\\" c\"";
+    let expected = "\"\\0 a 'b \\\" c\"";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_byte_str() {
+    let s = quote::ByteStr("\0 a 'b \" c");
+    let tokens = quote!(#s);
+    let expected = "b\"\\0 a 'b \\\" c\"";
     assert_eq!(expected, tokens.to_string());
 }
 
