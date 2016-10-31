@@ -1,5 +1,5 @@
-Dead Simple Rust Quasi-Quoting
-==============================
+Rust Quasi-Quoting
+==================
 
 [![Build Status](https://api.travis-ci.org/dtolnay/quote.svg?branch=master)](https://travis-ci.org/dtolnay/quote)
 [![Latest Version](https://img.shields.io/crates/v/quote.svg)](https://crates.io/crates/quote)
