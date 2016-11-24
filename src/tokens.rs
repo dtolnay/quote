@@ -1,14 +1,37 @@
 use super::ToTokens;
 use std::fmt::{self, Display};
 
+/// Tokens produced by a `quote!(...)` invocation.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Tokens(String);
 
 impl Tokens {
+    /// Empty tokens.
     pub fn new() -> Self {
         Tokens(String::new())
     }
 
+    /// For use by `ToTokens` implementations.
+    ///
+    /// ```
+    /// # #[macro_use] extern crate quote;
+    /// # use quote::{Tokens, ToTokens};
+    /// # fn main() {
+    /// struct X;
+    ///
+    /// impl ToTokens for X {
+    ///     fn to_tokens(&self, tokens: &mut Tokens) {
+    ///         tokens.append("a");
+    ///         tokens.append("b");
+    ///         tokens.append("c");
+    ///     }
+    /// }
+    ///
+    /// let x = X;
+    /// let tokens = quote!(#x);
+    /// assert_eq!(tokens.as_str(), "a b c");
+    /// # }
+    /// ```
     pub fn append(&mut self, token: &str) {
         if !self.0.is_empty() && !token.is_empty() {
             self.0.push(' ');
@@ -16,6 +39,25 @@ impl Tokens {
         self.0.push_str(token);
     }
 
+    /// For use by `ToTokens` implementations.
+    ///
+    /// ```
+    /// # #[macro_use] extern crate quote;
+    /// # use quote::{Tokens, ToTokens};
+    /// # fn main() {
+    /// struct X;
+    ///
+    /// impl ToTokens for X {
+    ///     fn to_tokens(&self, tokens: &mut Tokens) {
+    ///         tokens.append_all(&[true, false]);
+    ///     }
+    /// }
+    ///
+    /// let x = X;
+    /// let tokens = quote!(#x);
+    /// assert_eq!(tokens.as_str(), "true false");
+    /// # }
+    /// ```
     pub fn append_all<T, I>(&mut self, iter: I)
         where T: ToTokens,
               I: IntoIterator<Item = T>
@@ -25,6 +67,25 @@ impl Tokens {
         }
     }
 
+    /// For use by `ToTokens` implementations.
+    ///
+    /// ```
+    /// # #[macro_use] extern crate quote;
+    /// # use quote::{Tokens, ToTokens};
+    /// # fn main() {
+    /// struct X;
+    ///
+    /// impl ToTokens for X {
+    ///     fn to_tokens(&self, tokens: &mut Tokens) {
+    ///         tokens.append_separated(&[true, false], ",");
+    ///     }
+    /// }
+    ///
+    /// let x = X;
+    /// let tokens = quote!(#x);
+    /// assert_eq!(tokens.as_str(), "true , false");
+    /// # }
+    /// ```
     pub fn append_separated<T, I>(&mut self, iter: I, sep: &str)
         where T: ToTokens,
               I: IntoIterator<Item = T>
@@ -37,6 +98,25 @@ impl Tokens {
         }
     }
 
+    /// For use by `ToTokens` implementations.
+    ///
+    /// ```
+    /// # #[macro_use] extern crate quote;
+    /// # use quote::{Tokens, ToTokens};
+    /// # fn main() {
+    /// struct X;
+    ///
+    /// impl ToTokens for X {
+    ///     fn to_tokens(&self, tokens: &mut Tokens) {
+    ///         tokens.append_terminated(&[true, false], ",");
+    ///     }
+    /// }
+    ///
+    /// let x = X;
+    /// let tokens = quote!(#x);
+    /// assert_eq!(tokens.as_str(), "true , false ,");
+    /// # }
+    /// ```
     pub fn append_terminated<T, I>(&mut self, iter: I, term: &str)
         where T: ToTokens,
               I: IntoIterator<Item = T>
