@@ -1,6 +1,29 @@
 use super::Tokens;
 
+/// Types that can be interpolated inside a `quote!(...)` invocation.
 pub trait ToTokens {
+    /// Write `self` to the given `Tokens`.
+    ///
+    /// Example implementation for a struct representing Rust paths like
+    /// `std::cmp::PartialEq`:
+    ///
+    /// ```ignore
+    /// pub struct Path {
+    ///     pub global: bool,
+    ///     pub segments: Vec<PathSegment>,
+    /// }
+    ///
+    /// impl ToTokens for Path {
+    ///     fn to_tokens(&self, tokens: &mut Tokens) {
+    ///         for (i, segment) in self.segments.iter().enumerate() {
+    ///             if i > 0 || self.global {
+    ///                 tokens.append("::");
+    ///             }
+    ///             segment.to_tokens(tokens);
+    ///         }
+    ///     }
+    /// }
+    /// ```
     fn to_tokens(&self, &mut Tokens);
 }
 
