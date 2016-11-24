@@ -12,8 +12,6 @@ macro_rules! quote {
 
     ($($tt:tt)+) => {
         {
-            #[allow(unused_imports)]
-            use $crate::ToTokens;
             let mut _s = $crate::Tokens::new();
             quote_each_token!(_s $($tt)*);
             _s
@@ -158,7 +156,7 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident # $first:ident $($rest:tt)*) => {
-        $first.to_tokens(&mut $tokens);
+        $crate::ToTokens::to_tokens(&$first, &mut $tokens);
         quote_each_token!($tokens $($rest)*);
     };
 

@@ -4,13 +4,13 @@ pub trait ToTokens {
     fn to_tokens(&self, &mut Tokens);
 }
 
-impl<'a, T: ToTokens> ToTokens for &'a T {
+impl<'a, T: ?Sized + ToTokens> ToTokens for &'a T {
     fn to_tokens(&self, tokens: &mut Tokens) {
         (**self).to_tokens(tokens);
     }
 }
 
-impl<T: ToTokens> ToTokens for Box<T> {
+impl<T: ?Sized + ToTokens> ToTokens for Box<T> {
     fn to_tokens(&self, tokens: &mut Tokens) {
         (**self).to_tokens(tokens);
     }
