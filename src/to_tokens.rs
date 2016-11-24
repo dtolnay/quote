@@ -46,6 +46,7 @@ impl ToTokens for char {
     }
 }
 
+/// Wrap a `&str` so it interpolates as a byte-string: `b"abc"`.
 #[derive(Debug)]
 pub struct ByteStr<'a>(pub &'a str);
 
