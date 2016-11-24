@@ -50,7 +50,8 @@
 //! return quote! { /* ... */ #t /* ... */ };
 //! ```
 //!
-//! Call `to_string()` on a Tokens to get a String of Rust code.
+//! Call `to_string()` or `as_str()` on a Tokens to get a `String` or `&str` of Rust
+//! code.
 //!
 //! The `quote!` macro relies on deep recursion so some large invocations may fail
 //! with "recursion limit reached" when you compile. If it fails, bump up the
