@@ -1,5 +1,6 @@
 use super::ToTokens;
 use std::fmt::{self, Display};
+use std::str::FromStr;
 
 /// Tokens produced by a `quote!(...)` invocation.
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -129,6 +130,10 @@ impl Tokens {
 
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+
+    pub fn parse<T: FromStr>(&self) -> Result<T, T::Err> {
+        FromStr::from_str(&self.0)
     }
 }
 
