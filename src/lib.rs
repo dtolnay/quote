@@ -64,6 +64,9 @@ pub use tokens::Tokens;
 mod to_tokens;
 pub use to_tokens::{ToTokens, ByteStr};
 
+mod ident;
+pub use ident::Ident;
+
 /// The whole point.
 #[macro_export]
 macro_rules! quote {

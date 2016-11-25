@@ -193,6 +193,15 @@ fn test_byte_str() {
 }
 
 #[test]
+fn test_ident() {
+    let foo = quote::Ident::from("Foo");
+    let bar = quote::Ident::from(format!("Bar{}", 7));
+    let tokens = quote!(struct #foo; enum #bar {});
+    let expected = "struct Foo ; enum Bar7 { }";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
 fn test_duplicate() {
     let ch = 'x';
 
