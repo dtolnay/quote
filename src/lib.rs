@@ -62,7 +62,7 @@ mod tokens;
 pub use tokens::Tokens;
 
 mod to_tokens;
-pub use to_tokens::{ToTokens, ByteStr};
+pub use to_tokens::{ToTokens, ByteStr, Hex};
 
 mod ident;
 pub use ident::Ident;
