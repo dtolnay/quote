@@ -2,6 +2,7 @@ use {Tokens, ToTokens};
 use std::borrow::Cow;
 use std::fmt;
 
+/// An identifier that should be interpolated without quotes.
 #[derive(Debug, Clone, Eq, Hash)]
 pub struct Ident(String);
 
