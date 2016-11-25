@@ -29,7 +29,7 @@ fn test_quote_impl() {
         "}"
     );
 
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -39,18 +39,18 @@ fn test_substitution() {
 
     let expected = "X < X > ( X ) [ X ] { X }";
 
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
 fn test_iter() {
     let primes = &[X, X, X, X];
 
-    assert_eq!("X X X X", quote!(#(#primes)*).to_string());
+    assert_eq!("X X X X", quote!(#(#primes)*).as_str());
 
-    assert_eq!("X , X , X , X ,", quote!(#(#primes,)*).to_string());
+    assert_eq!("X , X , X , X ,", quote!(#(#primes,)*).as_str());
 
-    assert_eq!("X , X , X , X", quote!(#(#primes),*).to_string());
+    assert_eq!("X , X , X , X", quote!(#(#primes),*).as_str());
 }
 
 #[test]
@@ -105,7 +105,7 @@ fn test_advanced() {
         "}"
     );
 
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -113,7 +113,7 @@ fn test_tuple() {
     let x = ("foo", 4_u32);
     let tokens = quote!(#x);
     let expected = "( \"foo\" , 4u32 , )";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -121,7 +121,7 @@ fn test_array() {
     let x: [u32; 3] = [1, 2, 3];
     let tokens = quote!(#x);
     let expected = "[ 1u32 , 2u32 , 3u32 , ]";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -129,7 +129,7 @@ fn test_slice() {
     let x: &[u32] = &[1, 2, 3];
     let tokens = quote!(&#x);  // Note: explicit `&`
     let expected = "& [ 1u32 , 2u32 , 3u32 , ]";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -137,7 +137,7 @@ fn test_vec() {
     let x: Vec<u32> = vec![1, 2, 3];
     let tokens = quote!(vec!#x);  // Note: explicit `vec!`
     let expected = "vec ! [ 1u32 , 2u32 , 3u32 , ]";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -158,7 +158,7 @@ fn test_integer() {
         #uu8 #uu16 #uu32 #uu64 #uusize
     };
     let expected = "-1i8 -1i16 -1i32 -1i64 -1isize 1u8 1u16 1u32 1u64 1usize";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -166,7 +166,7 @@ fn test_hex() {
     let hex = quote::Hex(0xFFFF_0000_u32);
     let tokens = quote!(#hex);
     let expected = "0xFFFF0000u32";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -189,7 +189,7 @@ fn test_floating() {
         "2.71828f32 @ :: std :: f32 :: NAN @ :: std :: f32 :: INFINITY @ :: std :: f32 :: NEG_INFINITY ",
         "2.71828f64 @ :: std :: f64 :: NAN @ :: std :: f64 :: INFINITY @ :: std :: f64 :: NEG_INFINITY",
     );
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -205,7 +205,7 @@ fn test_char() {
         #zero #pound #quote #apost #newline #heart
     };
     let expected = "'\\0' '#' '\"' '\\'' '\\n' '\u{2764}'";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -213,7 +213,7 @@ fn test_str() {
     let s = "\0 a 'b \" c";
     let tokens = quote!(#s);
     let expected = "\"\\0 a 'b \\\" c\"";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -221,7 +221,7 @@ fn test_string() {
     let s = "\0 a 'b \" c".to_string();
     let tokens = quote!(#s);
     let expected = "\"\\0 a 'b \\\" c\"";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -229,7 +229,7 @@ fn test_byte_str() {
     let s = quote::ByteStr("\0 a 'b \" c");
     let tokens = quote!(#s);
     let expected = "b\"\\0 a 'b \\\" c\"";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -238,7 +238,7 @@ fn test_ident() {
     let bar = quote::Ident::from(format!("Bar{}", 7));
     let tokens = quote!(struct #foo; enum #bar {});
     let expected = "struct Foo ; enum Bar7 { }";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -248,7 +248,7 @@ fn test_duplicate() {
     let tokens = quote!(#ch #ch);
 
     let expected = "'x' 'x'";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -261,7 +261,7 @@ fn test_fancy_repetition() {
     };
 
     let expected = r#""a" : true , "b" : false"#;
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
@@ -275,13 +275,13 @@ fn test_nested_fancy_repetition() {
     };
 
     let expected = "'a' 'b' 'c' , 'x' 'y' 'z'";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
 fn test_empty_repetition() {
     let tokens = quote!(#(a b)* #(c d),*);
-    assert_eq!("", tokens.to_string());
+    assert_eq!("", tokens.as_str());
 }
 
 #[test]
@@ -291,11 +291,11 @@ fn test_variable_name_conflict() {
     let _i = vec!['a', 'b'];
     let tokens = quote! { #(#_i),* };
     let expected = "'a' , 'b'";
-    assert_eq!(expected, tokens.to_string());
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
 fn test_empty_quote() {
     let tokens = quote!();
-    assert_eq!("", tokens.to_string());
+    assert_eq!("", tokens.as_str());
 }
