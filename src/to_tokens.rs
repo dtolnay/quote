@@ -105,11 +105,21 @@ macro_rules! impl_to_tokens_display {
 impl_to_tokens_display!(Tokens);
 impl_to_tokens_display!(bool);
 
+/// Wrap an integer so it interpolates as a hexadecimal.
+#[derive(Debug)]
+pub struct Hex<T>(pub T);
+
 macro_rules! impl_to_tokens_integer {
     ($ty:ty) => {
         impl ToTokens for $ty {
             fn to_tokens(&self, tokens: &mut Tokens) {
                 tokens.append(&format!(concat!("{}", stringify!($ty)), self));
+            }
+        }
+
+        impl ToTokens for Hex<$ty> {
+            fn to_tokens(&self, tokens: &mut Tokens) {
+                tokens.append(&format!(concat!("0x{:X}", stringify!($ty)), self.0));
             }
         }
     };
