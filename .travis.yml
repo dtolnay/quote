@@ -2,7 +2,12 @@ sudo: false
 
 language: rust
 
-rust: nightly
+rust:
+  - nightly
+  - stable
+  - 1.11.0
+  - 1.12.1
+  - beta
 
 script:
   - cargo test
