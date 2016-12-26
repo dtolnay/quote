@@ -109,6 +109,14 @@ fn test_advanced() {
 }
 
 #[test]
+fn test_unit() {
+    let x = ();
+    let tokens = quote!(#x);
+    let expected = "( )";
+    assert_eq!(expected, tokens.as_str());
+}
+
+#[test]
 fn test_tuple() {
     let x = ("foo", 4_u32);
     let tokens = quote!(#x);

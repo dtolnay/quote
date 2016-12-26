@@ -218,17 +218,17 @@ macro_rules! e {
 macro_rules! tuple_impls {
     ($(
         $Tuple:ident {
-            $(($idx:tt) -> $T:ident)+
+            $(($idx:tt) -> $T:ident)*
         }
     )+) => {
         $(
-            impl<$($T: ToTokens),+> ToTokens for ($($T,)+) {
+            impl<$($T: ToTokens),*> ToTokens for ($($T,)*) {
                 fn to_tokens(&self, tokens: &mut Tokens) {
                     tokens.append("(");
                     $(
                         e!(self.$idx).to_tokens(tokens);
                         tokens.append(",");
-                    )+
+                    )*
                     tokens.append(")");
                 }
             }
@@ -237,6 +237,7 @@ macro_rules! tuple_impls {
 }
 
 tuple_impls! {
+    Tuple0 {}
     Tuple1 {
         (0) -> A
     }
