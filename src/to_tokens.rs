@@ -209,12 +209,6 @@ array_impls! {
     30 31 32
 }
 
-// To support Rust 1.11.0.
-// https://github.com/rust-lang/rust/issues/19630
-macro_rules! e {
-    ($e:expr) => { $e };
-}
-
 macro_rules! tuple_impls {
     ($(
         $Tuple:ident {
@@ -226,7 +220,7 @@ macro_rules! tuple_impls {
                 fn to_tokens(&self, tokens: &mut Tokens) {
                     tokens.append("(");
                     $(
-                        e!(self.$idx).to_tokens(tokens);
+                        self.$idx.to_tokens(tokens);
                         tokens.append(",");
                     )*
                     tokens.append(")");
