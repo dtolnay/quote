@@ -6,6 +6,7 @@ rust:
   - nightly
   - stable
   - 1.12.1
+  - 1.13.0
   - beta
 
 script:
