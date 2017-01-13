@@ -85,7 +85,8 @@ return quote! { /* ... */ #t /* ... */ };
 The `quote!` macro relies on deep recursion so some large invocations may fail
 with "recursion limit reached" when you compile. If it fails, bump up the
 recursion limit by adding `#![recursion_limit = "128"]` to your crate. An even
-higher limit may be necessary for especially large invocations.
+higher limit may be necessary for especially large invocations. You don't need
+this unless the compiler tells you that you need it.
 
 ## License
 
