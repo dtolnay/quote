@@ -241,6 +241,14 @@ fn test_byte_str() {
 }
 
 #[test]
+fn test_byte_str_escape() {
+    let s = quote::ByteStr("\u{3c3} \\ \" \n");
+    let tokens = quote!(#s);
+    let expected = "b\"\\xCF\\x83 \\\\ \\\" \\n\"";
+    assert_eq!(expected, tokens.as_str());
+}
+
+#[test]
 fn test_ident() {
     let foo = quote::Ident::from("Foo");
     let bar = quote::Ident::from(format!("Bar{}", 7));
