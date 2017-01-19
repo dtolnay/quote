@@ -1,4 +1,5 @@
 use std::{f32, f64};
+use std::borrow::Cow;
 
 #[macro_use]
 extern crate quote;
@@ -314,4 +315,36 @@ fn test_variable_name_conflict() {
 fn test_empty_quote() {
     let tokens = quote!();
     assert_eq!("", tokens.as_str());
+}
+
+#[test]
+fn test_box_str() {
+    let b = "str".to_owned().into_boxed_str();
+    let tokens = quote! { #b };
+    assert_eq!("\"str\"", tokens.as_str());
+}
+
+#[test]
+fn test_cow() {
+    let owned: Cow<quote::Ident> = Cow::Owned(quote::Ident::from("owned"));
+
+    let ident = quote::Ident::from("borrowed");
+    let borrowed = Cow::Borrowed(&ident);
+
+    let tokens = quote! { #owned #borrowed };
+    assert_eq!("owned borrowed", tokens.as_str());
+}
+
+#[test]
+fn test_closure() {
+    fn field_i(i: usize) -> quote::Ident {
+        quote::Ident::new(format!("__field{}", i))
+    }
+
+    let fields = (0usize..3)
+        .map(field_i as fn(_) -> _)
+        .map(|var| quote! { #var });
+
+    let tokens = quote! { #(#fields)* };
+    assert_eq!("__field0 __field1 __field2", tokens.as_str());
 }
