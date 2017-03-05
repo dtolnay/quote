@@ -98,8 +98,8 @@ macro_rules! pounded_var_names {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident ($($found:ident)*) # { $($ignore:tt)* } $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($rest)*)
     };
 
     ($finish:ident ($($found:ident)*) # $first:ident $($rest:tt)*) => {
@@ -216,6 +216,11 @@ macro_rules! quote_each_token {
         $tokens.append("[");
         quote_each_token!($tokens $($inner)*);
         $tokens.append("]");
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    ($tokens:ident # { $($inner:tt)* } $($rest:tt)*) => {
+        $crate::ToTokens::to_tokens(&{ $($inner)* }, &mut $tokens);
         quote_each_token!($tokens $($rest)*);
     };
 
