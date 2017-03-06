@@ -96,6 +96,8 @@ fn test_complex_computation_in_loop() {
     );
 
     let expected = r#""1" , "e" , "+" , "a" , "2" , "e" , "+" , "a" , "3" , "e" , "+" , "a" ,"#;
+
+    assert_eq!(expected, tokens.as_str());
 }
 
 #[test]
