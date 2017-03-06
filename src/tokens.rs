@@ -28,8 +28,7 @@ impl Tokens {
     ///     }
     /// }
     ///
-    /// let x = X;
-    /// let tokens = quote!(#x);
+    /// let tokens = quote!(#X);
     /// assert_eq!(tokens.as_str(), "a b c");
     /// # }
     /// ```
@@ -54,8 +53,7 @@ impl Tokens {
     ///     }
     /// }
     ///
-    /// let x = X;
-    /// let tokens = quote!(#x);
+    /// let tokens = quote!(#X);
     /// assert_eq!(tokens.as_str(), "true false");
     /// # }
     /// ```
@@ -82,8 +80,7 @@ impl Tokens {
     ///     }
     /// }
     ///
-    /// let x = X;
-    /// let tokens = quote!(#x);
+    /// let tokens = quote!(#X);
     /// assert_eq!(tokens.as_str(), "true , false");
     /// # }
     /// ```
@@ -113,8 +110,7 @@ impl Tokens {
     ///     }
     /// }
     ///
-    /// let x = X;
-    /// let tokens = quote!(#x);
+    /// let tokens = quote!(#X);
     /// assert_eq!(tokens.as_str(), "true , false ,");
     /// # }
     /// ```
