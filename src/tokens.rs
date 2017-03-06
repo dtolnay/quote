@@ -118,7 +118,7 @@ impl Tokens {
     /// assert_eq!(tokens.as_str(), "true , false ,");
     /// # }
     /// ```
-    pub fn append_terminated<T, I, X: AsRef<str>>(&mut self, iter: I, term: X)
+    pub fn append_terminated<T, I, S: AsRef<str>>(&mut self, iter: I, term: S)
         where T: ToTokens,
               I: IntoIterator<Item = T>
     {
