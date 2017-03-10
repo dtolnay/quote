@@ -82,6 +82,14 @@ let t = quote! { /* ... */ };
 return quote! { /* ... */ #t /* ... */ };
 ```
 
+For a great example making use of all of these features, check out [`DeepClone`]
+and [`deep-clone-derive`].
+
+[`DeepClone`]: https://github.com/asajeffrey/deep-clone
+[`deep-clone-derive`]: https://github.com/asajeffrey/deep-clone/blob/master/deep-clone-derive/lib.rs
+
+---
+
 The `quote!` macro relies on deep recursion so some large invocations may fail
 with "recursion limit reached" when you compile. If it fails, bump up the
 recursion limit by adding `#![recursion_limit = "128"]` to your crate. An even
