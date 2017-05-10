@@ -75,6 +75,8 @@ Repetition is done using `#(...)*` or `#(...),*` very similar to `macro_rules!`:
 - `#( struct #var; )*` - the repetition can contain other things
 - `#( #k => println!("{}", #v), )*` - even multiple interpolations
 
+**Note:** There is actually a difference between `#(#var ,)*` and `#(#var),*`: The latter one won't generate a trailing comma.
+
 Tokens can be interpolated into other quotes:
 
 ```rust
