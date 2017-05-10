@@ -3,11 +3,17 @@ sudo: false
 language: rust
 
 rust:
-  - nightly
   - stable
   - 1.12.1
   - 1.13.0
   - beta
+matrix:
+  include:
+    - rust: nightly
+      env: CARGO_FEATURES=dev_nightly # enable compiletests
+env:
+  global:
+  - CARGO_FEATURES=""
 
 script:
-  - cargo test
+  - cargo test --features "$CARGO_FEATURES"

@@ -50,6 +50,24 @@
 //! return quote! { /* ... */ #t /* ... */ };
 //! ```
 //!
+//! You can use `#{...}` for some basic computations inside of quotations. Computations are
+//! restricted to combinations of:
+//!
+//! - `#{x[0]}` - index arrays with integers 0..32
+//! - `#{x.0}` - index tuple structs with integers 0..32
+//! - `#{x.foo}` - access fields
+//! - `#{x()}` - call functions (without arguments)
+//!
+//! Note:
+//! - Any chained combination of the above is also possible, like `#{self.foo[0].bar()}`.
+//!   But please consider replacing too complex computations with helper variables `#bar`
+//!   in order to improve the readability for other people - thank you in advance. ;-)
+//! - These computations can be particularly useful if you want to implement `quote::ToTokens`
+//!   for a custom struct. You can then reference the struct fields directly via `#{self.foo}`
+//!   etc.
+//! - computations `#{...}` _inside_ of repetitions `#(...)*` are treated as constant expressions
+//!   and are not iterated over - in contrast to any other `#x` inside of a repetition.
+//!
 //! Call `to_string()` or `as_str()` on a Tokens to get a `String` or `&str` of Rust
 //! code.
 //!
@@ -98,8 +116,8 @@ macro_rules! pounded_var_names {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident ($($found:ident)*) # { $($ignore:tt)* } $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($rest)*)
     };
 
     ($finish:ident ($($found:ident)*) # $first:ident $($rest:tt)*) => {
@@ -181,6 +199,121 @@ macro_rules! multi_zip_expr {
     };
 }
 
+// in: validate_computation_in_interpolation!(@COMPUTATION self.foo())
+// result: OK - empty token tree
+//
+// in: validate_computation_in_interpolation!(@COMPUTATION self.x.map(|x| 3*x))
+// result: Parsing error "unexpected Token `|`"
+#[macro_export]
+#[doc(hidden)]
+macro_rules! validate_computation_in_interpolation {
+    // input must either start with `($ident...)`
+    //
+    // -> in order to support the computation `#{(matrix.2).3}`
+    (@ENTRY ($ident:ident $($branch:tt)*) $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@AFTER_IDENT $($branch)*);
+        validate_computation_in_interpolation!(@AFTER_IDENT $($rest)*);
+    };
+
+    // .. or it must start with an identifier `$ident`
+    (@ENTRY $ident:ident $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@AFTER_IDENT $($rest)*);
+    };
+
+    // done when empty
+    (@AFTER_IDENT) => {};
+
+    // function calls are ok - but only without arguments
+    (@AFTER_IDENT () $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@AFTER_IDENT $($rest)*);
+    };
+
+    // struct access is ok - both by field ident or tuple index
+    (@AFTER_IDENT . $expect_number_or_ident:tt $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@IS [NUMBER IDENT] $expect_number_or_ident);
+        validate_computation_in_interpolation!(@AFTER_IDENT $($rest)*);
+    };
+
+    // array access is ok - but only with for indices 0..32
+    (@AFTER_IDENT [$($expect_number:tt)*] $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@IS [NUMBER] $($expect_number)*);
+        validate_computation_in_interpolation!(@AFTER_IDENT $($rest)*);
+    };
+
+    // or else produce a nicer compiler error: "no rules expected the token `$invalid`"
+    (@AFTER_IDENT $invalid:tt $($rest:tt)*) => {
+        // no rule accepts a single token - voila!
+        validate_computation_in_interpolation!($invalid);
+    };
+
+    // -----------------------------------------
+    // `@IS [NUMBER IDENT] something` will check whether `something` is either a number or an
+    // identifier
+    //
+    // Important: `@IS [NUMBER IDENT]` will work, but `@IS [IDENT NUMBER]` will fail, see
+    // - https://github.com/rust-lang/rust/issues/27832
+    //
+    // The following will parse
+    // - @IS [NUMBER] 0
+    // - @IS [IDENT] foo
+    // - @IS [NUMBER IDENT] 0
+    //
+    // The following will not parse
+    // - @IS [NUMBER] foo
+    // - @IS [IDENT] 0
+    // -----------------------------------------
+    // if ident
+    (@IS [IDENT $($or:tt)*] $ident:ident) => {};
+    // .. else continue
+    (@IS [IDENT $($or:tt)*] $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@IS [$($or)*] $($rest)*);
+    };
+    // if number in 0..32
+    (@IS [NUMBER $($or:tt)*] 0) => {};
+    (@IS [NUMBER $($or:tt)*] 1) => {};
+    (@IS [NUMBER $($or:tt)*] 2) => {};
+    (@IS [NUMBER $($or:tt)*] 3) => {};
+    (@IS [NUMBER $($or:tt)*] 4) => {};
+    (@IS [NUMBER $($or:tt)*] 5) => {};
+    (@IS [NUMBER $($or:tt)*] 6) => {};
+    (@IS [NUMBER $($or:tt)*] 7) => {};
+    (@IS [NUMBER $($or:tt)*] 8) => {};
+    (@IS [NUMBER $($or:tt)*] 9) => {};
+    (@IS [NUMBER $($or:tt)*] 10) => {};
+    (@IS [NUMBER $($or:tt)*] 11) => {};
+    (@IS [NUMBER $($or:tt)*] 12) => {};
+    (@IS [NUMBER $($or:tt)*] 13) => {};
+    (@IS [NUMBER $($or:tt)*] 14) => {};
+    (@IS [NUMBER $($or:tt)*] 15) => {};
+    (@IS [NUMBER $($or:tt)*] 16) => {};
+    (@IS [NUMBER $($or:tt)*] 17) => {};
+    (@IS [NUMBER $($or:tt)*] 18) => {};
+    (@IS [NUMBER $($or:tt)*] 19) => {};
+    (@IS [NUMBER $($or:tt)*] 20) => {};
+    (@IS [NUMBER $($or:tt)*] 21) => {};
+    (@IS [NUMBER $($or:tt)*] 22) => {};
+    (@IS [NUMBER $($or:tt)*] 23) => {};
+    (@IS [NUMBER $($or:tt)*] 24) => {};
+    (@IS [NUMBER $($or:tt)*] 25) => {};
+    (@IS [NUMBER $($or:tt)*] 26) => {};
+    (@IS [NUMBER $($or:tt)*] 27) => {};
+    (@IS [NUMBER $($or:tt)*] 28) => {};
+    (@IS [NUMBER $($or:tt)*] 29) => {};
+    (@IS [NUMBER $($or:tt)*] 30) => {};
+    (@IS [NUMBER $($or:tt)*] 31) => {};
+    // .. else continue
+    (@IS [NUMBER $($or:tt)*] $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@IS [$($or)*] $($rest)*);
+    };
+    // if we reached `@IS []`, then nothing will match.
+    //
+    // Let's apply a trick to produce a nicer compiler error
+    (@IS [] $invalid:tt $($rest:tt)*) => {
+        // no rule accepts a single token - voila!
+        validate_computation_in_interpolation!($invalid);
+    };
+}
+
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_each_token {
@@ -216,6 +349,14 @@ macro_rules! quote_each_token {
         $tokens.append("[");
         quote_each_token!($tokens $($inner)*);
         $tokens.append("]");
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    // wrap computations in a
+    ($tokens:ident # { $($inner:tt)* } $($rest:tt)*) => {
+        validate_computation_in_interpolation!(@ENTRY $($inner)*);
+        let computation = &$($inner)*;
+        $crate::ToTokens::to_tokens(computation, &mut $tokens);
         quote_each_token!($tokens $($rest)*);
     };
 
