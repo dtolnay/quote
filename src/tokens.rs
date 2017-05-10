@@ -1,5 +1,6 @@
 use super::ToTokens;
 use std::fmt::{self, Display};
+use std::iter::Sum;
 use std::str::FromStr;
 
 /// Tokens produced by a `quote!(...)` invocation.
@@ -152,5 +153,15 @@ impl Display for Tokens {
 impl AsRef<str> for Tokens {
     fn as_ref(&self) -> &str {
         &self.0
+    }
+}
+
+impl<T: ToTokens> Sum<T> for Tokens {
+    fn sum<I>(iter: I) -> Self
+        where I: Iterator<Item=T> {
+        iter.fold(Tokens::default(), |mut tokens, token| {
+            token.to_tokens(&mut tokens);
+            tokens
+        })
     }
 }

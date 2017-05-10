@@ -358,3 +358,25 @@ fn test_closure() {
     let tokens = quote! { #(#fields)* };
     assert_eq!("__field0 __field1 __field2", tokens.as_str());
 }
+
+#[test]
+fn test_sum() {
+    use quote::{Tokens, ToTokens};
+
+    #[derive(Default, Clone, Copy)]
+    struct SomeT { val: usize };
+    impl SomeT {
+        fn new(val: usize) -> SomeT {
+            SomeT { val: val }
+        }
+    }
+    impl ToTokens for SomeT {
+        fn to_tokens(&self, tokens: &mut Tokens) {
+            tokens.append(format!("__t{}", self.val));
+        }
+    }
+
+    let items: Vec<_> = (0..3).map(SomeT::new).collect();
+    let tokens: Tokens = items.into_iter().sum();
+    assert_eq!("__t0 __t1 __t2", tokens.as_str());
+}
