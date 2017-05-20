@@ -27,6 +27,16 @@ pub trait ToTokens {
     /// }
     /// ```
     fn to_tokens(&self, &mut Tokens);
+
+    /// Convert `self` directly into a `Tokens` object.
+    ///
+    /// This method is implicitly implemented using `to_tokens`, and acts as a
+    /// convenience method for consumers of the `ToTokens` trait.
+    fn into_tokens(self) -> Tokens where Self: Sized {
+        let mut tokens = Tokens::new();
+        self.to_tokens(&mut tokens);
+        tokens
+    }
 }
 
 impl<'a, T: ?Sized + ToTokens> ToTokens for &'a T {
@@ -122,8 +132,17 @@ macro_rules! impl_to_tokens_display {
     };
 }
 
-impl_to_tokens_display!(Tokens);
 impl_to_tokens_display!(bool);
+
+impl ToTokens for Tokens {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(self.as_str());
+    }
+
+    fn into_tokens(self) -> Tokens {
+        self
+    }
+}
 
 /// Wrap an integer so it interpolates as a hexadecimal.
 #[derive(Debug)]
