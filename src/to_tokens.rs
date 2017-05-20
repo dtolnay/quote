@@ -122,17 +122,11 @@ impl<'a> ToTokens for ByteStr<'a> {
     }
 }
 
-macro_rules! impl_to_tokens_display {
-    ($ty:ty) => {
-        impl ToTokens for $ty {
-            fn to_tokens(&self, tokens: &mut Tokens) {
-                tokens.append(&self.to_string());
-            }
-        }
-    };
+impl ToTokens for bool {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(if *self { "true" } else { "false" });
+    }
 }
-
-impl_to_tokens_display!(bool);
 
 impl ToTokens for Tokens {
     fn to_tokens(&self, tokens: &mut Tokens) {
