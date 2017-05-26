@@ -1,42 +1,62 @@
 use super::ToTokens;
 use std::fmt::{self, Display};
-use std::str::FromStr;
+
+use proc_macro2::{TokenStream, TokenTree, TokenKind, Symbol, Span};
+use proc_macro2::Delimiter;
 
 /// Tokens produced by a `quote!(...)` invocation.
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct Tokens(String);
+#[derive(Clone)]
+pub struct Tokens {
+    tts: Vec<TokenTree>,
+}
 
 impl Tokens {
     /// Empty tokens.
     pub fn new() -> Self {
-        Tokens(String::new())
+        Tokens { tts: Vec::new() }
     }
 
     /// For use by `ToTokens` implementations.
     ///
-    /// ```
-    /// # #[macro_use] extern crate quote;
-    /// # use quote::{Tokens, ToTokens};
-    /// # fn main() {
-    /// struct X;
-    ///
-    /// impl ToTokens for X {
-    ///     fn to_tokens(&self, tokens: &mut Tokens) {
-    ///         tokens.append("a");
-    ///         tokens.append("b");
-    ///         tokens.append("c");
-    ///     }
-    /// }
-    ///
-    /// let tokens = quote!(#X);
-    /// assert_eq!(tokens.as_str(), "a b c");
-    /// # }
-    /// ```
-    pub fn append<T: AsRef<str>>(&mut self, token: T) {
-        if !self.0.is_empty() && !token.as_ref().is_empty() {
-            self.0.push(' ');
-        }
-        self.0.push_str(token.as_ref());
+    /// Appends the token specified to this list of tokens.
+    pub fn append<U>(&mut self, token: U)
+        where U: Into<TokenTree>,
+    {
+        self.tts.push(token.into());
+    }
+
+    /// Add `tokens` into `self`.
+    pub fn append_tokens<T: ToTokens>(&mut self, tokens: T) {
+        tokens.to_tokens(self)
+    }
+
+    /// Add the symbol specified to this list of tokens.
+    pub fn append_sym(&mut self, sym: &str, span: Span) {
+        self.append(TokenTree {
+            span: span,
+            kind: TokenKind::Word(Symbol::from(sym)),
+        });
+    }
+
+    pub fn append_delimited<F, R>(&mut self,
+                                  delim: &str,
+                                  span: Span,
+                                  f: F) -> R
+        where F: FnOnce(&mut Tokens) -> R,
+    {
+        let delim = match delim {
+            "(" => Delimiter::Parenthesis,
+            "[" => Delimiter::Bracket,
+            "{" => Delimiter::Brace,
+            _ => panic!("unknown delimiter: {}", delim),
+        };
+        let mut child = Tokens::new();
+        let ret = f(&mut child);
+        self.append(TokenTree {
+            span: span,
+            kind: TokenKind::Sequence(delim, child.into()),
+        });
+        return ret
     }
 
     /// For use by `ToTokens` implementations.
@@ -54,7 +74,7 @@ impl Tokens {
     /// }
     ///
     /// let tokens = quote!(#X);
-    /// assert_eq!(tokens.as_str(), "true false");
+    /// assert_eq!(tokens.to_string(), "true false");
     /// # }
     /// ```
     pub fn append_all<T, I>(&mut self, iter: I)
@@ -68,29 +88,16 @@ impl Tokens {
 
     /// For use by `ToTokens` implementations.
     ///
-    /// ```
-    /// # #[macro_use] extern crate quote;
-    /// # use quote::{Tokens, ToTokens};
-    /// # fn main() {
-    /// struct X;
-    ///
-    /// impl ToTokens for X {
-    ///     fn to_tokens(&self, tokens: &mut Tokens) {
-    ///         tokens.append_separated(&[true, false], ",");
-    ///     }
-    /// }
-    ///
-    /// let tokens = quote!(#X);
-    /// assert_eq!(tokens.as_str(), "true , false");
-    /// # }
-    /// ```
-    pub fn append_separated<T, I, S: AsRef<str>>(&mut self, iter: I, sep: S)
+    /// Appends all of the items in the iterator `I`, separated by the tokens
+    /// `U`.
+    pub fn append_separated<T, I, U>(&mut self, iter: I, op: U)
         where T: ToTokens,
-              I: IntoIterator<Item = T>
+              I: IntoIterator<Item = T>,
+              U: ToTokens,
     {
         for (i, token) in iter.into_iter().enumerate() {
             if i > 0 {
-                self.append(sep.as_ref());
+                op.to_tokens(self);
             }
             token.to_tokens(self);
         }
@@ -98,42 +105,23 @@ impl Tokens {
 
     /// For use by `ToTokens` implementations.
     ///
-    /// ```
-    /// # #[macro_use] extern crate quote;
-    /// # use quote::{Tokens, ToTokens};
-    /// # fn main() {
-    /// struct X;
-    ///
-    /// impl ToTokens for X {
-    ///     fn to_tokens(&self, tokens: &mut Tokens) {
-    ///         tokens.append_terminated(&[true, false], ",");
-    ///     }
-    /// }
-    ///
-    /// let tokens = quote!(#X);
-    /// assert_eq!(tokens.as_str(), "true , false ,");
-    /// # }
-    /// ```
-    pub fn append_terminated<T, I, S: AsRef<str>>(&mut self, iter: I, term: S)
+    /// Appends all tokens in the iterator `I`, appending `U` after each
+    /// element, including after the last element of the iterator.
+    pub fn append_terminated<T, I, U>(&mut self, iter: I, term: U)
         where T: ToTokens,
-              I: IntoIterator<Item = T>
+              I: IntoIterator<Item = T>,
+              U: ToTokens,
     {
         for token in iter {
             token.to_tokens(self);
-            self.append(term.as_ref());
+            term.to_tokens(self);
         }
     }
+}
 
-    pub fn as_str(&self) -> &str {
-        &self.0
-    }
-
-    pub fn into_string(self) -> String {
-        self.0
-    }
-
-    pub fn parse<T: FromStr>(&self) -> Result<T, T::Err> {
-        FromStr::from_str(&self.0)
+impl From<Tokens> for TokenStream {
+    fn from(tokens: Tokens) -> TokenStream {
+        tokens.tts.into_iter().collect()
     }
 }
 
@@ -143,14 +131,26 @@ impl Default for Tokens {
     }
 }
 
-impl Display for Tokens {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        self.0.fmt(formatter)
+impl ToTokens for Tokens {
+    fn to_tokens(&self, dst: &mut Tokens) {
+        dst.tts.extend(self.tts.iter().cloned());
     }
 }
 
-impl AsRef<str> for Tokens {
-    fn as_ref(&self) -> &str {
-        &self.0
+impl ToTokens for TokenStream {
+    fn to_tokens(&self, dst: &mut Tokens) {
+        dst.append_all(self.clone().into_iter());
+    }
+}
+
+impl ToTokens for TokenTree {
+    fn to_tokens(&self, dst: &mut Tokens) {
+        dst.append(self.clone());
+    }
+}
+
+impl Display for Tokens {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        TokenStream::from(self.clone()).fmt(formatter)
     }
 }

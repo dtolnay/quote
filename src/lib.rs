@@ -58,14 +58,29 @@
 //! recursion limit by adding `#![recursion_limit = "128"]` to your crate. An even
 //! higher limit may be necessary for especially large invocations.
 
+extern crate proc_macro2;
+
 mod tokens;
 pub use tokens::Tokens;
 
 mod to_tokens;
-pub use to_tokens::{ToTokens, ByteStr, Hex};
+pub use to_tokens::{ToTokens, ByteStr};
 
-mod ident;
-pub use ident::Ident;
+pub mod __rt {
+    pub use proc_macro2::*;
+
+    pub fn parse(tokens: &mut ::Tokens, s: &str) {
+        let s: TokenStream = s.parse().expect("invalid token stream");
+        tokens.append_all(s.into_iter());
+    }
+
+    pub fn append_kind(tokens: &mut ::Tokens, kind: TokenKind) {
+        tokens.append(TokenTree {
+            span: Default::default(),
+            kind: kind,
+        })
+    }
+}
 
 /// The whole point.
 #[macro_export]
@@ -187,8 +202,8 @@ macro_rules! quote_each_token {
     ($tokens:ident) => {};
 
     ($tokens:ident # ! $($rest:tt)*) => {
-        $tokens.append("#");
-        $tokens.append("!");
+        quote_each_token!($tokens #);
+        quote_each_token!($tokens !);
         quote_each_token!($tokens $($rest)*);
     };
 
@@ -204,7 +219,7 @@ macro_rules! quote_each_token {
         for (_i, pounded_var_names!(nested_tuples_pat () $($inner)*))
         in pounded_var_names!(multi_zip_expr () $($inner)*).into_iter().enumerate() {
             if _i > 0 {
-                $tokens.append(stringify!($sep));
+                quote_each_token!($tokens $sep);
             }
             quote_each_token!($tokens $($inner)*);
         }
@@ -212,11 +227,12 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
-        $tokens.append("#");
-        $tokens.append("[");
-        quote_each_token!($tokens $($inner)*);
-        $tokens.append("]");
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens #);
+        $crate::__rt::append_kind(&mut $tokens,
+            $crate::__rt::TokenKind::Sequence(
+                $crate::__rt::Delimiter::Brace,
+                quote! { $($rest)* }.into()
+            ));
     };
 
     ($tokens:ident # $first:ident $($rest:tt)*) => {
@@ -225,28 +241,35 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident ( $($first:tt)* ) $($rest:tt)*) => {
-        $tokens.append("(");
-        quote_each_token!($tokens $($first)*);
-        $tokens.append(")");
+        $crate::__rt::append_kind(&mut $tokens,
+            $crate::__rt::TokenKind::Sequence(
+                $crate::__rt::Delimiter::Parenthesis,
+                quote! { $($first)* }.into()
+            ));
         quote_each_token!($tokens $($rest)*);
     };
 
     ($tokens:ident [ $($first:tt)* ] $($rest:tt)*) => {
-        $tokens.append("[");
-        quote_each_token!($tokens $($first)*);
-        $tokens.append("]");
+        $crate::__rt::append_kind(&mut $tokens,
+            $crate::__rt::TokenKind::Sequence(
+                $crate::__rt::Delimiter::Bracket,
+                quote! { $($first)* }.into()
+            ));
         quote_each_token!($tokens $($rest)*);
     };
 
     ($tokens:ident { $($first:tt)* } $($rest:tt)*) => {
-        $tokens.append("{");
-        quote_each_token!($tokens $($first)*);
-        $tokens.append("}");
+        $crate::__rt::append_kind(&mut $tokens,
+            $crate::__rt::TokenKind::Sequence(
+                $crate::__rt::Delimiter::Brace,
+                quote! { $($first)* }.into()
+            ));
         quote_each_token!($tokens $($rest)*);
     };
 
     ($tokens:ident $first:tt $($rest:tt)*) => {
-        $tokens.append(stringify!($first));
+        // TODO: this seems slow... special case some `:tt` arguments?
+        $crate::__rt::parse(&mut $tokens, stringify!($first));
         quote_each_token!($tokens $($rest)*);
     };
 }

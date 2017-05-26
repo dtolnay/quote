@@ -2,6 +2,15 @@ use super::Tokens;
 
 use std::borrow::Cow;
 
+use proc_macro2::{TokenKind, Literal, OpKind, Delimiter, Symbol, TokenTree, Span};
+
+fn tt(kind: TokenKind) -> TokenTree {
+    TokenTree {
+        span: Span::default(),
+        kind: kind,
+    }
+}
+
 /// Types that can be interpolated inside a `quote!(...)` invocation.
 pub trait ToTokens {
     /// Write `self` to the given `Tokens`.
@@ -55,19 +64,15 @@ impl<T: ToTokens> ToTokens for Option<T> {
     }
 }
 
+impl ToTokens for Symbol {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(tt(TokenKind::Word(*self)));
+    }
+}
+
 impl ToTokens for str {
     fn to_tokens(&self, tokens: &mut Tokens) {
-        let mut escaped = "\"".to_string();
-        for ch in self.chars() {
-            match ch {
-                '\0' => escaped.push_str(r"\0"),
-                '\'' => escaped.push_str("'"),
-                _ => escaped.extend(ch.escape_default().map(|c| c as char)),
-            }
-        }
-        escaped.push('"');
-
-        tokens.append(&escaped);
+        tokens.append(tt(TokenKind::Literal(self.into())));
     }
 }
 
@@ -77,13 +82,27 @@ impl ToTokens for String {
     }
 }
 
-impl ToTokens for char {
-    fn to_tokens(&self, tokens: &mut Tokens) {
-        match *self {
-            '\0' => tokens.append(r"'\0'"),
-            '"' => tokens.append("'\"'"),
-            _ => tokens.append(&format!("{:?}", self)),
+macro_rules! primitive {
+    ($($t:ident)*) => ($(
+        impl ToTokens for $t {
+            fn to_tokens(&self, tokens: &mut Tokens) {
+                tokens.append(tt(TokenKind::Literal((*self).into())));
+            }
         }
+    )*)
+}
+
+primitive! {
+    i8 i16 i32 i64 isize
+    u8 u16 u32 u64 usize
+    char
+    f32 f64
+}
+
+impl ToTokens for bool {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        let word = if *self {"true"} else {"false"};
+        tokens.append(tt(TokenKind::Word(Symbol::from(word))));
     }
 }
 
@@ -93,114 +112,19 @@ pub struct ByteStr<'a>(pub &'a str);
 
 impl<'a> ToTokens for ByteStr<'a> {
     fn to_tokens(&self, tokens: &mut Tokens) {
-        let mut escaped = "b\"".to_string();
-        for b in self.0.bytes() {
-            match b {
-                b'\0' => escaped.push_str(r"\0"),
-                b'\t' => escaped.push_str(r"\t"),
-                b'\n' => escaped.push_str(r"\n"),
-                b'\r' => escaped.push_str(r"\r"),
-                b'"' => escaped.push_str("\\\""),
-                b'\\' => escaped.push_str("\\\\"),
-                b'\x20' ... b'\x7E' => escaped.push(b as char),
-                _ => escaped.push_str(&format!("\\x{:02X}", b)),
-            }
-        }
-        escaped.push('"');
-
-        tokens.append(&escaped);
+        let lit = Literal::byte_string(self.0.as_bytes());
+        tokens.append(tt(TokenKind::Literal(lit)));
     }
 }
 
-macro_rules! impl_to_tokens_display {
-    ($ty:ty) => {
-        impl ToTokens for $ty {
-            fn to_tokens(&self, tokens: &mut Tokens) {
-                tokens.append(&self.to_string());
-            }
-        }
-    };
-}
-
-impl_to_tokens_display!(Tokens);
-impl_to_tokens_display!(bool);
-
-/// Wrap an integer so it interpolates as a hexadecimal.
-#[derive(Debug)]
-pub struct Hex<T>(pub T);
-
-macro_rules! impl_to_tokens_integer {
-    ($ty:ty) => {
-        impl ToTokens for $ty {
-            fn to_tokens(&self, tokens: &mut Tokens) {
-                tokens.append(&format!(concat!("{}", stringify!($ty)), self));
-            }
-        }
-
-        impl ToTokens for Hex<$ty> {
-            fn to_tokens(&self, tokens: &mut Tokens) {
-                tokens.append(&format!(concat!("0x{:X}", stringify!($ty)), self.0));
-            }
-        }
-    };
-}
-
-impl_to_tokens_integer!(i8);
-impl_to_tokens_integer!(i16);
-impl_to_tokens_integer!(i32);
-impl_to_tokens_integer!(i64);
-impl_to_tokens_integer!(isize);
-impl_to_tokens_integer!(u8);
-impl_to_tokens_integer!(u16);
-impl_to_tokens_integer!(u32);
-impl_to_tokens_integer!(u64);
-impl_to_tokens_integer!(usize);
-
-macro_rules! impl_to_tokens_floating {
-    ($ty:ty) => {
-        impl ToTokens for $ty {
-            fn to_tokens(&self, tokens: &mut Tokens) {
-                use std::num::FpCategory::*;
-                match self.classify() {
-                    Zero | Subnormal | Normal => {
-                        tokens.append(&format!(concat!("{}", stringify!($ty)), self));
-                    }
-                    Nan => {
-                        tokens.append("::");
-                        tokens.append("std");
-                        tokens.append("::");
-                        tokens.append(stringify!($ty));
-                        tokens.append("::");
-                        tokens.append("NAN");
-                    }
-                    Infinite => {
-                        tokens.append("::");
-                        tokens.append("std");
-                        tokens.append("::");
-                        tokens.append(stringify!($ty));
-                        tokens.append("::");
-                        if self.is_sign_positive() {
-                            tokens.append("INFINITY");
-                        } else {
-                            tokens.append("NEG_INFINITY");
-                        }
-                    }
-                }
-            }
-        }
-    };
-}
-impl_to_tokens_floating!(f32);
-impl_to_tokens_floating!(f64);
-
 impl<T: ToTokens> ToTokens for [T] {
     fn to_tokens(&self, tokens: &mut Tokens) {
-        tokens.append("[");
+        let mut sub = Tokens::new();
         for item in self {
-            item.to_tokens(tokens);
-            tokens.append(",");
+            item.to_tokens(&mut sub);
+            sub.append(tt(TokenKind::Op(',', OpKind::Alone)));
         }
-        tokens.append("]");
+        tokens.append(tt(TokenKind::Sequence(Delimiter::Bracket, sub.into())));
     }
 }
 
@@ -238,12 +162,13 @@ macro_rules! tuple_impls {
         $(
             impl<$($T: ToTokens),*> ToTokens for ($($T,)*) {
                 fn to_tokens(&self, tokens: &mut Tokens) {
-                    tokens.append("(");
+                    let mut _sub = Tokens::new();
                     $(
-                        self.$idx.to_tokens(tokens);
-                        tokens.append(",");
+                        self.$idx.to_tokens(&mut _sub);
+                        _sub.append(tt(TokenKind::Op(',', OpKind::Alone)));
                     )*
-                    tokens.append(")");
+                    tokens.append(tt(TokenKind::Sequence(Delimiter::Parenthesis,
+                                                         _sub.into())));
                 }
             }
         )+
