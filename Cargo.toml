@@ -8,6 +8,7 @@ repository = "https://github.com/dtolnay/quote"
 documentation = "https://docs.rs/quote/"
 keywords = ["syn"]
 include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
+publish = false # this branch contains breaking changes
 
 [dependencies]
 proc-macro2 = { git = 'https://github.com/alexcrichton/proc-macro2' }
