@@ -230,7 +230,7 @@ macro_rules! quote_each_token {
         quote_each_token!($tokens #);
         $crate::__rt::append_kind(&mut $tokens,
             $crate::__rt::TokenKind::Sequence(
-                $crate::__rt::Delimiter::Brace,
+                $crate::__rt::Delimiter::Bracket,
                 quote! { $($rest)* }.into()
             ));
     };
