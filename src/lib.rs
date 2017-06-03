@@ -50,6 +50,19 @@
 //! return quote! { /* ... */ #t /* ... */ };
 //! ```
 //!
+//! You can use `#{...}` for arbitrary computations inside of quotations - _the result_ will then
+//! be spliced into the token stream:
+//!
+//! - `#{a[0]}` - index arrays
+//! - `#{x.foo}` - access fields
+//! - `#{format!("{:?}", ::std::time::Instant::now())}` - arbitrary computations and nested macros,
+//!    which are valid Rust
+//!
+//! Note:
+//! - interpolation inside of `#foo` inside of `#{...}` is disabled by design. `#{#foo}` is
+//!   illegal, but on the other hand you can `#{quote!(#foo)}` (if you _really want to_).
+//! - computations `#{...}` _inside_ of repetitions `#(...)*` are evaluated each time.
+//!
 //! Call `to_string()` or `as_str()` on a Tokens to get a `String` or `&str` of Rust
 //! code.
 //!
@@ -113,8 +126,8 @@ macro_rules! pounded_var_names {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident ($($found:ident)*) # { $($ignore:tt)* } $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)*) $($rest)*)
     };
 
     ($finish:ident ($($found:ident)*) # $first:ident $($rest:tt)*) => {
@@ -233,6 +246,11 @@ macro_rules! quote_each_token {
                 $crate::__rt::Delimiter::Bracket,
                 quote! { $($inner)* }.into()
             ));
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    ($tokens:ident # { $($inner:tt)* } $($rest:tt)*) => {
+        $crate::ToTokens::to_tokens(&{ $($inner)* }, &mut $tokens);
         quote_each_token!($tokens $($rest)*);
     };
 

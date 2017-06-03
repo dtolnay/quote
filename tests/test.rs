@@ -39,6 +39,73 @@ fn test_quote_impl() {
 }
 
 #[test]
+fn test_simple_computation_in_interpolation() {
+    let foo: [u32; 3] = [0, 1, 42];
+    let tokens = quote!(#{foo[2]});
+
+    let expected = "42u32";
+
+    assert_eq!(expected, tokens.as_str());
+}
+
+#[test]
+fn test_complex_computation_in_interpolation() {
+    let tokens = quote!(
+        let #{
+            struct Foo { }
+
+            impl quote::ToTokens for Foo {
+                fn to_tokens(&self, tokens: &mut quote::Tokens) {
+                    tokens.append("foo")
+                }
+            }
+
+            Foo { }
+        } = #{ quote!("Hello World!") };
+    );
+
+    let expected = "let foo = \"Hello World!\" ;";
+
+    assert_eq!(expected, tokens.as_str());
+}
+
+#[test]
+fn test_simple_computation_in_loop() {
+    let foo: [&'static str; 3] = ["1", "2", "3"];
+    let iter = foo.iter();
+    let tokens = quote!(#( #iter, #{"+"}, )*);
+
+    let expected = r#""1" , "+" , "2" , "+" , "3" , "+" ,"#;
+
+    assert_eq!(expected, tokens.as_str());
+}
+
+#[test]
+fn test_complex_computation_in_loop() {
+    let foo: [&'static str; 3] = ["1", "2", "3"];
+    let iter = foo.iter();
+    let tokens = quote!(
+        #( // loop
+            #{ // interpolation
+                "this will be ignored because the outer loop is empty"
+            }
+        )*
+        #( // loop
+            #iter,
+            #{ // interpolation
+                let foo = ["e", "+", "a"];
+                let iter = foo.iter();
+                quote!( #(#iter),*, )
+            }
+        )*
+    );
+
+    let expected = r#""1" , "e" , "+" , "a" , "2" , "e" , "+" , "a" , "3" , "e" , "+" , "a" ,"#;
+
+    assert_eq!(expected, tokens.as_str());
+}
+
+#[test]
 fn test_append_tokens() {
     let mut tokens = quote!(let x =);
     tokens.append_tokens(quote!("Hello World!";));
