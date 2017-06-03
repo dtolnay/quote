@@ -135,6 +135,10 @@ impl ToTokens for Tokens {
     fn to_tokens(&self, dst: &mut Tokens) {
         dst.tts.extend(self.tts.iter().cloned());
     }
+
+    fn into_tokens(self) -> Tokens {
+        self
+    }
 }
 
 impl ToTokens for TokenStream {
