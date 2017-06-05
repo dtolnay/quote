@@ -268,8 +268,17 @@ macro_rules! quote_each_token {
         quote_each_token!($tokens $($rest)*);
     };
 
+    // Special case for `ident` tokens.
+    ($tokens:ident $first_ident:ident $($rest:tt)*) => {
+        $crate::_rt::append_kind(&mut $tokens,
+            $crate::_rt::TokenKind::Word(
+                stringify!($first_ident).into()));
+        quote_each_token!($tokens $($rest)*);
+    };
+
+    // We can't identify any other token types reliably, so we just have to grab
+    // the `tt`, and parse it at runtime.
     ($tokens:ident $first:tt $($rest:tt)*) => {
-        // TODO: this seems slow... special case some `:tt` arguments?
         $crate::__rt::parse(&mut $tokens, stringify!($first));
         quote_each_token!($tokens $($rest)*);
     };
