@@ -1,7 +1,6 @@
 use super::ToTokens;
 use std::fmt::{self, Display};
 
-use proc_macro;
 use proc_macro2::{TokenStream, TokenTree, TokenNode, Term, Span};
 use proc_macro2::Delimiter;
 
@@ -123,13 +122,6 @@ impl Tokens {
 impl From<Tokens> for TokenStream {
     fn from(tokens: Tokens) -> TokenStream {
         tokens.tts.into_iter().collect()
-    }
-}
-
-impl From<Tokens> for proc_macro::TokenStream {
-    fn from(tokens: Tokens) -> proc_macro::TokenStream {
-        let tokens: TokenStream = tokens.into();
-        tokens.into()
     }
 }
 
