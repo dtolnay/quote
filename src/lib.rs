@@ -58,6 +58,7 @@
 //! recursion limit by adding `#![recursion_limit = "128"]` to your crate. An even
 //! higher limit may be necessary for especially large invocations.
 
+extern crate proc_macro;
 extern crate proc_macro2;
 
 mod tokens;
