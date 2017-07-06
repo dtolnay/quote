@@ -1,7 +1,7 @@
 use super::ToTokens;
 use std::fmt::{self, Display};
 
-use proc_macro2::{TokenStream, TokenTree, TokenKind, Symbol, Span};
+use proc_macro2::{TokenStream, TokenTree, TokenNode, Term, Span};
 use proc_macro2::Delimiter;
 
 /// Tokens produced by a `quote!(...)` invocation.
@@ -34,7 +34,7 @@ impl Tokens {
     pub fn append_sym(&mut self, sym: &str, span: Span) {
         self.append(TokenTree {
             span: span,
-            kind: TokenKind::Word(Symbol::from(sym)),
+            kind: TokenNode::Term(Term::intern(sym)),
         });
     }
 
@@ -54,7 +54,7 @@ impl Tokens {
         let ret = f(&mut child);
         self.append(TokenTree {
             span: span,
-            kind: TokenKind::Sequence(delim, child.into()),
+            kind: TokenNode::Group(delim, child.into()),
         });
         return ret
     }

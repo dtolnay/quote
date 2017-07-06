@@ -2,9 +2,9 @@ use super::Tokens;
 
 use std::borrow::Cow;
 
-use proc_macro2::{TokenKind, Literal, OpKind, Delimiter, Symbol, TokenTree, Span};
+use proc_macro2::{TokenNode, Literal, Spacing, Delimiter, Term, TokenTree, Span};
 
-fn tt(kind: TokenKind) -> TokenTree {
+fn tt(kind: TokenNode) -> TokenTree {
     TokenTree {
         span: Span::default(),
         kind: kind,
@@ -74,15 +74,15 @@ impl<T: ToTokens> ToTokens for Option<T> {
     }
 }
 
-impl ToTokens for Symbol {
+impl ToTokens for Term {
     fn to_tokens(&self, tokens: &mut Tokens) {
-        tokens.append(tt(TokenKind::Word(*self)));
+        tokens.append(tt(TokenNode::Term(*self)));
     }
 }
 
 impl ToTokens for str {
     fn to_tokens(&self, tokens: &mut Tokens) {
-        tokens.append(tt(TokenKind::Literal(self.into())));
+        tokens.append(tt(TokenNode::Literal(Literal::string(self))));
     }
 }
 
@@ -96,7 +96,7 @@ macro_rules! primitive {
     ($($t:ident)*) => ($(
         impl ToTokens for $t {
             fn to_tokens(&self, tokens: &mut Tokens) {
-                tokens.append(tt(TokenKind::Literal((*self).into())));
+                tokens.append(tt(TokenNode::Literal(Literal::$t(*self))));
             }
         }
     )*)
@@ -105,14 +105,19 @@ macro_rules! primitive {
 primitive! {
     i8 i16 i32 i64 isize
     u8 u16 u32 u64 usize
-    char
     f32 f64
+}
+
+impl ToTokens for char {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(tt(TokenNode::Literal(Literal::character(*self))));
+    }
 }
 
 impl ToTokens for bool {
     fn to_tokens(&self, tokens: &mut Tokens) {
         let word = if *self {"true"} else {"false"};
-        tokens.append(tt(TokenKind::Word(Symbol::from(word))));
+        tokens.append(tt(TokenNode::Term(Term::intern(word))));
     }
 }
 
@@ -123,7 +128,7 @@ pub struct ByteStr<'a>(pub &'a str);
 impl<'a> ToTokens for ByteStr<'a> {
     fn to_tokens(&self, tokens: &mut Tokens) {
         let lit = Literal::byte_string(self.0.as_bytes());
-        tokens.append(tt(TokenKind::Literal(lit)));
+        tokens.append(tt(TokenNode::Literal(lit)));
     }
 }
 
@@ -132,9 +137,9 @@ impl<T: ToTokens> ToTokens for [T] {
         let mut sub = Tokens::new();
         for item in self {
             item.to_tokens(&mut sub);
-            sub.append(tt(TokenKind::Op(',', OpKind::Alone)));
+            sub.append(tt(TokenNode::Op(',', Spacing::Alone)));
         }
-        tokens.append(tt(TokenKind::Sequence(Delimiter::Bracket, sub.into())));
+        tokens.append(tt(TokenNode::Group(Delimiter::Bracket, sub.into())));
     }
 }
 
@@ -175,10 +180,10 @@ macro_rules! tuple_impls {
                     let mut _sub = Tokens::new();
                     $(
                         self.$idx.to_tokens(&mut _sub);
-                        _sub.append(tt(TokenKind::Op(',', OpKind::Alone)));
+                        _sub.append(tt(TokenNode::Op(',', Spacing::Alone)));
                     )*
-                    tokens.append(tt(TokenKind::Sequence(Delimiter::Parenthesis,
-                                                         _sub.into())));
+                    tokens.append(tt(TokenNode::Group(Delimiter::Parenthesis,
+                                                      _sub.into())));
                 }
             }
         )+

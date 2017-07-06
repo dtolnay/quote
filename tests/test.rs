@@ -4,14 +4,14 @@ use std::borrow::Cow;
 extern crate quote;
 extern crate proc_macro2;
 
-use proc_macro2::Symbol;
+use proc_macro2::Term;
 
 struct X;
 
 impl quote::ToTokens for X {
     fn to_tokens(&self, tokens: &mut quote::Tokens) {
         tokens.append(proc_macro2::TokenTree {
-            kind: proc_macro2::TokenKind::Word("X".into()),
+            kind: proc_macro2::TokenNode::Term(Term::intern("X")),
             span: Default::default(),
         });
     }
@@ -260,8 +260,8 @@ fn test_byte_str_escape() {
 
 #[test]
 fn test_ident() {
-    let foo = Symbol::from("Foo");
-    let bar = Symbol::from(format!("Bar{}", 7));
+    let foo = Term::intern("Foo");
+    let bar = Term::intern(&format!("Bar{}", 7));
     let tokens = quote!(struct #foo; enum #bar {});
     let expected = "struct Foo ; enum Bar7 { }";
     assert_eq!(expected, tokens.to_string());
@@ -335,9 +335,9 @@ fn test_box_str() {
 
 #[test]
 fn test_cow() {
-    let owned: Cow<Symbol> = Cow::Owned(Symbol::from("owned"));
+    let owned: Cow<Term> = Cow::Owned(Term::intern("owned"));
 
-    let ident = Symbol::from("borrowed");
+    let ident = Term::intern("borrowed");
     let borrowed = Cow::Borrowed(&ident);
 
     let tokens = quote! { #owned #borrowed };
@@ -346,8 +346,8 @@ fn test_cow() {
 
 #[test]
 fn test_closure() {
-    fn field_i(i: usize) -> Symbol {
-        Symbol::from(format!("__field{}", i))
+    fn field_i(i: usize) -> Term {
+        Term::intern(&format!("__field{}", i))
     }
 
     let fields = (0usize..3)

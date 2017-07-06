@@ -74,7 +74,7 @@ pub mod __rt {
         tokens.append_all(s.into_iter());
     }
 
-    pub fn append_kind(tokens: &mut ::Tokens, kind: TokenKind) {
+    pub fn append_kind(tokens: &mut ::Tokens, kind: TokenNode) {
         tokens.append(TokenTree {
             span: Default::default(),
             kind: kind,
@@ -229,7 +229,7 @@ macro_rules! quote_each_token {
     ($tokens:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
         quote_each_token!($tokens #);
         $crate::__rt::append_kind(&mut $tokens,
-            $crate::__rt::TokenKind::Sequence(
+            $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Bracket,
                 quote! { $($inner)* }.into()
             ));
@@ -243,7 +243,7 @@ macro_rules! quote_each_token {
 
     ($tokens:ident ( $($first:tt)* ) $($rest:tt)*) => {
         $crate::__rt::append_kind(&mut $tokens,
-            $crate::__rt::TokenKind::Sequence(
+            $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Parenthesis,
                 quote! { $($first)* }.into()
             ));
@@ -252,7 +252,7 @@ macro_rules! quote_each_token {
 
     ($tokens:ident [ $($first:tt)* ] $($rest:tt)*) => {
         $crate::__rt::append_kind(&mut $tokens,
-            $crate::__rt::TokenKind::Sequence(
+            $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Bracket,
                 quote! { $($first)* }.into()
             ));
@@ -261,7 +261,7 @@ macro_rules! quote_each_token {
 
     ($tokens:ident { $($first:tt)* } $($rest:tt)*) => {
         $crate::__rt::append_kind(&mut $tokens,
-            $crate::__rt::TokenKind::Sequence(
+            $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Brace,
                 quote! { $($first)* }.into()
             ));
