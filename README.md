@@ -26,9 +26,9 @@ your text editor or IDE. It does not get in the way of syntax highlighting,
 brace matching, indentation, or autocompletion, all of which you would lose by
 writing code inside of double quotes.
 
-Check out
-[my meetup talk](https://air.mozilla.org/rust-meetup-december-2016-12-15/)
-on the topic to learn more about the use case. Start the video at 3:00.
+Check out [my meetup talk] on the topic to learn more about the use case.
+
+[my meetup talk]: https://github.com/dtolnay/talks#macros-11--syn--quote
 
 This crate is motivated by the Macros 1.1 use case, but is a general-purpose
 Rust quasi-quoting library and is not specific to procedural macros.
