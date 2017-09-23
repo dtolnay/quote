@@ -49,6 +49,7 @@ impl Tokens {
             "(" => Delimiter::Parenthesis,
             "[" => Delimiter::Bracket,
             "{" => Delimiter::Brace,
+            " " => Delimiter::None,
             _ => panic!("unknown delimiter: {}", delim),
         };
         let mut child = Tokens::new();
