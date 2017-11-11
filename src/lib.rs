@@ -72,7 +72,24 @@ pub mod __rt {
 
     pub fn parse(tokens: &mut ::Tokens, s: &str) {
         let s: TokenStream = s.parse().expect("invalid token stream");
-        tokens.append_all(s.into_iter());
+
+        // Reset all tokens in this iterator back to the default span to ensure
+        // they don't get "bogus" spans through `parse`. It was found that
+        // otherwise this doesn't actually work:
+        //
+        //      quote! {
+        //          mod foo {
+        //              use super::*;
+        //          }
+        //      }
+        //
+        // That spits out a weird error about "there are too may initial
+        // `super`s". No idea why that's spit out, but ensuring that the default
+        // span comes out seems to fix it!
+        tokens.append_all(s.into_iter().map(|mut t| {
+            t.span = Default::default();
+            t
+        }));
     }
 
     pub fn append_kind(tokens: &mut ::Tokens, kind: TokenNode) {
