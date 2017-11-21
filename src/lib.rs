@@ -70,14 +70,17 @@ pub use to_tokens::{ToTokens, ByteStr};
 pub mod __rt {
     pub use proc_macro2::*;
 
-    pub fn parse(tokens: &mut ::Tokens, s: &str) {
+    pub fn parse(tokens: &mut ::Tokens, span: Span, s: &str) {
         let s: TokenStream = s.parse().expect("invalid token stream");
-        tokens.append_all(s.into_iter());
+        tokens.append_all(s.into_iter().map(|mut t| {
+            t.span = span;
+            t
+        }));
     }
 
-    pub fn append_kind(tokens: &mut ::Tokens, kind: TokenNode) {
+    pub fn append_kind(tokens: &mut ::Tokens, span: Span, kind: TokenNode) {
         tokens.append(TokenTree {
-            span: Default::default(),
+            span: span,
             kind: kind,
         })
     }
@@ -86,14 +89,17 @@ pub mod __rt {
 /// The whole point.
 #[macro_export]
 macro_rules! quote {
-    () => {
-        $crate::Tokens::new()
-    };
+    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::default(), $($tt)*));
+}
 
-    ($($tt:tt)+) => {
+/// Same as `quote!` above, but all generated tokens will use the span provided
+#[macro_export]
+macro_rules! quote_spanned {
+    ($span:expr, $($tt:tt)*) => {
         {
             let mut _s = $crate::Tokens::new();
-            quote_each_token!(_s $($tt)*);
+            let _span = $span;
+            quote_each_token!(_s _span $($tt)*);
             _s
         }
     };
@@ -200,78 +206,82 @@ macro_rules! multi_zip_expr {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_each_token {
-    ($tokens:ident) => {};
+    ($tokens:ident $span:ident) => {};
 
-    ($tokens:ident # ! $($rest:tt)*) => {
-        quote_each_token!($tokens #);
-        quote_each_token!($tokens !);
-        quote_each_token!($tokens $($rest)*);
+    ($tokens:ident $span:ident # ! $($rest:tt)*) => {
+        quote_each_token!($tokens $span #);
+        quote_each_token!($tokens $span !);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
+    ($tokens:ident $span:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
         for pounded_var_names!(nested_tuples_pat () $($inner)*)
         in pounded_var_names!(multi_zip_expr () $($inner)*) {
-            quote_each_token!($tokens $($inner)*);
+            quote_each_token!($tokens $span $($inner)*);
         }
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident # ( $($inner:tt)* ) $sep:tt * $($rest:tt)*) => {
+    ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt * $($rest:tt)*) => {
         for (_i, pounded_var_names!(nested_tuples_pat () $($inner)*))
         in pounded_var_names!(multi_zip_expr () $($inner)*).into_iter().enumerate() {
             if _i > 0 {
-                quote_each_token!($tokens $sep);
+                quote_each_token!($tokens $span $sep);
             }
-            quote_each_token!($tokens $($inner)*);
+            quote_each_token!($tokens $span $($inner)*);
         }
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
-        quote_each_token!($tokens #);
+    ($tokens:ident $span:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
+        quote_each_token!($tokens $span #);
         $crate::__rt::append_kind(&mut $tokens,
+            $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Bracket,
-                quote! { $($inner)* }.into()
+                quote_spanned! { $span, $($inner)* }.into()
             ));
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident # $first:ident $($rest:tt)*) => {
+    ($tokens:ident $span:ident # $first:ident $($rest:tt)*) => {
         $crate::ToTokens::to_tokens(&$first, &mut $tokens);
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident ( $($first:tt)* ) $($rest:tt)*) => {
+    ($tokens:ident $span:ident ( $($first:tt)* ) $($rest:tt)*) => {
         $crate::__rt::append_kind(&mut $tokens,
+            $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Parenthesis,
-                quote! { $($first)* }.into()
+                quote_spanned! { $span, $($first)* }.into()
             ));
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident [ $($first:tt)* ] $($rest:tt)*) => {
+    ($tokens:ident $span:ident [ $($first:tt)* ] $($rest:tt)*) => {
         $crate::__rt::append_kind(&mut $tokens,
+            $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Bracket,
-                quote! { $($first)* }.into()
+                quote_spanned! { $span, $($first)* }.into()
             ));
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident { $($first:tt)* } $($rest:tt)*) => {
+    ($tokens:ident $span:ident { $($first:tt)* } $($rest:tt)*) => {
         $crate::__rt::append_kind(&mut $tokens,
+            $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Brace,
-                quote! { $($first)* }.into()
+                quote_spanned! { $span, $($first)* }.into()
             ));
-        quote_each_token!($tokens $($rest)*);
+        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $first:tt $($rest:tt)*) => {
+    ($tokens:ident $span:ident $first:tt $($rest:tt)*) => {
         // TODO: this seems slow... special case some `:tt` arguments?
-        $crate::__rt::parse(&mut $tokens, stringify!($first));
-        quote_each_token!($tokens $($rest)*);
+        $crate::__rt::parse(&mut $tokens, $span, stringify!($first));
+        quote_each_token!($tokens $span $($rest)*);
     };
 }
