@@ -147,14 +147,6 @@ fn test_integer() {
     assert_eq!(expected, tokens.to_string());
 }
 
-// #[test]
-// fn test_hex() {
-//     let hex = quote::Hex(0xFFFF_0000_u32);
-//     let tokens = quote!(#hex);
-//     let expected = "0xFFFF0000u32";
-//     assert_eq!(expected, tokens.to_string());
-// }
-
 #[test]
 fn test_floating() {
     let e32 = 2.345f32;
