@@ -67,9 +67,13 @@ pub use tokens::Tokens;
 mod to_tokens;
 pub use to_tokens::{ByteStr, ToTokens};
 
+// Not public API.
+#[doc(hidden)]
 pub mod __rt {
+    // Not public API.
     pub use proc_macro2::*;
 
+    // Not public API.
     pub fn parse(tokens: &mut ::Tokens, span: Span, s: &str) {
         let s: TokenStream = s.parse().expect("invalid token stream");
         tokens.append_all(s.into_iter().map(|mut t| {
@@ -78,6 +82,7 @@ pub mod __rt {
         }));
     }
 
+    // Not public API.
     pub fn append_kind(tokens: &mut ::Tokens, span: Span, kind: TokenNode) {
         tokens.append(TokenTree {
             span: span,
