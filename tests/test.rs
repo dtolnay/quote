@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "cargo-clippy", allow(blacklisted_name))]
+
 use std::borrow::Cow;
 
 #[macro_use]
@@ -155,17 +157,17 @@ fn test_integer() {
 
 #[test]
 fn test_floating() {
-    let e32 = 2.71828f32;
+    let e32 = 2.345f32;
 
-    let e64 = 2.71828f64;
+    let e64 = 2.345f64;
 
     let tokens = quote! {
         #e32
         #e64
     };
     let expected = concat!(
-        "2.71828f32 ",
-        "2.71828f64",
+        "2.345f32 ",
+        "2.345f64",
     );
     assert_eq!(expected, tokens.to_string());
 }

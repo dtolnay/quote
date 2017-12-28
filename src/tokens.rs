@@ -58,7 +58,7 @@ impl Tokens {
             span: span,
             kind: TokenNode::Group(delim, child.into()),
         });
-        return ret
+        ret
     }
 
     /// For use by `ToTokens` implementations.
