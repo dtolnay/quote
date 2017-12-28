@@ -1,8 +1,8 @@
 use super::ToTokens;
-use std::fmt::{self, Display, Debug};
+use std::fmt::{self, Debug, Display};
 
 use proc_macro;
-use proc_macro2::{TokenStream, TokenTree, TokenNode, Term, Span};
+use proc_macro2::{Span, Term, TokenNode, TokenStream, TokenTree};
 use proc_macro2::Delimiter;
 
 /// Tokens produced by a `quote!(...)` invocation.
@@ -21,7 +21,8 @@ impl Tokens {
     ///
     /// Appends the token specified to this list of tokens.
     pub fn append<U>(&mut self, token: U)
-        where U: Into<TokenTree>,
+    where
+        U: Into<TokenTree>,
     {
         self.tts.push(token.into());
     }
@@ -39,11 +40,9 @@ impl Tokens {
         });
     }
 
-    pub fn append_delimited<F, R>(&mut self,
-                                  delim: &str,
-                                  span: Span,
-                                  f: F) -> R
-        where F: FnOnce(&mut Tokens) -> R,
+    pub fn append_delimited<F, R>(&mut self, delim: &str, span: Span, f: F) -> R
+    where
+        F: FnOnce(&mut Tokens) -> R,
     {
         let delim = match delim {
             "(" => Delimiter::Parenthesis,
@@ -80,8 +79,9 @@ impl Tokens {
     /// # }
     /// ```
     pub fn append_all<T, I>(&mut self, iter: I)
-        where T: ToTokens,
-              I: IntoIterator<Item = T>
+    where
+        T: ToTokens,
+        I: IntoIterator<Item = T>,
     {
         for token in iter {
             token.to_tokens(self);
@@ -93,9 +93,10 @@ impl Tokens {
     /// Appends all of the items in the iterator `I`, separated by the tokens
     /// `U`.
     pub fn append_separated<T, I, U>(&mut self, iter: I, op: U)
-        where T: ToTokens,
-              I: IntoIterator<Item = T>,
-              U: ToTokens,
+    where
+        T: ToTokens,
+        I: IntoIterator<Item = T>,
+        U: ToTokens,
     {
         for (i, token) in iter.into_iter().enumerate() {
             if i > 0 {
@@ -110,9 +111,10 @@ impl Tokens {
     /// Appends all tokens in the iterator `I`, appending `U` after each
     /// element, including after the last element of the iterator.
     pub fn append_terminated<T, I, U>(&mut self, iter: I, term: U)
-        where T: ToTokens,
-              I: IntoIterator<Item = T>,
-              U: ToTokens,
+    where
+        T: ToTokens,
+        I: IntoIterator<Item = T>,
+        U: ToTokens,
     {
         for token in iter {
             token.to_tokens(self);
@@ -172,14 +174,16 @@ impl Debug for Tokens {
         struct DebugAsDisplay<'a, T: 'a>(&'a T);
 
         impl<'a, T> Debug for DebugAsDisplay<'a, T>
-            where T: Display
+        where
+            T: Display,
         {
             fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 Display::fmt(self.0, formatter)
             }
         }
 
-        formatter.debug_tuple("Tokens")
+        formatter
+            .debug_tuple("Tokens")
             .field(&DebugAsDisplay(self))
             .finish()
     }

@@ -2,7 +2,7 @@ use super::Tokens;
 
 use std::borrow::Cow;
 
-use proc_macro2::{TokenNode, Literal, Term, TokenTree, Span};
+use proc_macro2::{Literal, Span, Term, TokenNode, TokenTree};
 
 fn tt(kind: TokenNode) -> TokenTree {
     TokenTree {
@@ -41,7 +41,10 @@ pub trait ToTokens {
     ///
     /// This method is implicitly implemented using `to_tokens`, and acts as a
     /// convenience method for consumers of the `ToTokens` trait.
-    fn into_tokens(self) -> Tokens where Self: Sized {
+    fn into_tokens(self) -> Tokens
+    where
+        Self: Sized,
+    {
         let mut tokens = Tokens::new();
         self.to_tokens(&mut tokens);
         tokens
@@ -116,7 +119,7 @@ impl ToTokens for char {
 
 impl ToTokens for bool {
     fn to_tokens(&self, tokens: &mut Tokens) {
-        let word = if *self {"true"} else {"false"};
+        let word = if *self { "true" } else { "false" };
         tokens.append(tt(TokenNode::Term(Term::intern(word))));
     }
 }

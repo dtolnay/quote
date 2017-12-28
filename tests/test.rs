@@ -2,9 +2,9 @@
 
 use std::borrow::Cow;
 
+extern crate proc_macro2;
 #[macro_use]
 extern crate quote;
-extern crate proc_macro2;
 
 use proc_macro2::Term;
 
@@ -31,9 +31,9 @@ fn test_quote_impl() {
 
     let expected = concat!(
         "impl < 'a , T : ToTokens > ToTokens for & 'a T { ",
-            "fn to_tokens ( & self , tokens : & mut Tokens ) { ",
-                "( * * self ) . to_tokens ( tokens ) ",
-            "} ",
+        "fn to_tokens ( & self , tokens : & mut Tokens ) { ",
+        "( * * self ) . to_tokens ( tokens ) ",
+        "} ",
         "}"
     );
 
@@ -77,13 +77,13 @@ fn test_advanced() {
 
     let where_clause = quote!( where T: Serialize );
 
-    let field_ty = quote!( String );
+    let field_ty = quote!(String);
 
-    let item_ty = quote!( Cow<'a, str> );
+    let item_ty = quote!(Cow<'a, str>);
 
-    let path = quote!( SomeTrait::serialize_with );
+    let path = quote!(SomeTrait::serialize_with);
 
-    let value = quote!( self.x );
+    let value = quote!(self.x);
 
     let tokens = quote! {
         struct SerializeWith #generics #where_clause {
@@ -107,19 +107,19 @@ fn test_advanced() {
 
     let expected = concat!(
         "struct SerializeWith < 'a , T > where T : Serialize { ",
-            "value : & 'a String , ",
-            "phantom : :: std :: marker :: PhantomData < Cow < 'a , str > > , ",
+        "value : & 'a String , ",
+        "phantom : :: std :: marker :: PhantomData < Cow < 'a , str > > , ",
         "} ",
         "impl < 'a , T > :: serde :: Serialize for SerializeWith < 'a , T > where T : Serialize { ",
-            "fn serialize < S > ( & self , s : & mut S ) -> Result < ( ) , S :: Error > ",
-                "where S : :: serde :: Serializer ",
-            "{ ",
-                "SomeTrait :: serialize_with ( self . value , s ) ",
-            "} ",
+        "fn serialize < S > ( & self , s : & mut S ) -> Result < ( ) , S :: Error > ",
+        "where S : :: serde :: Serializer ",
+        "{ ",
+        "SomeTrait :: serialize_with ( self . value , s ) ",
+        "} ",
         "} ",
         "SerializeWith { ",
-            "value : self . x , ",
-            "phantom : :: std :: marker :: PhantomData :: < Cow < 'a , str > > , ",
+        "value : self . x , ",
+        "phantom : :: std :: marker :: PhantomData :: < Cow < 'a , str > > , ",
         "}"
     );
 
@@ -165,10 +165,7 @@ fn test_floating() {
         #e32
         #e64
     };
-    let expected = concat!(
-        "2.345f32 ",
-        "2.345f64",
-    );
+    let expected = concat!("2.345f32 2.345f64");
     assert_eq!(expected, tokens.to_string());
 }
 
