@@ -125,46 +125,6 @@ fn test_advanced() {
 }
 
 #[test]
-fn test_unit() {
-    let x = ();
-    let tokens = quote!(#x);
-    let expected = "( )";
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
-fn test_tuple() {
-    let x = ("foo", 4_u32);
-    let tokens = quote!(#x);
-    let expected = "( \"foo\" , 4u32 , )";
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
-fn test_array() {
-    let x: [u32; 3] = [1, 2, 3];
-    let tokens = quote!(#x);
-    let expected = "[ 1u32 , 2u32 , 3u32 , ]";
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
-fn test_slice() {
-    let x: &[u32] = &[1, 2, 3];
-    let tokens = quote!(&#x);  // Note: explicit `&`
-    let expected = "& [ 1u32 , 2u32 , 3u32 , ]";
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
-fn test_vec() {
-    let x: Vec<u32> = vec![1, 2, 3];
-    let tokens = quote!(vec!#x);  // Note: explicit `vec!`
-    let expected = "vec ! [ 1u32 , 2u32 , 3u32 , ]";
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
 fn test_integer() {
     let ii8 = -1i8;
     let ii16 = -1i16;
