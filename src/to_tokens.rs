@@ -18,7 +18,13 @@ pub trait ToTokens {
     /// Example implementation for a struct representing Rust paths like
     /// `std::cmp::PartialEq`:
     ///
-    /// ```ignore
+    /// ```
+    /// extern crate quote;
+    /// use quote::{Tokens, ToTokens};
+    ///
+    /// extern crate proc_macro2;
+    /// use proc_macro2::{TokenTree, TokenNode, Spacing, Span};
+    ///
     /// pub struct Path {
     ///     pub global: bool,
     ///     pub segments: Vec<PathSegment>,
@@ -28,12 +34,30 @@ pub trait ToTokens {
     ///     fn to_tokens(&self, tokens: &mut Tokens) {
     ///         for (i, segment) in self.segments.iter().enumerate() {
     ///             if i > 0 || self.global {
-    ///                 tokens.append("::");
+    ///                 // Double colon `::`
+    ///                 tokens.append(TokenTree {
+    ///                     span: Span::def_site(),
+    ///                     kind: TokenNode::Op(':', Spacing::Joint),
+    ///                 });
+    ///                 tokens.append(TokenTree {
+    ///                     span: Span::def_site(),
+    ///                     kind: TokenNode::Op(':', Spacing::Alone),
+    ///                 });
     ///             }
     ///             segment.to_tokens(tokens);
     ///         }
     ///     }
     /// }
+    /// #
+    /// # pub struct PathSegment;
+    /// #
+    /// # impl ToTokens for PathSegment {
+    /// #     fn to_tokens(&self, tokens: &mut Tokens) {
+    /// #         unimplemented!()
+    /// #     }
+    /// # }
+    /// #
+    /// # fn main() {}
     /// ```
     fn to_tokens(&self, &mut Tokens);
 
