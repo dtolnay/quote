@@ -6,9 +6,11 @@
 //! quote = "0.3"
 //! ```
 //!
-//! ```rust,ignore
+//! ```
 //! #[macro_use]
 //! extern crate quote;
+//! #
+//! # fn main() {}
 //! ```
 //!
 //! Interpolation is done with `#var`:
