@@ -1,5 +1,5 @@
 use super::ToTokens;
-use std::fmt::{self, Display};
+use std::fmt::{self, Display, Debug};
 
 use proc_macro;
 use proc_macro2::{TokenStream, TokenTree, TokenNode, Term, Span};
@@ -162,7 +162,25 @@ impl ToTokens for TokenTree {
 }
 
 impl Display for Tokens {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        TokenStream::from(self.clone()).fmt(formatter)
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        Display::fmt(&TokenStream::from(self.clone()), formatter)
+    }
+}
+
+impl Debug for Tokens {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        struct DebugAsDisplay<'a, T: 'a>(&'a T);
+
+        impl<'a, T> Debug for DebugAsDisplay<'a, T>
+            where T: Display
+        {
+            fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                Display::fmt(self.0, formatter)
+            }
+        }
+
+        formatter.debug_tuple("Tokens")
+            .field(&DebugAsDisplay(self))
+            .finish()
     }
 }
