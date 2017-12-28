@@ -15,7 +15,7 @@
 //!
 //! Interpolation is done with `#var`:
 //!
-//! ```text
+//! ```
 //! let tokens = quote! {
 //!     struct SerializeWith #generics #where_clause {
 //!         value: &'a #field_ty,
