@@ -16,6 +16,17 @@
 //! Interpolation is done with `#var`:
 //!
 //! ```
+//! # #[macro_use]
+//! # extern crate quote;
+//! #
+//! # fn main() {
+//! #     let generics = "";
+//! #     let where_clause = "";
+//! #     let field_ty = "";
+//! #     let item_ty = "";
+//! #     let path = "";
+//! #     let value = "";
+//! #
 //! let tokens = quote! {
 //!     struct SerializeWith #generics #where_clause {
 //!         value: &'a #field_ty,
@@ -35,6 +46,8 @@
 //!         phantom: ::std::marker::PhantomData::<#item_ty>,
 //!     }
 //! };
+//! #
+//! # }
 //! ```
 //!
 //! Repetition is done using `#(...)*` or `#(...),*` very similar to `macro_rules!`:
