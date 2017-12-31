@@ -41,16 +41,6 @@ fn test_quote_impl() {
 }
 
 #[test]
-fn test_append_tokens() {
-    let mut tokens = quote!(let x =);
-    tokens.append_tokens(quote!("Hello World!";));
-
-    let expected = "let x = \"Hello World!\" ;";
-
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
 fn test_substitution() {
     let x = X;
     let tokens = quote!(#x <#x> (#x) [#x] {#x});

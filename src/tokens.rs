@@ -2,8 +2,7 @@ use super::ToTokens;
 use std::fmt::{self, Debug, Display};
 
 use proc_macro;
-use proc_macro2::{Span, Term, TokenNode, TokenStream, TokenTree};
-use proc_macro2::Delimiter;
+use proc_macro2::{TokenStream, TokenTree};
 
 /// Tokens produced by a `quote!(...)` invocation.
 #[derive(Clone)]
@@ -25,39 +24,6 @@ impl Tokens {
         U: Into<TokenTree>,
     {
         self.tts.push(token.into());
-    }
-
-    /// Add `tokens` into `self`.
-    pub fn append_tokens<T: ToTokens>(&mut self, tokens: T) {
-        tokens.to_tokens(self)
-    }
-
-    /// Add the symbol specified to this list of tokens.
-    pub fn append_sym(&mut self, sym: &str, span: Span) {
-        self.append(TokenTree {
-            span: span,
-            kind: TokenNode::Term(Term::intern(sym)),
-        });
-    }
-
-    pub fn append_delimited<F, R>(&mut self, delim: &str, span: Span, f: F) -> R
-    where
-        F: FnOnce(&mut Tokens) -> R,
-    {
-        let delim = match delim {
-            "(" => Delimiter::Parenthesis,
-            "[" => Delimiter::Bracket,
-            "{" => Delimiter::Brace,
-            " " => Delimiter::None,
-            _ => panic!("unknown delimiter: {}", delim),
-        };
-        let mut child = Tokens::new();
-        let ret = f(&mut child);
-        self.append(TokenTree {
-            span: span,
-            kind: TokenNode::Group(delim, child.into()),
-        });
-        ret
     }
 
     /// For use by `ToTokens` implementations.
