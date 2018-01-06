@@ -156,6 +156,12 @@ impl ToTokens for Literal {
     }
 }
 
+impl ToTokens for TokenNode {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(tt(self.clone()));
+    }
+}
+
 impl ToTokens for TokenTree {
     fn to_tokens(&self, dst: &mut Tokens) {
         dst.append(self.clone());
