@@ -80,7 +80,7 @@ mod tokens;
 pub use tokens::Tokens;
 
 mod to_tokens;
-pub use to_tokens::{ByteStr, ToTokens};
+pub use to_tokens::ToTokens;
 
 // Not public API.
 #[doc(hidden)]

@@ -149,14 +149,3 @@ impl ToTokens for bool {
         tokens.append(tt(TokenNode::Term(Term::intern(word))));
     }
 }
-
-/// Wrap a `&str` so it interpolates as a byte-string: `b"abc"`.
-#[derive(Debug)]
-pub struct ByteStr<'a>(pub &'a str);
-
-impl<'a> ToTokens for ByteStr<'a> {
-    fn to_tokens(&self, tokens: &mut Tokens) {
-        let lit = Literal::byte_string(self.0.as_bytes());
-        tokens.append(tt(TokenNode::Literal(lit)));
-    }
-}
