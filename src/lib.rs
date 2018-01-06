@@ -1,9 +1,28 @@
-//! Quasi-quoting without a Syntex dependency, intended for use with [Macros
-//! 1.1](https://github.com/rust-lang/rfcs/blob/master/text/1681-macros-1.1.md).
+//! This crate provides the [`quote!`] macro for turning Rust syntax tree data
+//! structures into tokens of source code.
+//!
+//! [`quote!`]: macro.quote.html
+//!
+//! Procedural macros in Rust receive a stream of tokens as input, execute
+//! arbitrary Rust code to determine how to manipulate those tokens, and produce
+//! a stream of tokens to hand back to the compiler to compile into the caller's
+//! crate. Quasi-quoting is a solution to one piece of that -- producing tokens
+//! to return to the compiler.
+//!
+//! The idea of quasi-quoting is that we write *code* that we treat as *data*.
+//! Within the `quote!` macro, we can write what looks like code to our text
+//! editor or IDE. We get all the benefits of the editor's brace matching,
+//! syntax highlighting, indentation, and maybe autocompletion. But rather than
+//! compiling that as code into the current crate, we can treat it as data, pass
+//! it around, mutate it, and eventually hand it back to the compiler as tokens
+//! to compile into the macro caller's crate.
+//!
+//! *Version requirement: Quote supports any compiler version back to Rust's very
+//! first support for procedural macros in Rust 1.15.0.*
 //!
 //! ```toml
 //! [dependencies]
-//! quote = "0.3"
+//! quote = "0.4"
 //! ```
 //!
 //! ```
@@ -13,7 +32,17 @@
 //! # fn main() {}
 //! ```
 //!
-//! Interpolation is done with `#var`:
+//! # Example
+//!
+//! The following quasi-quoted block of code is something you might find in [a]
+//! procedural macro having to do with data structure serialization. The `#var`
+//! syntax performs interpolation of runtime variables into the quoted tokens.
+//! Check out the documentation of the [`quote!`] macro for more detail about
+//! the syntax. See also the [`quote_spanned!`] macro which is important for
+//! implementing hygienic procedural macros.
+//!
+//! [a]: https://serde.rs/
+//! [`quote_spanned!`]: macro.quote_spanned.html
 //!
 //! ```
 //! # #[macro_use]
@@ -50,23 +79,7 @@
 //! # }
 //! ```
 //!
-//! Repetition is done using `#(...)*` or `#(...),*` very similar to `macro_rules!`:
-//!
-//! - `#(#var)*` - no separators
-//! - `#(#var),*` - the character before the asterisk is used as a separator
-//! - `#( struct #var; )*` - the repetition can contain other things
-//! - `#( #k => println!("{}", #v), )*` - even multiple interpolations
-//!
-//! The return type of `quote!` is `quote::Tokens`. Tokens can be interpolated into
-//! other quotes:
-//!
-//! ```text
-//! let t = quote! { /* ... */ };
-//! return quote! { /* ... */ #t /* ... */ };
-//! ```
-//!
-//! Call `to_string()` or `as_str()` on a Tokens to get a `String` or `&str` of Rust
-//! code.
+//! ## Recursion limit
 //!
 //! The `quote!` macro relies on deep recursion so some large invocations may fail
 //! with "recursion limit reached" when you compile. If it fails, bump up the
