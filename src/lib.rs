@@ -156,12 +156,12 @@ pub mod __rt {
 ///
 /// use proc_macro::TokenStream;
 ///
-/// # const IGNORE_TOKENS: &str = stringify! {
+/// # const IGNORE_TOKENS: &'static str = stringify! {
 /// #[proc_macro_derive(HeapSize)]
 /// # };
 /// pub fn derive_heap_size(input: TokenStream) -> TokenStream {
 ///     // Parse the input and figure out what implementation to generate...
-///     # const IGNORE_TOKENS: &str = stringify! {
+///     # const IGNORE_TOKENS: &'static str = stringify! {
 ///     let name = /* ... */;
 ///     let expr = /* ... */;
 ///     # };
@@ -208,7 +208,7 @@ macro_rules! quote {
 /// # use proc_macro2::Span;
 /// #
 /// # fn main() {
-/// # const IGNORE_TOKENS: &str = stringify! {
+/// # const IGNORE_TOKENS: &'static str = stringify! {
 /// let span = /* ... */;
 /// # };
 /// # let span = Span::call_site();
