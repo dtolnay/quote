@@ -109,13 +109,13 @@ pub mod __rt {
 /// The whole point.
 #[macro_export]
 macro_rules! quote {
-    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::default(), $($tt)*));
+    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::default()=> $($tt)*));
 }
 
 /// Same as `quote!` above, but all generated tokens will use the span provided
 #[macro_export]
 macro_rules! quote_spanned {
-    ($span:expr, $($tt:tt)*) => {
+    ($span:expr=> $($tt:tt)*) => {
         {
             let mut _s = $crate::Tokens::new();
             let _span = $span;
@@ -259,7 +259,7 @@ macro_rules! quote_each_token {
             $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Bracket,
-                quote_spanned! { $span, $($inner)* }.into()
+                quote_spanned!($span=> $($inner)*).into()
             ));
         quote_each_token!($tokens $span $($rest)*);
     };
@@ -274,7 +274,7 @@ macro_rules! quote_each_token {
             $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Parenthesis,
-                quote_spanned! { $span, $($first)* }.into()
+                quote_spanned!($span=> $($first)*).into()
             ));
         quote_each_token!($tokens $span $($rest)*);
     };
@@ -284,7 +284,7 @@ macro_rules! quote_each_token {
             $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Bracket,
-                quote_spanned! { $span, $($first)* }.into()
+                quote_spanned!($span=> $($first)*).into()
             ));
         quote_each_token!($tokens $span $($rest)*);
     };
@@ -294,7 +294,7 @@ macro_rules! quote_each_token {
             $span,
             $crate::__rt::TokenNode::Group(
                 $crate::__rt::Delimiter::Brace,
-                quote_spanned! { $span, $($first)* }.into()
+                quote_spanned!($span=> $($first)*).into()
             ));
         quote_each_token!($tokens $span $($rest)*);
     };
