@@ -11,7 +11,9 @@ fn tt(kind: TokenNode) -> TokenTree {
     }
 }
 
-/// Types that can be interpolated inside a `quote!(...)` invocation.
+/// Types that can be interpolated inside a [`quote!`] invocation.
+///
+/// [`quote!`]: macro.quote.html
 pub trait ToTokens {
     /// Write `self` to the given `Tokens`.
     ///
@@ -59,7 +61,7 @@ pub trait ToTokens {
     /// #
     /// # fn main() {}
     /// ```
-    fn to_tokens(&self, &mut Tokens);
+    fn to_tokens(&self, tokens: &mut Tokens);
 
     /// Convert `self` directly into a `Tokens` object.
     ///
