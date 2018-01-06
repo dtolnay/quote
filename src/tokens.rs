@@ -5,7 +5,7 @@ use proc_macro;
 use proc_macro2::{TokenStream, TokenTree};
 
 /// Tokens produced by a `quote!(...)` invocation.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Tokens {
     tts: Vec<TokenTree>,
 }
@@ -108,12 +108,6 @@ impl From<Tokens> for TokenStream {
 impl From<Tokens> for proc_macro::TokenStream {
     fn from(tokens: Tokens) -> proc_macro::TokenStream {
         TokenStream::from(tokens).into()
-    }
-}
-
-impl Default for Tokens {
-    fn default() -> Self {
-        Tokens::new()
     }
 }
 
