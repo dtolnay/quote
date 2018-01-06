@@ -150,6 +150,12 @@ impl ToTokens for Term {
     }
 }
 
+impl ToTokens for Literal {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(tt(TokenNode::Literal(self.clone())));
+    }
+}
+
 impl ToTokens for TokenTree {
     fn to_tokens(&self, dst: &mut Tokens) {
         dst.append(self.clone());
