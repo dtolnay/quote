@@ -107,9 +107,86 @@ pub mod __rt {
 }
 
 /// The whole point.
+///
+/// Performs variable interpolation against the input and produces it as
+/// [`Tokens`]. For returning tokens to the compiler in a procedural macro, use
+/// `into()` to build a `TokenStream`.
+///
+/// [`Tokens`]: struct.Tokens.html
+///
+/// # Interpolation
+///
+/// Variable interpolation is done with `#var` (similar to `$var` in
+/// `macro_rules!` macros). This grabs the `var` variable that is currently in
+/// scope and inserts it in that location in the output tokens. The variable
+/// must implement the [`ToTokens`] trait.
+///
+/// [`ToTokens`]: trait.ToTokens.html
+///
+/// Repetition is done using `#(...)*` or `#(...),*` again similar to
+/// `macro_rules!`. This iterates through the elements of any variable
+/// interpolated within the repetition and inserts a copy of the repetition body
+/// for each one. The variables in an interpolation may be anything that
+/// implements `IntoIterator`, including `Vec` or a pre-existing iterator.
+///
+/// - `#(#var)*` — no separators
+/// - `#(#var),*` — the character before the asterisk is used as a separator
+/// - `#( struct #var; )*` — the repetition can contain other tokens
+/// - `#( #k => println!("{}", #v), )*` — even multiple interpolations
+///
+/// # Hygiene
+///
+/// Any interpolated tokens preserve the `Span` information provided by their
+/// `ToTokens` implementation. Tokens that originate within the `quote!`
+/// invocation are spanned with [`Span::def_site()`].
+///
+/// [`Span::def_site()`]: https://docs.rs/proc-macro2/0.1/proc_macro2/struct.Span.html#method.def_site
+///
+/// A different span can be provided through the [`quote_spanned!`] macro.
+///
+/// [`quote_spanned!`]: macro.quote_spanned.html
+///
+/// # Example
+///
+/// ```
+/// extern crate proc_macro;
+///
+/// #[macro_use]
+/// extern crate quote;
+///
+/// use proc_macro::TokenStream;
+///
+/// # const IGNORE_TOKENS: &str = stringify! {
+/// #[proc_macro_derive(HeapSize)]
+/// # };
+/// pub fn derive_heap_size(input: TokenStream) -> TokenStream {
+///     // Parse the input and figure out what implementation to generate...
+///     # const IGNORE_TOKENS: &str = stringify! {
+///     let name = /* ... */;
+///     let expr = /* ... */;
+///     # };
+///     #
+///     # let name = 0;
+///     # let expr = 0;
+///
+///     let expanded = quote! {
+///         // The generated impl.
+///         impl ::heapsize::HeapSize for #name {
+///             fn heap_size_of_children(&self) -> usize {
+///                 #expr
+///             }
+///         }
+///     };
+///
+///     // Hand the output tokens back to the compiler.
+///     expanded.into()
+/// }
+/// #
+/// # fn main() {}
+/// ```
 #[macro_export]
 macro_rules! quote {
-    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::default()=> $($tt)*));
+    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::def_site()=> $($tt)*));
 }
 
 /// Same as `quote!` above, but all generated tokens will use the span provided
