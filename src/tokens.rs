@@ -4,7 +4,9 @@ use std::fmt::{self, Debug, Display};
 use proc_macro;
 use proc_macro2::{TokenStream, TokenTree};
 
-/// Tokens produced by a `quote!(...)` invocation.
+/// Tokens produced by a [`quote!`] invocation.
+///
+/// [`quote!`]: macro.quote.html
 #[derive(Clone, Default)]
 pub struct Tokens {
     tts: Vec<TokenTree>,
