@@ -189,7 +189,104 @@ macro_rules! quote {
     ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::def_site()=> $($tt)*));
 }
 
-/// Same as `quote!` above, but all generated tokens will use the span provided
+/// Same as `quote!`, but applies a given span to all tokens originating within
+/// the macro invocation.
+///
+/// # Syntax
+///
+/// A span expression of type [`Span`], followed by `=>`, followed by the tokens
+/// to quote. The span expression should be brief -- use a variable for anything
+/// more than a few characters. There should be no space before the `=>` token.
+///
+/// [`Span`]: https://docs.rs/proc-macro2/0.1/proc_macro2/struct.Span.html
+///
+/// ```
+/// # #[macro_use]
+/// # extern crate quote;
+/// # extern crate proc_macro2;
+/// #
+/// # use proc_macro2::Span;
+/// #
+/// # fn main() {
+/// # const IGNORE_TOKENS: &str = stringify! {
+/// let span = /* ... */;
+/// # };
+/// # let span = Span::call_site();
+/// # let init = 0;
+///
+/// // On one line, use parentheses.
+/// let tokens = quote_spanned!(span=> Box::into_raw(Box::new(#init)));
+///
+/// // On multiple lines, place the span at the top and use braces.
+/// let tokens = quote_spanned! {span=>
+///     Box::into_raw(Box::new(#init))
+/// };
+/// # }
+/// ```
+///
+/// # Hygiene
+///
+/// Any interpolated tokens preserve the `Span` information provided by their
+/// `ToTokens` implementation. Tokens that originate within the `quote_spanned!`
+/// invocation are spanned with the given span argument.
+///
+/// # Example
+///
+/// The following procedural macro code uses `quote_spanned!` to assert that a
+/// particular Rust type implements the [`Sync`] trait so that references can be
+/// safely shared between threads.
+///
+/// [`Sync`]: https://doc.rust-lang.org/std/marker/trait.Sync.html
+///
+/// ```
+/// # #[macro_use]
+/// # extern crate quote;
+/// # extern crate proc_macro2;
+/// #
+/// # use quote::{Tokens, ToTokens};
+/// # use proc_macro2::Span;
+/// #
+/// # struct Type;
+/// #
+/// # impl Type {
+/// #     fn span(&self) -> Span {
+/// #         Span::call_site()
+/// #     }
+/// # }
+/// #
+/// # impl ToTokens for Type {
+/// #     fn to_tokens(&self, _tokens: &mut Tokens) {}
+/// # }
+/// #
+/// # fn main() {
+/// # let ty = Type;
+/// # let def_site = Span::def_site();
+/// #
+/// let ty_span = ty.span().resolved_at(def_site);
+/// let assert_sync = quote_spanned! {ty_span=>
+///     struct _AssertSync where #ty: Sync;
+/// };
+/// # }
+/// ```
+///
+/// If the assertion fails, the user will see an error like the following. The
+/// input span of their type is hightlighted in the error.
+///
+/// ```text
+/// error[E0277]: the trait bound `*const (): std::marker::Sync` is not satisfied
+///   --> src/main.rs:10:21
+///    |
+/// 10 |     static ref PTR: *const () = &();
+///    |                     ^^^^^^^^^ `*const ()` cannot be shared between threads safely
+/// ```
+///
+/// In this example it is important for the where-clause to be spanned with the
+/// line/column information of the user's input type so that error messages are
+/// placed appropriately by the compiler. But it is also incredibly important
+/// that `Sync` resolves at the macro definition site and not the macro call
+/// site. If we resolve `Sync` at the same span that the user's type is going to
+/// be resolved, then they could bypass our check by defining their own trait
+/// named `Sync` that is implemented for their type.
 #[macro_export]
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {
