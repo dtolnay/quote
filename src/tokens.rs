@@ -89,6 +89,16 @@ impl Tokens {
     }
 }
 
+impl ToTokens for Tokens {
+    fn to_tokens(&self, dst: &mut Tokens) {
+        dst.tts.extend(self.tts.iter().cloned());
+    }
+
+    fn into_tokens(self) -> Tokens {
+        self
+    }
+}
+
 impl From<Tokens> for TokenStream {
     fn from(tokens: Tokens) -> TokenStream {
         tokens.tts.into_iter().collect()
@@ -104,28 +114,6 @@ impl From<Tokens> for proc_macro::TokenStream {
 impl Default for Tokens {
     fn default() -> Self {
         Tokens::new()
-    }
-}
-
-impl ToTokens for Tokens {
-    fn to_tokens(&self, dst: &mut Tokens) {
-        dst.tts.extend(self.tts.iter().cloned());
-    }
-
-    fn into_tokens(self) -> Tokens {
-        self
-    }
-}
-
-impl ToTokens for TokenStream {
-    fn to_tokens(&self, dst: &mut Tokens) {
-        dst.append_all(self.clone().into_iter());
-    }
-}
-
-impl ToTokens for TokenTree {
-    fn to_tokens(&self, dst: &mut Tokens) {
-        dst.append(self.clone());
     }
 }
 

@@ -2,7 +2,7 @@ use super::Tokens;
 
 use std::borrow::Cow;
 
-use proc_macro2::{Literal, Span, Term, TokenNode, TokenTree};
+use proc_macro2::{Literal, Span, Term, TokenNode, TokenTree, TokenStream};
 
 fn tt(kind: TokenNode) -> TokenTree {
     TokenTree {
@@ -103,12 +103,6 @@ impl<T: ToTokens> ToTokens for Option<T> {
     }
 }
 
-impl ToTokens for Term {
-    fn to_tokens(&self, tokens: &mut Tokens) {
-        tokens.append(tt(TokenNode::Term(*self)));
-    }
-}
-
 impl ToTokens for str {
     fn to_tokens(&self, tokens: &mut Tokens) {
         tokens.append(tt(TokenNode::Literal(Literal::string(self))));
@@ -147,5 +141,23 @@ impl ToTokens for bool {
     fn to_tokens(&self, tokens: &mut Tokens) {
         let word = if *self { "true" } else { "false" };
         tokens.append(tt(TokenNode::Term(Term::intern(word))));
+    }
+}
+
+impl ToTokens for Term {
+    fn to_tokens(&self, tokens: &mut Tokens) {
+        tokens.append(tt(TokenNode::Term(*self)));
+    }
+}
+
+impl ToTokens for TokenTree {
+    fn to_tokens(&self, dst: &mut Tokens) {
+        dst.append(self.clone());
+    }
+}
+
+impl ToTokens for TokenStream {
+    fn to_tokens(&self, dst: &mut Tokens) {
+        dst.append_all(self.clone().into_iter());
     }
 }
