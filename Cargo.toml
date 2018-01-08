@@ -11,4 +11,4 @@ include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-A
 publish = false # this branch contains breaking changes
 
 [dependencies]
-proc-macro2 = "0.1"
+proc-macro2 = "0.2"

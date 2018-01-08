@@ -6,7 +6,7 @@ use proc_macro2::{Literal, Span, Term, TokenNode, TokenTree, TokenStream};
 
 fn tt(kind: TokenNode) -> TokenTree {
     TokenTree {
-        span: Span::default(),
+        span: Span::def_site(),
         kind: kind,
     }
 }

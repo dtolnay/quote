@@ -6,7 +6,7 @@ extern crate proc_macro2;
 #[macro_use]
 extern crate quote;
 
-use proc_macro2::Term;
+use proc_macro2::{Span, Term};
 
 struct X;
 
@@ -14,7 +14,7 @@ impl quote::ToTokens for X {
     fn to_tokens(&self, tokens: &mut quote::Tokens) {
         tokens.append(proc_macro2::TokenTree {
             kind: proc_macro2::TokenNode::Term(Term::intern("X")),
-            span: Default::default(),
+            span: Span::def_site(),
         });
     }
 }

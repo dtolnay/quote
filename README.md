@@ -104,7 +104,7 @@ Any interpolated tokens preserve the `Span` information provided by their
 `ToTokens` implementation. Tokens that originate within a `quote!` invocation
 are spanned with [`Span::def_site()`].
 
-[`Span::def_site()`]: https://docs.rs/proc-macro2/0.1/proc_macro2/struct.Span.html#method.def_site
+[`Span::def_site()`]: https://docs.rs/proc-macro2/0.2/proc_macro2/struct.Span.html#method.def_site
 
 A different span can be provided explicitly through the [`quote_spanned!`]
 macro.

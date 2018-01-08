@@ -160,7 +160,7 @@ pub mod __rt {
 /// `ToTokens` implementation. Tokens that originate within the `quote!`
 /// invocation are spanned with [`Span::def_site()`].
 ///
-/// [`Span::def_site()`]: https://docs.rs/proc-macro2/0.1/proc_macro2/struct.Span.html#method.def_site
+/// [`Span::def_site()`]: https://docs.rs/proc-macro2/0.2/proc_macro2/struct.Span.html#method.def_site
 ///
 /// A different span can be provided through the [`quote_spanned!`] macro.
 ///
@@ -218,7 +218,7 @@ macro_rules! quote {
 /// to quote. The span expression should be brief -- use a variable for anything
 /// more than a few characters. There should be no space before the `=>` token.
 ///
-/// [`Span`]: https://docs.rs/proc-macro2/0.1/proc_macro2/struct.Span.html
+/// [`Span`]: https://docs.rs/proc-macro2/0.2/proc_macro2/struct.Span.html
 ///
 /// ```
 /// # #[macro_use]
