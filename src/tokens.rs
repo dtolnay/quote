@@ -113,6 +113,35 @@ impl From<Tokens> for proc_macro::TokenStream {
     }
 }
 
+/// Allows a `Tokens` to be passed to `Tokens::append_all`.
+impl IntoIterator for Tokens {
+    type Item = TokenTree;
+    type IntoIter = private::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        private::into_iter(self.tts.into_iter())
+    }
+}
+
+mod private {
+    use std::vec;
+    use proc_macro2::TokenTree;
+
+    pub struct IntoIter(vec::IntoIter<TokenTree>);
+
+    pub fn into_iter(tts: vec::IntoIter<TokenTree>) -> IntoIter {
+        IntoIter(tts)
+    }
+
+    impl Iterator for IntoIter {
+        type Item = TokenTree;
+
+        fn next(&mut self) -> Option<Self::Item> {
+            self.0.next()
+        }
+    }
+}
+
 impl Display for Tokens {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         Display::fmt(&TokenStream::from(self.clone()), formatter)

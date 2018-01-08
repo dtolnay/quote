@@ -282,3 +282,11 @@ fn test_closure() {
     let tokens = quote! { #(#fields)* };
     assert_eq!("__field0 __field1 __field2", tokens.to_string());
 }
+
+#[test]
+fn test_append_tokens() {
+    let mut a = quote!(a);
+    let b = quote!(b);
+    a.append_all(b);
+    assert_eq!("a b", a.to_string());
+}
