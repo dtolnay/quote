@@ -94,6 +94,7 @@
 #![doc(html_root_url = "https://docs.rs/quote/0.4.2")]
 
 extern crate proc_macro2;
+#[cfg(feature = "proc-macro")]
 extern crate proc_macro;
 
 mod tokens;
@@ -161,7 +162,10 @@ pub mod __rt {
 /// # Example
 ///
 /// ```
+/// # #[cfg(feature = "proc-macro")]
 /// extern crate proc_macro;
+/// # #[cfg(not(feature = "proc-macro"))]
+/// # extern crate proc_macro2 as proc_macro;
 ///
 /// #[macro_use]
 /// extern crate quote;

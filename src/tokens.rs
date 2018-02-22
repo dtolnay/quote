@@ -2,6 +2,7 @@ use super::ToTokens;
 use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
 
+#[cfg(feature = "proc-macro")]
 use proc_macro;
 use proc_macro2::{TokenStream, TokenTree};
 
@@ -108,6 +109,7 @@ impl From<Tokens> for TokenStream {
     }
 }
 
+#[cfg(feature = "proc-macro")]
 impl From<Tokens> for proc_macro::TokenStream {
     fn from(tokens: Tokens) -> proc_macro::TokenStream {
         TokenStream::from(tokens).into()
