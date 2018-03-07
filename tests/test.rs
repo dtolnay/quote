@@ -41,6 +41,22 @@ fn test_quote_impl() {
 }
 
 #[test]
+fn test_tuple() {
+    #![allow(unused_parens)]
+    
+    let tuple0 = ();
+    let tuple1 = (0);
+    let tuple2 = (0, 1);
+    let tuple3 = (0, 1, 2);
+    let tuple4 = (0, 1, 2, 3);
+    assert_eq!("let tuple = ( ) ;", quote!(let tuple = #tuple0;).to_string());
+    assert_eq!("let tuple = 0i32 ;", quote!(let tuple = #tuple1;).to_string());
+    assert_eq!("let tuple = ( 0i32 , 1i32 ) ;", quote!(let tuple = #tuple2;).to_string());
+    assert_eq!("let tuple = ( 0i32 , 1i32 , 2i32 ) ;", quote!(let tuple = #tuple3;).to_string());
+    assert_eq!("let tuple = ( 0i32 , 1i32 , 2i32 , 3i32 ) ;", quote!(let tuple = #tuple4;).to_string());
+}
+
+#[test]
 fn test_substitution() {
     let x = X;
     let tokens = quote!(#x <#x> (#x) [#x] {#x});

@@ -2,7 +2,7 @@ use super::Tokens;
 
 use std::borrow::Cow;
 
-use proc_macro2::{Literal, Span, Term, TokenNode, TokenTree, TokenStream};
+use proc_macro2::{Literal, Span, Term, TokenNode, TokenTree, TokenStream, Spacing};
 
 fn tt(kind: TokenNode) -> TokenTree {
     TokenTree {
@@ -114,6 +114,49 @@ impl ToTokens for String {
         self.as_str().to_tokens(tokens);
     }
 }
+
+impl ToTokens for () {
+    fn to_tokens(&self, dst: &mut Tokens) {
+        dst.append(TokenNode::Op('(', Spacing::Alone));
+        dst.append(TokenNode::Op(')', Spacing::Alone));
+    }
+}
+
+macro_rules! tuple {
+    (() => ()) => {
+        // covered by `impl ToTokens for ()`
+    };
+    (($type:ident) => ($index:tt)) => {
+        // covered by `impl<'a, T: ?Sized + ToTokens> ToTokens for &'a T`
+    };
+    (($($type:ident),+) => ($($index:tt),+)) => {
+        impl<$($type),+> ToTokens for ($($type),+) where $($type: ToTokens + Clone),+ {
+            fn to_tokens(&self, dst: &mut Tokens) {
+                let tokens = vec![
+                    $(self.$index.clone().into_tokens()),+
+                ];
+                dst.append(TokenNode::Op('(', Spacing::Alone));
+                dst.append_separated(
+                    tokens.into_iter(),
+                    TokenNode::Op(',', Spacing::Alone)
+                );
+                dst.append(TokenNode::Op(')', Spacing::Alone));
+            }
+        }
+    };
+}
+
+tuple!(() => ());
+tuple!((A) => (0));
+tuple!((A, B) => (0, 1));
+tuple!((A, B, C) => (0, 1, 2));
+tuple!((A, B, C, D) => (0, 1, 2, 3));
+tuple!((A, B, C, D, E) => (0, 1, 2, 3, 4));
+tuple!((A, B, C, D, E, F) => (0, 1, 2, 3, 4, 5));
+tuple!((A, B, C, D, E, F, G) => (0, 1, 2, 3, 4, 5, 6));
+tuple!((A, B, C, D, E, F, G, H) => (0, 1, 2, 3, 4, 5, 6, 7));
+tuple!((A, B, C, D, E, F, G, H, I) => (0, 1, 2, 3, 4, 5, 6, 7, 8));
+tuple!((A, B, C, D, E, F, G, H, I, J) => (0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
 
 macro_rules! primitive {
     ($($t:ident)*) => ($(
