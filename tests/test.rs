@@ -133,7 +133,7 @@ fn test_integer() {
         #ii8 #ii16 #ii32 #ii64 #iisize
         #uu8 #uu16 #uu32 #uu64 #uusize
     };
-    let expected = "-1i8 -1i16 -1i32 -1i64 -1isize 1u8 1u16 1u32 1u64 1usize";
+    let expected = "- 1i8 - 1i16 - 1i32 - 1i64 - 1isize 1u8 1u16 1u32 1u64 1usize";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -289,4 +289,18 @@ fn test_append_tokens() {
     let b = quote!(b);
     a.append_all(b);
     assert_eq!("a b", a.to_string());
+}
+
+#[test]
+fn negative_integers() {
+    let a = -1i32;
+    let a = quote!(#a);
+    assert_eq!("- 1i32", a.to_string());
+}
+
+#[test]
+fn negative_min() {
+    let a = -128i8;
+    let a = quote!(#a);
+    assert_eq!("( 18446744073709551488u64 as i8 )", a.to_string());
 }

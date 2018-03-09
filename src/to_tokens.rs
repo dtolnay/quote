@@ -3,6 +3,7 @@ use super::Tokens;
 use std::borrow::Cow;
 
 use proc_macro2::{Literal, Span, Term, TokenNode, TokenTree, TokenStream};
+use proc_macro2::{Spacing, Delimiter};
 
 fn tt(kind: TokenNode) -> TokenTree {
     TokenTree {
@@ -126,8 +127,54 @@ macro_rules! primitive {
 }
 
 primitive! {
-    i8 i16 i32 i64 isize
     u8 u16 u32 u64 usize
+}
+
+macro_rules! signed_primitive {
+    ($($t:ident)*) => ($(
+        impl ToTokens for $t {
+            fn to_tokens(&self, tokens: &mut Tokens) {
+                let val = if *self == <$t>::min_value() {
+                    let mut sub_tokens = Tokens::new();
+                    (*self as u64).to_tokens(&mut sub_tokens);
+                    sub_tokens.append(tt(TokenNode::Term(Term::intern("as"))));
+                    sub_tokens.append(tt(TokenNode::Term(Term::intern(stringify!($t)))));
+                    let sub_tokens = sub_tokens.into();
+                    tokens.append(tt(TokenNode::Group(Delimiter::Parenthesis, sub_tokens)));
+                    return
+                } else if *self < 0 {
+                    tokens.append(tt(TokenNode::Op('-', Spacing::Alone)));
+                    self.abs()
+                } else {
+                    *self
+                };
+                tokens.append(tt(TokenNode::Literal(Literal::$t(val))));
+            }
+        }
+    )*)
+}
+
+signed_primitive! {
+    i8 i16 i32 i64 isize
+}
+
+macro_rules! float_primitive {
+    ($($t:ident)*) => ($(
+        impl ToTokens for $t {
+            fn to_tokens(&self, tokens: &mut Tokens) {
+                let val = if *self < 0.0 {
+                    tokens.append(tt(TokenNode::Op('-', Spacing::Alone)));
+                    -*self
+                } else {
+                    *self
+                };
+                tokens.append(tt(TokenNode::Literal(Literal::$t(val))));
+            }
+        }
+    )*)
+}
+
+float_primitive! {
     f32 f64
 }
 
