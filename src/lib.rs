@@ -112,17 +112,9 @@ pub mod __rt {
     pub fn parse(tokens: &mut ::Tokens, span: Span, s: &str) {
         let s: TokenStream = s.parse().expect("invalid token stream");
         tokens.append_all(s.into_iter().map(|mut t| {
-            t.span = span;
+            t.set_span(span);
             t
         }));
-    }
-
-    // Not public API.
-    pub fn append_kind(tokens: &mut ::Tokens, span: Span, kind: TokenNode) {
-        tokens.append(TokenTree {
-            span: span,
-            kind: kind,
-        })
     }
 }
 
@@ -158,9 +150,9 @@ pub mod __rt {
 ///
 /// Any interpolated tokens preserve the `Span` information provided by their
 /// `ToTokens` implementation. Tokens that originate within the `quote!`
-/// invocation are spanned with [`Span::def_site()`].
+/// invocation are spanned with [`Span::call_site()`].
 ///
-/// [`Span::def_site()`]: https://docs.rs/proc-macro2/0.2/proc_macro2/struct.Span.html#method.def_site
+/// [`Span::call_site()`]: https://docs.rs/proc-macro2/0.2/proc_macro2/struct.Span.html#method.call_site
 ///
 /// A different span can be provided through the [`quote_spanned!`] macro.
 ///
@@ -206,7 +198,7 @@ pub mod __rt {
 /// ```
 #[macro_export]
 macro_rules! quote {
-    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::def_site()=> $($tt)*));
+    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::call_site()=> $($tt)*));
 }
 
 /// Same as `quote!`, but applies a given span to all tokens originating within
@@ -286,9 +278,9 @@ macro_rules! quote {
 /// #
 /// # fn main() {
 /// # let ty = Type;
-/// # let def_site = Span::def_site();
+/// # let call_site = Span::call_site();
 /// #
-/// let ty_span = ty.span().resolved_at(def_site);
+/// let ty_span = ty.span();
 /// let assert_sync = quote_spanned! {ty_span=>
 ///     struct _AssertSync where #ty: Sync;
 /// };
@@ -455,12 +447,14 @@ macro_rules! quote_each_token {
 
     ($tokens:ident $span:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
         quote_each_token!($tokens $span #);
-        $crate::__rt::append_kind(&mut $tokens,
-            $span,
-            $crate::__rt::TokenNode::Group(
+        $tokens.append({
+            let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
-                quote_spanned!($span=> $($inner)*).into()
-            ));
+                quote_spanned!($span=> $($inner)*).into(),
+            );
+            g.set_span($span);
+            g
+        });
         quote_each_token!($tokens $span $($rest)*);
     };
 
@@ -470,32 +464,38 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident $span:ident ( $($first:tt)* ) $($rest:tt)*) => {
-        $crate::__rt::append_kind(&mut $tokens,
-            $span,
-            $crate::__rt::TokenNode::Group(
+        $tokens.append({
+            let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Parenthesis,
-                quote_spanned!($span=> $($first)*).into()
-            ));
+                quote_spanned!($span=> $($first)*).into(),
+            );
+            g.set_span($span);
+            g
+        });
         quote_each_token!($tokens $span $($rest)*);
     };
 
     ($tokens:ident $span:ident [ $($first:tt)* ] $($rest:tt)*) => {
-        $crate::__rt::append_kind(&mut $tokens,
-            $span,
-            $crate::__rt::TokenNode::Group(
+        $tokens.append({
+            let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
-                quote_spanned!($span=> $($first)*).into()
-            ));
+                quote_spanned!($span=> $($first)*).into(),
+            );
+            g.set_span($span);
+            g
+        });
         quote_each_token!($tokens $span $($rest)*);
     };
 
     ($tokens:ident $span:ident { $($first:tt)* } $($rest:tt)*) => {
-        $crate::__rt::append_kind(&mut $tokens,
-            $span,
-            $crate::__rt::TokenNode::Group(
+        $tokens.append({
+            let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Brace,
-                quote_spanned!($span=> $($first)*).into()
-            ));
+                quote_spanned!($span=> $($first)*).into(),
+            );
+            g.set_span($span);
+            g
+        });
         quote_each_token!($tokens $span $($rest)*);
     };
 
