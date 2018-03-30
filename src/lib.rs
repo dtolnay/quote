@@ -244,6 +244,12 @@ macro_rules! quote {
 /// # }
 /// ```
 ///
+/// The lack of space before the `=>` should look jarring to Rust programmers
+/// and this is intentional. The formatting is designed to be visibly
+/// off-balance and draw the eye a particular way, due to the span expression
+/// being evaluated in the context of the procedural macro and the remaining
+/// tokens being evaluated in the generated code.
+///
 /// # Hygiene
 ///
 /// Any interpolated tokens preserve the `Span` information provided by their
