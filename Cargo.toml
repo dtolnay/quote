@@ -10,4 +10,4 @@ keywords = ["syn"]
 include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 
 [dependencies]
-proc-macro2 = "0.2"
+proc-macro2 = "0.3"
