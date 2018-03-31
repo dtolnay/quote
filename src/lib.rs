@@ -26,7 +26,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! quote = "0.4"
+//! quote = "0.5"
 //! ```
 //!
 //! ```
@@ -91,7 +91,7 @@
 //! An even higher limit may be necessary for especially large invocations.
 
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote/0.4.2")]
+#![doc(html_root_url = "https://docs.rs/quote/0.5.0")]
 
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;
