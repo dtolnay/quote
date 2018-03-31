@@ -2,7 +2,7 @@ use super::Tokens;
 
 use std::borrow::Cow;
 
-use proc_macro2::{Literal, Span, Term, TokenTree, TokenStream};
+use proc_macro2::{Literal, Span, Term, TokenStream, TokenTree};
 
 /// Types that can be interpolated inside a [`quote!`] invocation.
 ///

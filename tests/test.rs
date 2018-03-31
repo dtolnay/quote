@@ -18,13 +18,13 @@ impl quote::ToTokens for X {
 
 #[test]
 fn test_quote_impl() {
-    let tokens = quote!(
+    let tokens = quote! {
         impl<'a, T: ToTokens> ToTokens for &'a T {
             fn to_tokens(&self, tokens: &mut Tokens) {
                 (**self).to_tokens(tokens)
             }
         }
-    );
+    };
 
     let expected = concat!(
         "impl < 'a , T : ToTokens > ToTokens for & 'a T { ",

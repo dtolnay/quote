@@ -127,8 +127,8 @@ impl IntoIterator for Tokens {
 }
 
 mod private {
-    use std::vec;
     use proc_macro2::TokenTree;
+    use std::vec;
 
     pub struct IntoIter(vec::IntoIter<TokenTree>);
 
@@ -207,9 +207,7 @@ fn tt_eq(a: &TokenTree, b: &TokenTree) -> bool {
         (&TokenTree::Literal(ref l1), &TokenTree::Literal(ref l2)) => {
             l1.to_string() == l2.to_string()
         }
-        (&TokenTree::Term(ref s1), &TokenTree::Term(ref s2)) => {
-            s1.as_str() == s2.as_str()
-        }
+        (&TokenTree::Term(ref s1), &TokenTree::Term(ref s2)) => s1.as_str() == s2.as_str(),
         _ => false,
     }
 }
