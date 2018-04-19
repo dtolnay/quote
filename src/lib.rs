@@ -321,6 +321,20 @@ macro_rules! quote_spanned {
     };
 }
 
+/// Asserts that `val` has the given token representation, for testing.
+/// 
+/// Equivalent to `assert!($fmt, $val.into_tokens(), quote! { $($tt)* })`; the
+/// format string is optional.
+#[macro_export]
+macro_rules! assert_tokens {
+    ($fmt:expr, $val:expr; $($tt:tt)*) => (
+        assert_eq!!($fmt, $val.into_tokens(), quote! { $($tt)* })
+    );
+    ($val:expr; $($tt:tt)*) => (
+        assert_eq!!($val.into_tokens(), quote! { $($tt)* })
+    )
+}
+
 // Extract the names of all #metavariables and pass them to the $finish macro.
 //
 // in:   pounded_var_names!(then () a #b c #( #d )* #e)
