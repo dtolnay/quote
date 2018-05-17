@@ -3,16 +3,21 @@ use super::ToTokens;
 use proc_macro2::{TokenStream, TokenTree};
 
 pub trait TokenStreamExt: private::Sealed {
-    fn append<U>(&mut self, token: U) where U: Into<TokenTree>;
+    fn append<U>(&mut self, token: U)
+    where
+        U: Into<TokenTree>;
+
     fn append_all<T, I>(&mut self, iter: I)
     where
         T: ToTokens,
         I: IntoIterator<Item = T>;
+
     fn append_separated<T, I, U>(&mut self, iter: I, op: U)
     where
         T: ToTokens,
         I: IntoIterator<Item = T>,
         U: ToTokens;
+
     fn append_terminated<T, I, U>(&mut self, iter: I, term: U)
     where
         T: ToTokens,

@@ -2,7 +2,7 @@ use super::TokenStreamExt;
 
 use std::borrow::Cow;
 
-use proc_macro2::{Group, Literal, Punct, Span, Ident, TokenStream, TokenTree};
+use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
 /// Types that can be interpolated inside a [`quote!`] invocation.
 ///

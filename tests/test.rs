@@ -6,7 +6,7 @@ extern crate proc_macro2;
 #[macro_use]
 extern crate quote;
 
-use proc_macro2::{Span, Ident, TokenStream};
+use proc_macro2::{Ident, Span, TokenStream};
 use quote::TokenStreamExt;
 
 struct X;
