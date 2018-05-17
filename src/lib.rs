@@ -94,12 +94,10 @@
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote/0.5.2")]
 
-#[cfg(feature = "proc-macro")]
-extern crate proc_macro;
 extern crate proc_macro2;
 
-mod tokens;
-pub use tokens::Tokens;
+mod ext;
+pub use ext::TokenStreamExt;
 
 mod to_tokens;
 pub use to_tokens::ToTokens;
@@ -111,9 +109,9 @@ pub mod __rt {
     pub use proc_macro2::*;
 
     // Not public API.
-    pub fn parse(tokens: &mut ::Tokens, span: Span, s: &str) {
+    pub fn parse(tokens: &mut TokenStream, span: Span, s: &str) {
         let s: TokenStream = s.parse().expect("invalid token stream");
-        tokens.append_all(s.into_iter().map(|mut t| {
+        tokens.extend(s.into_iter().map(|mut t| {
             t.set_span(span);
             t
         }));
@@ -163,9 +161,8 @@ pub mod __rt {
 /// # Example
 ///
 /// ```
-/// # #[cfg(feature = "proc-macro")]
+/// # #[cfg(any())]
 /// extern crate proc_macro;
-/// # #[cfg(not(feature = "proc-macro"))]
 /// # extern crate proc_macro2 as proc_macro;
 ///
 /// #[macro_use]
@@ -266,8 +263,8 @@ macro_rules! quote {
 /// # extern crate quote;
 /// # extern crate proc_macro2;
 /// #
-/// # use quote::{Tokens, ToTokens};
-/// # use proc_macro2::Span;
+/// # use quote::{TokenStreamExt, ToTokens};
+/// # use proc_macro2::{Span, TokenStream};
 /// #
 /// # struct Type;
 /// #
@@ -278,7 +275,7 @@ macro_rules! quote {
 /// # }
 /// #
 /// # impl ToTokens for Type {
-/// #     fn to_tokens(&self, _tokens: &mut Tokens) {}
+/// #     fn to_tokens(&self, _tokens: &mut TokenStream) {}
 /// # }
 /// #
 /// # fn main() {
@@ -314,7 +311,7 @@ macro_rules! quote {
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {
         {
-            let mut _s = $crate::Tokens::new();
+            let mut _s = $crate::__rt::TokenStream::empty();
             let _span = $span;
             quote_each_token!(_s _span $($tt)*);
             _s
@@ -452,13 +449,13 @@ macro_rules! quote_each_token {
 
     ($tokens:ident $span:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
         quote_each_token!($tokens $span #);
-        $tokens.append({
+        $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
                 quote_spanned!($span=> $($inner)*).into(),
             );
             g.set_span($span);
-            g
+            Some($crate::__rt::TokenTree::from(g))
         });
         quote_each_token!($tokens $span $($rest)*);
     };
@@ -469,37 +466,37 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident $span:ident ( $($first:tt)* ) $($rest:tt)*) => {
-        $tokens.append({
+        $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Parenthesis,
                 quote_spanned!($span=> $($first)*).into(),
             );
             g.set_span($span);
-            g
+            Some($crate::__rt::TokenTree::from(g))
         });
         quote_each_token!($tokens $span $($rest)*);
     };
 
     ($tokens:ident $span:ident [ $($first:tt)* ] $($rest:tt)*) => {
-        $tokens.append({
+        $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
                 quote_spanned!($span=> $($first)*).into(),
             );
             g.set_span($span);
-            g
+            Some($crate::__rt::TokenTree::from(g))
         });
         quote_each_token!($tokens $span $($rest)*);
     };
 
     ($tokens:ident $span:ident { $($first:tt)* } $($rest:tt)*) => {
-        $tokens.append({
+        $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Brace,
                 quote_spanned!($span=> $($first)*).into(),
             );
             g.set_span($span);
-            g
+            Some($crate::__rt::TokenTree::from(g))
         });
         quote_each_token!($tokens $span $($rest)*);
     };
