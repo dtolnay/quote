@@ -2,6 +2,9 @@ use super::ToTokens;
 
 use proc_macro2::{TokenStream, TokenTree};
 
+/// TokenStream extension trait with methods for appending tokens.
+///
+/// This trait is sealed and cannot be implemented outside of the `quote` crate.
 pub trait TokenStreamExt: private::Sealed {
     fn append<U>(&mut self, token: U)
     where
