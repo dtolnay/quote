@@ -94,8 +94,6 @@
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote/0.5.2")]
 
-#[cfg(feature = "proc-macro")]
-extern crate proc_macro;
 extern crate proc_macro2;
 
 mod tokens;
@@ -163,9 +161,8 @@ pub mod __rt {
 /// # Example
 ///
 /// ```
-/// # #[cfg(feature = "proc-macro")]
+/// # #[cfg(any())]
 /// extern crate proc_macro;
-/// # #[cfg(not(feature = "proc-macro"))]
 /// # extern crate proc_macro2 as proc_macro;
 ///
 /// #[macro_use]
