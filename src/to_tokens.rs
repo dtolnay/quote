@@ -176,4 +176,8 @@ impl ToTokens for TokenStream {
     fn to_tokens(&self, dst: &mut TokenStream) {
         dst.append_all(self.clone().into_iter());
     }
+
+    fn into_token_stream(self) -> TokenStream {
+        self
+    }
 }
