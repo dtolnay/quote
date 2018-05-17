@@ -96,8 +96,8 @@
 
 extern crate proc_macro2;
 
-mod tokens;
-pub use tokens::TokenStreamExt;
+mod ext;
+pub use ext::TokenStreamExt;
 
 mod to_tokens;
 pub use to_tokens::ToTokens;
