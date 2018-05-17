@@ -2,7 +2,7 @@ use super::ToTokens;
 
 use proc_macro2::{TokenStream, TokenTree};
 
-pub trait TokenStreamExt {
+pub trait TokenStreamExt: private::Sealed {
     fn append<U>(&mut self, token: U) where U: Into<TokenTree>;
     fn append_all<T, I>(&mut self, iter: I)
     where
@@ -94,4 +94,12 @@ impl TokenStreamExt for TokenStream {
             term.to_tokens(self);
         }
     }
+}
+
+mod private {
+    use proc_macro2::TokenStream;
+
+    pub trait Sealed {}
+
+    impl Sealed for TokenStream {}
 }
