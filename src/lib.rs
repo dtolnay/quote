@@ -123,10 +123,10 @@ pub mod __rt {
 /// The whole point.
 ///
 /// Performs variable interpolation against the input and produces it as
-/// [`Tokens`]. For returning tokens to the compiler in a procedural macro, use
+/// [`TokenStream`]. For returning tokens to the compiler in a procedural macro, use
 /// `into()` to build a `TokenStream`.
 ///
-/// [`Tokens`]: struct.Tokens.html
+/// [`TokenStream`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.TokenStream.html
 ///
 /// # Interpolation
 ///

@@ -8,7 +8,14 @@ use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 ///
 /// [`quote!`]: macro.quote.html
 pub trait ToTokens {
-    /// Write `self` to the given `Tokens`.
+    /// Write `self` to the given `TokenStream`.
+    ///
+    /// The token append methods provided by the [`TokenStreamExt`] extension
+    /// trait may be useful for implementing `ToTokens`.
+    ///
+    /// [`TokenStreamExt`]: trait.TokenStreamExt.html
+    ///
+    /// # Example
     ///
     /// Example implementation for a struct representing Rust paths like
     /// `std::cmp::PartialEq`:
@@ -50,7 +57,7 @@ pub trait ToTokens {
     /// ```
     fn to_tokens(&self, tokens: &mut TokenStream);
 
-    /// Convert `self` directly into a `Tokens` object.
+    /// Convert `self` directly into a `TokenStream` object.
     ///
     /// This method is implicitly implemented using `to_tokens`, and acts as a
     /// convenience method for consumers of the `ToTokens` trait.

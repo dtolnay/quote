@@ -44,13 +44,12 @@ extern crate quote;
 ## Syntax
 
 The quote crate provides a [`quote!`] macro within which you can write Rust code
-that gets packaged into a [`quote::Tokens`] and can be treated as data. You
-should think of `Tokens` as representing a fragment of Rust source code. Call
-`to_string()` on a `Tokens` to get back the fragment of source code as a string,
-or call `into()` to stream them as a `TokenStream` back to the compiler in a
-procedural macro.
+that gets packaged into a [`TokenStream`] and can be treated as data. You should
+think of `TokenStream` as representing a fragment of Rust source code. This type
+can be returned directly back to the compiler by a procedural macro to get
+compiled into the caller's crate.
 
-[`quote::Tokens`]: https://docs.rs/quote/0.6/quote/struct.Tokens.html
+[`TokenStream`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.TokenStream.html
 
 Within the `quote!` macro, interpolation is done with `#var`. Any type
 implementing the [`quote::ToTokens`] trait can be interpolated. This includes
