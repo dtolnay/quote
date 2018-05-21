@@ -31,6 +31,8 @@ macros.
 *Version requirement: Quote supports any compiler version back to Rust's very
 first support for procedural macros in Rust 1.15.0.*
 
+[*Release notes*](https://github.com/dtolnay/quote/releases)
+
 ```toml
 [dependencies]
 quote = "0.6"
