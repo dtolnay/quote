@@ -104,9 +104,9 @@ does not produce a trailing comma. This matches the behavior of delimiters in
 
 Any interpolated tokens preserve the `Span` information provided by their
 `ToTokens` implementation. Tokens that originate within a `quote!` invocation
-are spanned with [`Span::def_site()`].
+are spanned with [`Span::call_site()`].
 
-[`Span::def_site()`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html#method.def_site
+[`Span::call_site()`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html#method.call_site
 
 A different span can be provided explicitly through the [`quote_spanned!`]
 macro.
