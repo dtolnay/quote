@@ -92,7 +92,7 @@
 //! An even higher limit may be necessary for especially large invocations.
 
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote/0.6.0")]
+#![doc(html_root_url = "https://docs.rs/quote/0.6.1")]
 
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;
