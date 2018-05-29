@@ -65,7 +65,7 @@ pub trait ToTokens {
     where
         Self: Sized,
     {
-        let mut tokens = TokenStream::empty();
+        let mut tokens = TokenStream::new();
         self.to_tokens(&mut tokens);
         tokens
     }
