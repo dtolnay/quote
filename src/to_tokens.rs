@@ -2,6 +2,7 @@ use super::TokenStreamExt;
 
 use std::borrow::Cow;
 
+use proc_macro;
 use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
 /// Types that can be interpolated inside a [`quote!`] invocation.
@@ -186,5 +187,12 @@ impl ToTokens for TokenStream {
 
     fn into_token_stream(self) -> TokenStream {
         self
+    }
+}
+
+impl ToTokens for proc_macro::TokenStream {
+    fn to_tokens(&self, dst: &mut TokenStream) {
+        let stream: TokenStream = self.clone().into();
+        stream.to_tokens(dst);
     }
 }
