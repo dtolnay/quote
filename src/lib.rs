@@ -67,11 +67,11 @@
 //!     }
 //!
 //!     impl #generics serde::Serialize for SerializeWith #generics #where_clause {
-//!         fn serialize<S>(&self, s: &mut S) -> Result<(), S::Error>
+//!         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 //!         where
 //!             S: serde::Serializer,
 //!         {
-//!             #path(self.value, s)
+//!             #path(self.value, serializer)
 //!         }
 //!     }
 //!
