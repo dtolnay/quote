@@ -132,10 +132,13 @@ pub mod __rt {
 ///
 /// Variable interpolation is done with `#var` (similar to `$var` in
 /// `macro_rules!` macros). This grabs the `var` variable that is currently in
-/// scope and inserts it in that location in the output tokens. The variable
-/// must implement the [`ToTokens`] trait.
+/// scope and inserts it in that location in the output tokens. Any type
+/// implementing the [`ToTokens`] trait can be interpolated. This includes most
+/// Rust primitive types as well as most of the syntax tree types from the [Syn]
+/// crate.
 ///
 /// [`ToTokens`]: trait.ToTokens.html
+/// [Syn]: https://github.com/dtolnay/syn
 ///
 /// Repetition is done using `#(...)*` or `#(...),*` again similar to
 /// `macro_rules!`. This iterates through the elements of any variable
