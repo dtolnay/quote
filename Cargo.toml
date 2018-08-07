@@ -18,3 +18,6 @@ default = ["proc-macro"]
 # Disabling the proc-macro feature removes the dynamic library dependency on
 # libproc_macro in the rustc compiler.
 proc-macro = ["proc-macro2/proc-macro"]
+
+[badges]
+travis-ci = { repository = "dtolnay/quote" }
