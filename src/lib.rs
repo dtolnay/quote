@@ -94,7 +94,7 @@
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote/0.6.5")]
 
-#[cfg(feature = "proc-macro")]
+#[cfg(all(not(all(target_arch = "wasm32", target_os = "unknown")), feature = "proc-macro"))]
 extern crate proc_macro;
 extern crate proc_macro2;
 
