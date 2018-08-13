@@ -566,7 +566,7 @@ macro_rules! quote_each_token {
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
-                quote_spanned!($span=> $($inner)*).into(),
+                quote_spanned!($span=> $($inner)*),
             );
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
@@ -583,7 +583,7 @@ macro_rules! quote_each_token {
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Parenthesis,
-                quote_spanned!($span=> $($first)*).into(),
+                quote_spanned!($span=> $($first)*),
             );
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
@@ -595,7 +595,7 @@ macro_rules! quote_each_token {
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
-                quote_spanned!($span=> $($first)*).into(),
+                quote_spanned!($span=> $($first)*),
             );
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
@@ -607,7 +607,7 @@ macro_rules! quote_each_token {
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Brace,
-                quote_spanned!($span=> $($first)*).into(),
+                quote_spanned!($span=> $($first)*),
             );
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
