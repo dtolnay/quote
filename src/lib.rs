@@ -111,13 +111,43 @@ pub mod __rt {
     pub use proc_macro2::*;
     use ext::TokenStreamExt;
 
-    // Not public API.
+    fn is_ident_start(c: u8) -> bool {
+        (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_'
+    }
+
+    fn is_ident_continue(c: u8) -> bool {
+        (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_' || (b'0' <= c && c <= b'9')
+    }
+
+    fn is_ident(token: &str) -> bool {
+        if token.bytes().all(|digit| digit >= b'0' && digit <= b'9') {
+            return false;
+        }
+
+        let mut bytes = token.bytes();
+        let first = bytes.next().unwrap();
+        if !is_ident_start(first) {
+            return false;
+        }
+        for ch in bytes {
+            if !is_ident_continue(ch) {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn parse(tokens: &mut TokenStream, span: Span, s: &str) {
-        let s: TokenStream = s.parse().expect("invalid token stream");
-        tokens.extend(s.into_iter().map(|mut t| {
-            t.set_span(span);
-            t
-        }));
+        if is_ident(s) {
+            // Fast path, since idents are the most common token.
+            tokens.append(Ident::new(s, span));
+        } else {
+            let s: TokenStream = s.parse().expect("invalid token stream");
+            tokens.extend(s.into_iter().map(|mut t| {
+                t.set_span(span);
+                t
+            }));
+        }
     }
 
     macro_rules! push_punct {
@@ -197,10 +227,6 @@ pub mod __rt {
     push_punct!(push_star '*');
     push_punct!(push_sub '-');
     push_punct!(push_sub_eq '-' '=');
-
-    pub fn push_ident(tokens: &mut TokenStream, span: Span, ident: &str) {
-        tokens.append(Ident::new(ident, span));
-    }
 }
 
 /// The whole point.
@@ -806,11 +832,6 @@ macro_rules! quote_each_token {
 
     ($tokens:ident $span:ident -= $($rest:tt)*) => {
         $crate::__rt::push_sub_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
-    };
-
-    ($tokens:ident $span:ident $ident:ident $($rest:tt)*) => {
-        $crate::__rt::push_ident(&mut $tokens, $span, stringify!($ident));
         quote_each_token!($tokens $span $($rest)*);
     };
 
