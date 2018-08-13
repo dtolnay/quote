@@ -197,6 +197,10 @@ pub mod __rt {
     push_punct!(push_star '*');
     push_punct!(push_sub '-');
     push_punct!(push_sub_eq '-' '=');
+
+    pub fn push_ident(tokens: &mut TokenStream, span: Span, ident: &str) {
+        tokens.append(Ident::new(ident, span));
+    }
 }
 
 /// The whole point.
@@ -802,6 +806,11 @@ macro_rules! quote_each_token {
 
     ($tokens:ident $span:ident -= $($rest:tt)*) => {
         $crate::__rt::push_sub_eq(&mut $tokens, $span);
+        quote_each_token!($tokens $span $($rest)*);
+    };
+
+    ($tokens:ident $span:ident $ident:ident $($rest:tt)*) => {
+        $crate::__rt::push_ident(&mut $tokens, $span, stringify!($ident));
         quote_each_token!($tokens $span $($rest)*);
     };
 
