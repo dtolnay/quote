@@ -94,7 +94,10 @@
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote/0.6.6")]
 
-#[cfg(all(not(all(target_arch = "wasm32", target_os = "unknown")), feature = "proc-macro"))]
+#[cfg(all(
+    not(all(target_arch = "wasm32", target_os = "unknown")),
+    feature = "proc-macro"
+))]
 extern crate proc_macro;
 extern crate proc_macro2;
 
@@ -107,16 +110,18 @@ pub use to_tokens::ToTokens;
 // Not public API.
 #[doc(hidden)]
 pub mod __rt {
-    // Not public API.
-    pub use proc_macro2::*;
     use ext::TokenStreamExt;
+    pub use proc_macro2::*;
 
     fn is_ident_start(c: u8) -> bool {
         (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_'
     }
 
     fn is_ident_continue(c: u8) -> bool {
-        (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_' || (b'0' <= c && c <= b'9')
+        (b'a' <= c && c <= b'z')
+            || (b'A' <= c && c <= b'Z')
+            || c == b'_'
+            || (b'0' <= c && c <= b'9')
     }
 
     fn is_ident(token: &str) -> bool {
