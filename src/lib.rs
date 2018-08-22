@@ -317,7 +317,7 @@ pub mod __rt {
 /// #
 /// # fn main() {}
 /// ```
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! quote {
     ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::call_site()=> $($tt)*));
 }
@@ -426,7 +426,7 @@ macro_rules! quote {
 /// site. If we resolve `Sync` at the same span that the user's type is going to
 /// be resolved, then they could bypass our check by defining their own trait
 /// named `Sync` that is implemented for their type.
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {
         {
@@ -442,7 +442,7 @@ macro_rules! quote_spanned {
 //
 // in:   pounded_var_names!(then () a #b c #( #d )* #e)
 // out:  then!(() b d e)
-#[macro_export]
+#[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! pounded_var_names {
     ($finish:ident ($($found:ident)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
@@ -487,7 +487,7 @@ macro_rules! pounded_var_names {
 //
 // in:   nested_tuples_pat!(() a)
 // out:  a
-#[macro_export]
+#[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! nested_tuples_pat {
     (()) => {
@@ -512,7 +512,7 @@ macro_rules! nested_tuples_pat {
 //
 // in:   multi_zip_iter!(() a)
 // out:  a
-#[macro_export]
+#[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! multi_zip_expr {
     (()) => {
@@ -536,7 +536,7 @@ macro_rules! multi_zip_expr {
     };
 }
 
-#[macro_export]
+#[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! quote_each_token {
     ($tokens:ident $span:ident) => {};
@@ -841,7 +841,18 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident $span:ident $first:tt $($rest:tt)*) => {
-        $crate::__rt::parse(&mut $tokens, $span, stringify!($first));
+        $crate::__rt::parse(&mut $tokens, $span, quote_stringify!($first));
         quote_each_token!($tokens $span $($rest)*);
+    };
+}
+
+// Unhygienically invoke whatever `stringify` the caller has in scope i.e. not a
+// local macro. The macros marked `local_inner_macros` above cannot invoke
+// `stringify` directly.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! quote_stringify {
+    ($tt:tt) => {
+        stringify!($tt)
     };
 }
