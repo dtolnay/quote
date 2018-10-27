@@ -245,11 +245,12 @@ pub mod __rt {
 /// # Interpolation
 ///
 /// Variable interpolation is done with `#var` (similar to `$var` in
-/// `macro_rules!` macros). This grabs the `var` variable that is currently in
-/// scope and inserts it in that location in the output tokens. Any type
-/// implementing the [`ToTokens`] trait can be interpolated. This includes most
-/// Rust primitive types as well as most of the syntax tree types from the [Syn]
-/// crate.
+/// `macro_rules!` macros) or by inserting the result of an expression with
+/// `#,(expr)`. This grabs the `var` variable that is currently in scope, or the
+/// result of the expression, and inserts it in that location in the output
+/// tokens. Any type implementing the [`ToTokens`] trait can be interpolated.
+/// This includes most Rust primitive types as well as most of the syntax tree
+/// types from the [Syn] crate.
 ///
 /// [`ToTokens`]: trait.ToTokens.html
 /// [Syn]: https://github.com/dtolnay/syn
@@ -257,7 +258,9 @@ pub mod __rt {
 /// Repetition is done using `#(...)*` or `#(...),*` again similar to
 /// `macro_rules!`. This iterates through the elements of any variable
 /// interpolated within the repetition and inserts a copy of the repetition body
-/// for each one. The variables in an interpolation may be anything that
+/// for each one. In the case of dynamic expression insertion, it is necessary
+/// to supply a name as well as the expression, as in `#(name; expr)`, where
+/// `name` is unique. The variables in an interpolation may be anything that
 /// implements `IntoIterator`, including `Vec` or a pre-existing iterator.
 ///
 /// - `#(#var)*` — no separators
@@ -445,44 +448,48 @@ macro_rules! quote_spanned {
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! pounded_var_names {
-    ($finish:ident ($($found:ident)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) # { $($inner:tt)* } $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # $first:ident $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) # , ($first:ident; $expr:expr) $($rest:tt)*) => {
+        pounded_var_names!($finish ($($found)* ($first; $expr)) $($rest)*)
+    };
+
+    ($finish:ident ($($found:tt)*) # $first:ident $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)* $first) $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) ( $($inner:tt)* ) $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) ( $($inner:tt)* ) $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) [ $($inner:tt)* ] $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) [ $($inner:tt)* ] $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) { $($inner:tt)* } $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) { $($inner:tt)* } $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) $ignore:tt $($rest:tt)*) => {
+    ($finish:ident ($($found:tt)*) $ignore:tt $($rest:tt)*) => {
         pounded_var_names!($finish ($($found)*) $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*)) => {
+    ($finish:ident ($($found:tt)*)) => {
         $finish!(() $($found)*)
     };
 }
 
-// in:   nested_tuples_pat!(() a b c d e)
+// in:   nested_tuples_pat!(() a (b; <expr>) c d e)
 // out:  ((((a b) c) d) e)
 //
 // in:   nested_tuples_pat!(() a)
@@ -494,11 +501,19 @@ macro_rules! nested_tuples_pat {
         &()
     };
 
-    (() $first:ident $($rest:ident)*) => {
+    (() $first:ident $($rest:tt)*) => {
         nested_tuples_pat!(($first) $($rest)*)
     };
 
-    (($pat:pat) $first:ident $($rest:ident)*) => {
+    (() ($first:ident; $expr:expr) $($rest:tt)*) => {
+        nested_tuples_pat!(($first) $($rest)*)
+    };
+
+    (($pat:pat) $first:ident $($rest:tt)*) => {
+        nested_tuples_pat!((($pat, $first)) $($rest)*)
+    };
+
+    (($pat:pat) ($first:ident; $expr:expr) $($rest:tt)*) => {
         nested_tuples_pat!((($pat, $first)) $($rest)*)
     };
 
@@ -507,8 +522,8 @@ macro_rules! nested_tuples_pat {
     };
 }
 
-// in:   multi_zip_expr!(() a b c d e)
-// out:  a.into_iter().zip(b).zip(c).zip(d).zip(e)
+// in:   multi_zip_expr!(() a (b; <expr>) c d e)
+// out:  a.into_iter().zip(<expr>).zip(c).zip(d).zip(e)
 //
 // in:   multi_zip_iter!(() a)
 // out:  a
@@ -523,12 +538,24 @@ macro_rules! multi_zip_expr {
         $single
     };
 
-    (() $first:ident $($rest:ident)*) => {
+    (() ($first:ident; $expr:expr)) => {
+        $expr
+    };
+
+    (() $first:ident $($rest:tt)*) => {
         multi_zip_expr!(($first.into_iter()) $($rest)*)
     };
 
-    (($zips:expr) $first:ident $($rest:ident)*) => {
+    (() ($first:ident; $expr:expr) $($rest:tt)*) => {
+        multi_zip_expr!(($expr.into_iter()) $($rest)*)
+    };
+
+    (($zips:expr) $first:ident $($rest:tt)*) => {
         multi_zip_expr!(($zips.zip($first)) $($rest)*)
+    };
+
+    (($zips:expr) ($first:ident; $expr:expr) $($rest:tt)*) => {
+        multi_zip_expr!(($zips.zip($expr)) $($rest)*)
     };
 
     (($done:expr)) => {
@@ -580,6 +607,16 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident $span:ident # $first:ident $($rest:tt)*) => {
+        $crate::ToTokens::to_tokens(&$first, &mut $tokens);
+        quote_each_token!($tokens $span $($rest)*);
+    };
+
+    ($tokens:ident $span:ident # , ( $first:expr ) $($rest:tt)*) => {
+        $crate::ToTokens::to_tokens(&$first, &mut $tokens);
+        quote_each_token!($tokens $span $($rest)*);
+    };
+
+    ($tokens:ident $span:ident # , ( $first:ident; $expr:expr ) $($rest:tt)*) => {
         $crate::ToTokens::to_tokens(&$first, &mut $tokens);
         quote_each_token!($tokens $span $($rest)*);
     };
