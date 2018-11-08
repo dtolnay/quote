@@ -143,6 +143,12 @@ primitive! {
     f64 => f64_suffixed
 }
 
+#[cfg(integer128)]
+primitive! {
+    i128 => i128_suffixed
+    u128 => u128_suffixed
+}
+
 impl ToTokens for char {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(Literal::character(*self));
