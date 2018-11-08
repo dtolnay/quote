@@ -9,6 +9,11 @@ extern crate quote;
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::TokenStreamExt;
 
+mod conditional {
+    #[cfg(integer128)]
+    mod integer128;
+}
+
 struct X;
 
 impl quote::ToTokens for X {
@@ -132,19 +137,6 @@ fn test_integer() {
         #uu8 #uu16 #uu32 #uu64 #uusize
     };
     let expected = "-1i8 -1i16 -1i32 -1i64 -1isize 1u8 1u16 1u32 1u64 1usize";
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[cfg(integer128)]
-#[test]
-fn test_integer128() {
-    let ii128 = -1i128;
-    let uu128 = 1u128;
-
-    let tokens = quote! {
-        #ii128 #uu128
-    };
-    let expected = "-1i128 1u128";
     assert_eq!(expected, tokens.to_string());
 }
 
