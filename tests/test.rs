@@ -293,3 +293,19 @@ fn test_append_tokens() {
     a.append_all(b);
     assert_eq!("a b", a.to_string());
 }
+
+#[test]
+fn whole_exprs() {
+    let x = X;
+    let tokens = quote!(#{x});
+    assert_eq!(tokens.to_string(), "X");
+
+    let tokens = quote!(#{1 + 2});
+    assert_eq!(tokens.to_string(), "3i32");
+
+    struct A { b: X }
+    let x = A { b: X };
+
+    let tokens = quote!(#{x.b});
+    assert_eq!(tokens.to_string(), "X");
+}

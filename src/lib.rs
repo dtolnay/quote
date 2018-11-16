@@ -254,6 +254,10 @@ pub mod __rt {
 /// [`ToTokens`]: trait.ToTokens.html
 /// [Syn]: https://github.com/dtolnay/syn
 ///
+/// You can also use `#{expr}` to interpolate an arbitrary expression, so long
+/// as the result implements the [`ToTokens`] trait. For example `#{1 + 3}` will
+/// interpolate `4i32`.
+///
 /// Repetition is done using `#(...)*` or `#(...),*` again similar to
 /// `macro_rules!`. This iterates through the elements of any variable
 /// interpolated within the repetition and inserts a copy of the repetition body
@@ -576,6 +580,11 @@ macro_rules! quote_each_token {
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
         });
+        quote_each_token!($tokens $span $($rest)*);
+    };
+
+    ($tokens:ident $span:ident # { $val:expr } $($rest:tt)*) => {
+        $crate::ToTokens::to_tokens(&$val, &mut $tokens);
         quote_each_token!($tokens $span $($rest)*);
     };
 
