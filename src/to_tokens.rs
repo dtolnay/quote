@@ -201,3 +201,17 @@ impl ToTokens for TokenStream {
         self
     }
 }
+
+#[cfg(all(
+    not(all(target_arch = "wasm32", target_os = "unknown")),
+    feature = "proc-macro"
+))]
+impl ToTokens for ::proc_macro::TokenStream {
+    fn to_tokens(&self, dst: &mut TokenStream) {
+        dst.extend(iter::once(TokenStream::from(self.clone())));
+    }
+
+    fn into_token_stream(self) -> TokenStream {
+        self.into()
+    }
+}
