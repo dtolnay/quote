@@ -844,8 +844,30 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident $span:ident $first:tt $($rest:tt)*) => {
-        $crate::__rt::parse(&mut $tokens, $span, quote_stringify!($first));
+        quote_ident_or_tt!($tokens $span $first);
         quote_each_token!($tokens $span $($rest)*);
+    };
+}
+
+#[cfg(quote_can_special_case_ident)]
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
+macro_rules! quote_ident_or_tt {
+    ($tokens:ident $span:ident $first:ident) => {
+        $crate::__rt::push_ident(&mut $tokens, $span, quote_stringify!($first));
+    };
+
+    ($tokens:ident $span:ident $first:tt) => {
+        $crate::__rt::push_tt(&mut $tokens, $span, quote_stringify!($first));
+    };
+}
+
+#[cfg(not(quote_can_special_case_ident))]
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
+macro_rules! quote_ident_or_tt {
+    ($tokens:ident $span:ident $first:tt) => {
+        $crate::__rt::slow::parse(&mut $tokens, $span, quote_stringify!($first));
     };
 }
 
