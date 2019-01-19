@@ -131,27 +131,34 @@ let tokens = quote! {
 };
 ```
 
-### Changing identifiers
+### Constructing identifiers
 
-Assuming you want to quote an identifier `ident`, but prepended with an underscore. If you naively do:
+Suppose we have an identifier `ident` which came from somewhere in a macro
+input and we need to modify it in some way for the macro output. Let's consider
+prepending the identifier with an underscore.
 
-    quote! {
-        _#ident
-    }
+Simply interpolating the identifier next to an underscore will not have the
+behavior of concatenating them. The underscore and the identifier will continue
+to be two separate tokens as if you had written `_ x`.
 
-If `ident` is `foo` this will lead to a space between the underscore and the identifier `_ foo`. You can create a new identifier that the compiler can trace back to the original identifier by creating a new identifier with the span of the previous one.
+```rust
+// incorrect
+quote! {
+    let mut _#ident = 0;
+}
+```
 
-    fn underscore_ident(ident: &syn::Ident) -> syn::Ident {
-        syn::Ident::new(&format!("_{}", ident), ident.span())
-    }
-    
-which you can then use as:
+The solution is to perform token-level manipulations using the APIs provided by
+Syn and proc-macro2.
 
-    let underscore_ident = underscore_ident(&ident);
-    quote! {
-        #underscore_ident
-    }
-    
+```rust
+let concatenated = format!("_{}", ident);
+let varname = syn::Ident::new(&concatenated, ident.span())
+quote! {
+    let mut #varname = 0;
+}
+```
+
 ### Using `syn::Type`
 
 Say the variable `field_type` contains the `syn::Type` of `Vec<i32>` of a struct_field from your derive macro. Using
