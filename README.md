@@ -100,6 +100,63 @@ Note that there is a difference between `#(#var ,)*` and `#(#var),*`—the latte
 does not produce a trailing comma. This matches the behavior of delimiters in
 `macro_rules!`.
 
+## Examples
+
+### Quoting other quotes
+
+Often you don't want to write your whole `TokenStream` in one piece. The `TokenStream` produced by `quote!{...}` (`syn::export::TokenStream2` not (**!**) `proc_macro::TokenStream`) implements `ToTokens`. Therefore it can be directly quoted.
+
+    let quote1 = quote! {...};
+    let quote2 = quote! {...};
+    
+    let quote_combined = quote!{
+        #quote1
+        #quote2
+    };
+
+### Changing identifiers
+
+Assuming you want to quote an identifier `ident`, but prepended with an underscore. If you naively do:
+
+    quote! {
+        _#ident
+    }
+
+If `ident` is `foo` this will lead to a space between the underscore and the identifier `_ foo`. You can create a new identifier that the compiler can trace back to the original identifier by creating a new identifier with the span of the previous one.
+
+    fn underscore_ident(ident: &syn::Ident) -> syn::Ident {
+        syn::Ident::new(&format!("_{}", ident), ident.span())
+    }
+    
+which you can then use as:
+
+    let underscore_ident = underscore_ident(&ident);
+    quote! {
+        #underscore_ident
+    }
+    
+### Using `syn::Type`
+
+Say the variable `field_type` contains the `syn::Type` of `Vec<i32>` of a struct_field from your derive macro. Using
+
+    quote!{
+        let v: #field_type = some_collection.iter().collect();
+    }
+
+will work. However if you want a new vector you'd usually use the turbofish operator `Vec::<i32>::new()`, e.g.
+
+    quote!{
+        let v = #field_type::new();
+    }
+
+This will expand to `Vec<i32>::new()`, so it won't work. However you can use the field_type directly in `quote!` when you use the fully qualified type notation.
+
+    quote! {
+        let v = <#field_type>::new();
+    }
+
+You can also use `<Type as Trait>` here, e.g. for the trait MyTrait<T> you could do `<#field_type as MyTrait<#field_type>>`.
+
 ## Hygiene
 
 Any interpolated tokens preserve the `Span` information provided by their
