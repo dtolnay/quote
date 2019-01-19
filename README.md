@@ -38,11 +38,6 @@ first support for procedural macros in Rust 1.15.0.*
 quote = "0.6"
 ```
 
-```rust
-#[macro_use]
-extern crate quote;
-```
-
 ## Syntax
 
 The quote crate provides a [`quote!`] macro within which you can write Rust code
