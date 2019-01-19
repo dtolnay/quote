@@ -17,12 +17,10 @@ pub trait TokenStreamExt: private::Sealed {
 
     /// For use by `ToTokens` implementations.
     ///
-    /// ```
-    /// # #[macro_use] extern crate quote;
-    /// # extern crate proc_macro2;
-    /// # use quote::{TokenStreamExt, ToTokens};
+    /// ```edition2018
+    /// # use quote::{quote, TokenStreamExt, ToTokens};
     /// # use proc_macro2::TokenStream;
-    /// # fn main() {
+    /// #
     /// struct X;
     ///
     /// impl ToTokens for X {
@@ -33,7 +31,6 @@ pub trait TokenStreamExt: private::Sealed {
     ///
     /// let tokens = quote!(#X);
     /// assert_eq!(tokens.to_string(), "true false");
-    /// # }
     /// ```
     fn append_all<T, I>(&mut self, iter: I)
     where

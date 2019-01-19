@@ -29,13 +29,6 @@
 //! quote = "0.6"
 //! ```
 //!
-//! ```
-//! #[macro_use]
-//! extern crate quote;
-//! #
-//! # fn main() {}
-//! ```
-//!
 //! # Example
 //!
 //! The following quasi-quoted block of code is something you might find in [a]
@@ -48,17 +41,15 @@
 //! [a]: https://serde.rs/
 //! [`quote_spanned!`]: macro.quote_spanned.html
 //!
-//! ```
-//! # #[macro_use]
-//! # extern crate quote;
+//! ```edition2018
+//! # use quote::quote;
 //! #
-//! # fn main() {
-//! #     let generics = "";
-//! #     let where_clause = "";
-//! #     let field_ty = "";
-//! #     let item_ty = "";
-//! #     let path = "";
-//! #     let value = "";
+//! # let generics = "";
+//! # let where_clause = "";
+//! # let field_ty = "";
+//! # let item_ty = "";
+//! # let path = "";
+//! # let value = "";
 //! #
 //! let tokens = quote! {
 //!     struct SerializeWith #generics #where_clause {
@@ -80,8 +71,6 @@
 //!         phantom: core::marker::PhantomData::<#item_ty>,
 //!     }
 //! };
-//! #
-//! # }
 //! ```
 //!
 //! ## Recursion limit
@@ -279,15 +268,13 @@ pub mod __rt {
 ///
 /// # Example
 ///
-/// ```
+/// ```edition2018
 /// # #[cfg(any())]
 /// extern crate proc_macro;
-/// # extern crate proc_macro2 as proc_macro;
-///
-/// #[macro_use]
-/// extern crate quote;
+/// # use proc_macro2 as proc_macro;
 ///
 /// use proc_macro::TokenStream;
+/// use quote::quote;
 ///
 /// # const IGNORE_TOKENS: &'static str = stringify! {
 /// #[proc_macro_derive(HeapSize)]
@@ -314,8 +301,6 @@ pub mod __rt {
 ///     // Hand the output tokens back to the compiler.
 ///     expanded.into()
 /// }
-/// #
-/// # fn main() {}
 /// ```
 #[macro_export(local_inner_macros)]
 macro_rules! quote {
@@ -333,14 +318,10 @@ macro_rules! quote {
 ///
 /// [`Span`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html
 ///
-/// ```
-/// # #[macro_use]
-/// # extern crate quote;
-/// # extern crate proc_macro2;
-/// #
+/// ```edition2018
 /// # use proc_macro2::Span;
+/// # use quote::quote_spanned;
 /// #
-/// # fn main() {
 /// # const IGNORE_TOKENS: &'static str = stringify! {
 /// let span = /* ... */;
 /// # };
@@ -354,7 +335,6 @@ macro_rules! quote {
 /// let tokens = quote_spanned! {span=>
 ///     Box::into_raw(Box::new(#init))
 /// };
-/// # }
 /// ```
 ///
 /// The lack of space before the `=>` should look jarring to Rust programmers
@@ -377,12 +357,8 @@ macro_rules! quote {
 ///
 /// [`Sync`]: https://doc.rust-lang.org/std/marker/trait.Sync.html
 ///
-/// ```
-/// # #[macro_use]
-/// # extern crate quote;
-/// # extern crate proc_macro2;
-/// #
-/// # use quote::{TokenStreamExt, ToTokens};
+/// ```edition2018
+/// # use quote::{quote_spanned, TokenStreamExt, ToTokens};
 /// # use proc_macro2::{Span, TokenStream};
 /// #
 /// # struct Type;
@@ -397,7 +373,6 @@ macro_rules! quote {
 /// #     fn to_tokens(&self, _tokens: &mut TokenStream) {}
 /// # }
 /// #
-/// # fn main() {
 /// # let ty = Type;
 /// # let call_site = Span::call_site();
 /// #
@@ -405,7 +380,6 @@ macro_rules! quote {
 /// let assert_sync = quote_spanned! {ty_span=>
 ///     struct _AssertSync where #ty: Sync;
 /// };
-/// # }
 /// ```
 ///
 /// If the assertion fails, the user will see an error like the following. The
