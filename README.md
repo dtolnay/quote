@@ -114,17 +114,22 @@ There is a [`From`]-conversion in both directions so returning the output of
 
 ## Examples
 
-### Quoting other quotes
+### Combining quoted fragments
 
-Often you don't want to write your whole `TokenStream` in one piece. The `TokenStream` produced by `quote!{...}` (`syn::export::TokenStream2` not (**!**) `proc_macro::TokenStream`) implements `ToTokens`. Therefore it can be directly quoted.
+Usually you don't end up constructing an entire final `TokenStream` in one
+piece. Different parts may come from different helper functions. The tokens
+produced by `quote!` themselves implement `ToTokens` and so can be interpolated
+into later `quote!` invocations to build up a final result.
 
-    let quote1 = quote! {...};
-    let quote2 = quote! {...};
-    
-    let quote_combined = quote!{
-        #quote1
-        #quote2
-    };
+```rust
+let type_definition = quote! {...};
+let methods = quote! {...};
+
+let tokens = quote! {
+    #type_definition
+    #methods
+};
+```
 
 ### Changing identifiers
 
