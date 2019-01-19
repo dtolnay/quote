@@ -42,9 +42,7 @@ quote = "0.6"
 
 The quote crate provides a [`quote!`] macro within which you can write Rust code
 that gets packaged into a [`TokenStream`] and can be treated as data. You should
-think of `TokenStream` as representing a fragment of Rust source code. This type
-can be returned directly back to the compiler by a procedural macro to get
-compiled into the caller's crate.
+think of `TokenStream` as representing a fragment of Rust source code.
 
 [`TokenStream`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.TokenStream.html
 
@@ -94,6 +92,25 @@ a pre-existing iterator.
 Note that there is a difference between `#(#var ,)*` and `#(#var),*`—the latter
 does not produce a trailing comma. This matches the behavior of delimiters in
 `macro_rules!`.
+
+## Returning tokens to the compiler
+
+The `quote!` macro evaluates to an expression of type
+`proc_macro2::TokenStream`. Meanwhile Rust procedural macros are expected to
+return the type `proc_macro::TokenStream`.
+
+The difference between the two types is that `proc_macro` types are entirely
+specific to procedural macros and cannot ever exist in code outside of a
+procedural macro, while `proc_macro2` types may exist anywhere including tests
+and non-macro code like main.rs and build.rs. This is why even the procedural
+macro ecosystem is largely built around `proc_macro2`, because that ensures the
+libraries are unit testable and accessible in non-macro contexts.
+
+There is a [`From`]-conversion in both directions so returning the output of
+`quote!` from a procedural macro usually looks like `tokens.into()` or
+`proc_macro::TokenStream::from(tokens)`.
+
+[`From`]: https://doc.rust-lang.org/std/convert/trait.From.html
 
 ## Examples
 
