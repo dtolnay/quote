@@ -59,7 +59,7 @@ most Rust primitive types as well as most of the syntax tree types from [`syn`].
 let tokens = quote! {
     struct SerializeWith #generics #where_clause {
         value: &'a #field_ty,
-        phantom: ::std::marker::PhantomData<#item_ty>,
+        phantom: core::marker::PhantomData<#item_ty>,
     }
 
     impl #generics serde::Serialize for SerializeWith #generics #where_clause {
@@ -73,7 +73,7 @@ let tokens = quote! {
 
     SerializeWith {
         value: #value,
-        phantom: ::std::marker::PhantomData::<#item_ty>,
+        phantom: core::marker::PhantomData::<#item_ty>,
     }
 };
 ```
