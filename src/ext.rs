@@ -8,38 +8,12 @@ use proc_macro2::{TokenStream, TokenTree};
 ///
 /// This trait is sealed and cannot be implemented outside of the `quote` crate.
 pub trait TokenStreamExt: private::Sealed {
-    fn append<U>(&mut self, token: U)
-    where
-        U: Into<TokenTree>;
-
-    fn append_all<T, I>(&mut self, iter: I)
-    where
-        T: ToTokens,
-        I: IntoIterator<Item = T>;
-
-    fn append_separated<T, I, U>(&mut self, iter: I, op: U)
-    where
-        T: ToTokens,
-        I: IntoIterator<Item = T>,
-        U: ToTokens;
-
-    fn append_terminated<T, I, U>(&mut self, iter: I, term: U)
-    where
-        T: ToTokens,
-        I: IntoIterator<Item = T>,
-        U: ToTokens;
-}
-
-impl TokenStreamExt for TokenStream {
     /// For use by `ToTokens` implementations.
     ///
     /// Appends the token specified to this list of tokens.
     fn append<U>(&mut self, token: U)
     where
-        U: Into<TokenTree>,
-    {
-        self.extend(iter::once(token.into()));
-    }
+        U: Into<TokenTree>;
 
     /// For use by `ToTokens` implementations.
     ///
@@ -64,6 +38,40 @@ impl TokenStreamExt for TokenStream {
     fn append_all<T, I>(&mut self, iter: I)
     where
         T: ToTokens,
+        I: IntoIterator<Item = T>;
+
+    /// For use by `ToTokens` implementations.
+    ///
+    /// Appends all of the items in the iterator `I`, separated by the tokens
+    /// `U`.
+    fn append_separated<T, I, U>(&mut self, iter: I, op: U)
+    where
+        T: ToTokens,
+        I: IntoIterator<Item = T>,
+        U: ToTokens;
+
+    /// For use by `ToTokens` implementations.
+    ///
+    /// Appends all tokens in the iterator `I`, appending `U` after each
+    /// element, including after the last element of the iterator.
+    fn append_terminated<T, I, U>(&mut self, iter: I, term: U)
+    where
+        T: ToTokens,
+        I: IntoIterator<Item = T>,
+        U: ToTokens;
+}
+
+impl TokenStreamExt for TokenStream {
+    fn append<U>(&mut self, token: U)
+    where
+        U: Into<TokenTree>,
+    {
+        self.extend(iter::once(token.into()));
+    }
+
+    fn append_all<T, I>(&mut self, iter: I)
+    where
+        T: ToTokens,
         I: IntoIterator<Item = T>,
     {
         for token in iter {
@@ -71,10 +79,6 @@ impl TokenStreamExt for TokenStream {
         }
     }
 
-    /// For use by `ToTokens` implementations.
-    ///
-    /// Appends all of the items in the iterator `I`, separated by the tokens
-    /// `U`.
     fn append_separated<T, I, U>(&mut self, iter: I, op: U)
     where
         T: ToTokens,
@@ -89,10 +93,6 @@ impl TokenStreamExt for TokenStream {
         }
     }
 
-    /// For use by `ToTokens` implementations.
-    ///
-    /// Appends all tokens in the iterator `I`, appending `U` after each
-    /// element, including after the last element of the iterator.
     fn append_terminated<T, I, U>(&mut self, iter: I, term: U)
     where
         T: ToTokens,
