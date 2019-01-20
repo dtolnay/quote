@@ -73,7 +73,7 @@
 //! };
 //! ```
 //!
-//! ## Recursion limit
+//! # Recursion limit
 //!
 //! The `quote!` macro relies on deep recursion so some large invocations may
 //! fail with "recursion limit reached" when you compile. If it fails, bump up
@@ -266,7 +266,35 @@ pub mod __rt {
 ///
 /// [`quote_spanned!`]: macro.quote_spanned.html
 ///
-/// # Example
+/// # Return type
+///
+/// The macro evaluates to an expression of type `proc_macro2::TokenStream`.
+/// Meanwhile Rust procedural macros are expected to return the type
+/// `proc_macro::TokenStream`.
+///
+/// The difference between the two types is that `proc_macro` types are entirely
+/// specific to procedural macros and cannot ever exist in code outside of a
+/// procedural macro, while `proc_macro2` types may exist anywhere including
+/// tests and non-macro code like main.rs and build.rs. This is why even the
+/// procedural macro ecosystem is largely built around `proc_macro2`, because
+/// that ensures the libraries are unit testable and accessible in non-macro
+/// contexts.
+///
+/// There is a [`From`]-conversion in both directions so returning the output of
+/// `quote!` from a procedural macro usually looks like `tokens.into()` or
+/// `proc_macro::TokenStream::from(tokens)`.
+///
+/// [`From`]: https://doc.rust-lang.org/std/convert/trait.From.html
+///
+/// # Examples
+///
+/// ## Procedural macro
+///
+/// The structure of a basic procedural macro is as follows. Refer to the [Syn]
+/// crate for further useful guidance on using `quote!` as part of a procedural
+/// macro.
+///
+/// [Syn]: https://github.com/dtolnay/syn
 ///
 /// ```edition2018
 /// # #[cfg(any())]
@@ -291,7 +319,7 @@ pub mod __rt {
 ///
 ///     let expanded = quote! {
 ///         // The generated impl.
-///         impl ::heapsize::HeapSize for #name {
+///         impl heapsize::HeapSize for #name {
 ///             fn heap_size_of_children(&self) -> usize {
 ///                 #expr
 ///             }
@@ -299,8 +327,117 @@ pub mod __rt {
 ///     };
 ///
 ///     // Hand the output tokens back to the compiler.
-///     expanded.into()
+///     TokenStream::from(expanded)
 /// }
+/// ```
+///
+/// ## Combining quoted fragments
+///
+/// Usually you don't end up constructing an entire final `TokenStream` in one
+/// piece. Different parts may come from different helper functions. The tokens
+/// produced by `quote!` themselves implement `ToTokens` and so can be
+/// interpolated into later `quote!` invocations to build up a final result.
+///
+/// ```edition2018
+/// # use quote::quote;
+/// #
+/// let type_definition = quote! {...};
+/// let methods = quote! {...};
+///
+/// let tokens = quote! {
+///     #type_definition
+///     #methods
+/// };
+/// ```
+///
+/// ## Constructing identifiers
+///
+/// Suppose we have an identifier `ident` which came from somewhere in a macro
+/// input and we need to modify it in some way for the macro output. Let's
+/// consider prepending the identifier with an underscore.
+///
+/// Simply interpolating the identifier next to an underscore will not have the
+/// behavior of concatenating them. The underscore and the identifier will
+/// continue to be two separate tokens as if you had written `_ x`.
+///
+/// ```edition2018
+/// # use proc_macro2::{self as syn, Span};
+/// # use quote::quote;
+/// #
+/// # let ident = syn::Ident::new("i", Span::call_site());
+/// #
+/// // incorrect
+/// quote! {
+///     let mut _#ident = 0;
+/// }
+/// # ;
+/// ```
+///
+/// The solution is to perform token-level manipulations using the APIs provided
+/// by Syn and proc-macro2.
+///
+/// ```edition2018
+/// # use proc_macro2::{self as syn, Span};
+/// # use quote::quote;
+/// #
+/// # let ident = syn::Ident::new("i", Span::call_site());
+/// #
+/// let concatenated = format!("_{}", ident);
+/// let varname = syn::Ident::new(&concatenated, ident.span());
+/// quote! {
+///     let mut #varname = 0;
+/// }
+/// # ;
+/// ```
+///
+/// ## Making method calls
+///
+/// Let's say our macro requires some type specified in the macro input to have
+/// a constructor called `new`. We have the type in a variable called
+/// `field_type` of type `syn::Type` and want to invoke the constructor.
+///
+/// ```edition2018
+/// # use quote::quote;
+/// #
+/// # let field_type = quote!(...);
+/// #
+/// // incorrect
+/// quote! {
+///     let value = #field_type::new();
+/// }
+/// # ;
+/// ```
+///
+/// This works only sometimes. If `field_type` is `String`, the expanded code
+/// contains `String::new()` which is fine. But if `field_type` is something
+/// like `Vec<i32>` then the expanded code is `Vec<i32>::new()` which is invalid
+/// syntax. Ordinarily in handwritten Rust we would write `Vec::<i32>::new()`
+/// but for macros often the following is more convenient.
+///
+/// ```edition2018
+/// # use quote::quote;
+/// #
+/// # let field_type = quote!(...);
+/// #
+/// quote! {
+///     let value = <#field_type>::new();
+/// }
+/// # ;
+/// ```
+///
+/// This expands to `<Vec<i32>>::new()` which behaves correctly.
+///
+/// A similar pattern is appropriate for trait methods.
+///
+/// ```edition2018
+/// # use quote::quote;
+/// #
+/// # let field_type = quote!(...);
+/// #
+/// quote! {
+///     let value = <#field_type as core::default::Default>::default();
+/// }
+/// # ;
 /// ```
 #[macro_export(local_inner_macros)]
 macro_rules! quote {

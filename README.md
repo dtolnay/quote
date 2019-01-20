@@ -153,7 +153,7 @@ Syn and proc-macro2.
 
 ```rust
 let concatenated = format!("_{}", ident);
-let varname = syn::Ident::new(&concatenated, ident.span())
+let varname = syn::Ident::new(&concatenated, ident.span());
 quote! {
     let mut #varname = 0;
 }
