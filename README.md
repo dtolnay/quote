@@ -159,27 +159,40 @@ quote! {
 }
 ```
 
-### Using `syn::Type`
+### Making method calls
 
-Say the variable `field_type` contains the `syn::Type` of `Vec<i32>` of a struct_field from your derive macro. Using
+Let's say our macro requires some type specified in the macro input to have a
+constructor called `new`. We have the type in a variable called `field_type` of
+type `syn::Type` and want to invoke the constructor.
 
-    quote!{
-        let v: #field_type = some_collection.iter().collect();
-    }
+```rust
+// incorrect
+quote! {
+    let value = #field_type::new();
+}
+```
 
-will work. However if you want a new vector you'd usually use the turbofish operator `Vec::<i32>::new()`, e.g.
+This works only sometimes. If `field_type` is `String`, the expanded code
+contains `String::new()` which is fine. But if `field_type` is something like
+`Vec<i32>` then the expanded code is `Vec<i32>::new()` which is invalid syntax.
+Ordinarily in handwritten Rust we would write `Vec::<i32>::new()` but for macros
+often the following is more convenient.
 
-    quote!{
-        let v = #field_type::new();
-    }
+```rust
+quote! {
+    let value = <#field_type>::new();
+}
+```
 
-This will expand to `Vec<i32>::new()`, so it won't work. However you can use the field_type directly in `quote!` when you use the fully qualified type notation.
+This expands to `<Vec<i32>>::new()` which behaves correctly.
 
-    quote! {
-        let v = <#field_type>::new();
-    }
+A similar pattern is appropriate for trait methods.
 
-You can also use `<Type as Trait>` here, e.g. for the trait MyTrait<T> you could do `<#field_type as MyTrait<#field_type>>`.
+```rust
+quote! {
+    let value = <#field_type as core::default::Default>::default();
+}
+```
 
 ## Hygiene
 
