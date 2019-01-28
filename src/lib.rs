@@ -254,6 +254,20 @@ pub mod __rt {
 /// - `#( struct #var; )*` — the repetition can contain other tokens
 /// - `#( #k => println!("{}", #v), )*` — even multiple interpolations
 ///
+/// There are two limitations around interpolations in a repetition:
+///
+/// - Every interpolation inside of a repetition must be a distinct variable.
+///   That is, `#(#a #a)*` is not allowed. Work around this by collecting `a`
+///   into a vector and taking references `a1 = &a` and `a2 = &a` which you use
+///   inside the repetition: `#(#a1 #a2)*`. Where possible, use meaningful names
+///   that indicate the distinct role of each copy.
+///
+/// - Every interpolation inside of a repetition must be iterable. If we have
+///   `vec` which is a vector and `ident` which is a single identifier,
+///   `#(#ident #vec)*` is not allowed. Work around this by using
+///   `std::iter::repeat(ident)` to produce an iterable that can be used from
+///   within the repetition.
+///
 /// # Hygiene
 ///
 /// Any interpolated tokens preserve the `Span` information provided by their
