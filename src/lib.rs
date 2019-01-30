@@ -267,6 +267,11 @@ pub mod __rt {
 ///   `#(#ident #vec)*` is not allowed. Work around this by using
 ///   `std::iter::repeat(ident)` to produce an iterable that can be used from
 ///   within the repetition.
+/// 
+/// Alternatively, you might want to consider using [proc-quote] which overcomes
+/// those limitations.
+/// 
+/// [proc-quote]: https://docs.rs/proc-quote/0.1.0/proc_quote/macro.quote.html
 ///
 /// # Hygiene
 ///

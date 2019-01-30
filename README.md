@@ -209,6 +209,9 @@ macro.
 
 ### Limitations
 
+If any of the following limitations is hindering you too much, you might want to
+consider using the [proc-quote] crate instead.
+
 - A non-repeating variable may not be interpolated inside of a repeating block
   ([#7]).
 - The same variable may not be interpolated more than once inside of a repeating
@@ -216,6 +219,7 @@ macro.
 
 [#7]: https://github.com/dtolnay/quote/issues/7
 [#8]: https://github.com/dtolnay/quote/issues/8
+[proc-quote]: https://github.com/Goncalerta/proc-quote
 
 ### Recursion limit
 
