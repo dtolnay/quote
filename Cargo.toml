@@ -13,12 +13,18 @@ include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-A
 
 [dependencies]
 proc-macro2 = { version = "0.4.21", default-features = false }
+quote-impl = { version = "0.0", optional = true, path = "impl" }
 
 [features]
 default = ["proc-macro"]
 # Disabling the proc-macro feature removes the dynamic library dependency on
 # libproc_macro in the rustc compiler.
 proc-macro = ["proc-macro2/proc-macro"]
+# TODO
+proc = ["quote-impl"]
 
 [badges]
 travis-ci = { repository = "dtolnay/quote" }
+
+[workspace]
+members = ["impl"]

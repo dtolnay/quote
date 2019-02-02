@@ -65,6 +65,18 @@ fn test_iter() {
 }
 
 #[test]
+fn test_ambiguous_separator() {
+    let xs = &[X, X];
+    assert_eq!("X *= X", quote!(#(#xs)*=*).to_string());
+}
+
+#[test]
+fn test_not_quote_repetition() {
+    let x = X;
+    assert_eq!("# ( X ) +", quote!(#(#x)+).to_string());
+}
+
+#[test]
 fn test_advanced() {
     let generics = quote!( <'a, T> );
 
