@@ -9,10 +9,20 @@ use std::iter::FromIterator;
 struct Context {
     out_token: TokenTree,
     span_token: TokenTree,
+    default_span: bool,
 }
 
 #[proc_macro_derive(QuoteImpl)]
 pub fn quote_impl(input: TokenStream) -> TokenStream {
+    expand(input, true)
+}
+
+#[proc_macro_derive(QuoteSpannedImpl)]
+pub fn quote_spanned_impl(input: TokenStream) -> TokenStream {
+    expand(input, false)
+}
+
+fn expand(input: TokenStream, default_span: bool) -> TokenStream {
     // Input looks like:
     //
     //    enum QuoteHack {
@@ -49,6 +59,7 @@ pub fn quote_impl(input: TokenStream) -> TokenStream {
     let ctx = Context {
         out_token: input.next().unwrap(),
         span_token: input.next().unwrap(),
+        default_span,
     };
 
     let mut content = Vec::new();
@@ -93,7 +104,7 @@ fn wrap_in_macro_rule(content: Vec<TokenTree>) -> TokenStream {
     ])
 }
 
-fn quote_fully(input: TokenIter, span_token: &TokenTree, out: &mut Vec<TokenTree>, interp: &mut Vec<Ident>) {
+fn quote_fully(input: TokenIter, ctx: &Context, out: &mut Vec<TokenTree>, interp: &mut Vec<Ident>) {
     /*
         {
             let mut __qs = $crate::__rt::TokenStream::new();
@@ -104,7 +115,8 @@ fn quote_fully(input: TokenIter, span_token: &TokenTree, out: &mut Vec<TokenTree
 
     let ctx = Context {
         out_token: TokenTree::Ident(Ident::new("__qs", Span::call_site())),
-        span_token: span_token.clone(),
+        span_token: ctx.span_token.clone(),
+        default_span: ctx.default_span,
     };
 
     let mut content = vec![
@@ -347,14 +359,22 @@ fn quote_punct(out: &mut Vec<TokenTree>, ctx: &Context, punct: Punct) {
             ]),
         )),
         TokenTree::Punct(Punct::new(';', Spacing::Alone)),
-        TokenTree::Ident(Ident::new("__q", Span::call_site())),
-        TokenTree::Punct(Punct::new('.', Spacing::Alone)),
-        TokenTree::Ident(Ident::new("set_span", Span::call_site())),
-        TokenTree::Group(Group::new(
-            Delimiter::Parenthesis,
-            TokenStream::from_iter(vec![ctx.span_token.clone()]),
-        )),
-        TokenTree::Punct(Punct::new(';', Spacing::Alone)),
+    ]);
+
+    if !ctx.default_span {
+        out.extend(vec![
+            TokenTree::Ident(Ident::new("__q", Span::call_site())),
+            TokenTree::Punct(Punct::new('.', Spacing::Alone)),
+            TokenTree::Ident(Ident::new("set_span", Span::call_site())),
+            TokenTree::Group(Group::new(
+                Delimiter::Parenthesis,
+                TokenStream::from_iter(vec![ctx.span_token.clone()]),
+            )),
+            TokenTree::Punct(Punct::new(';', Spacing::Alone)),
+        ]);
+    }
+
+    out.extend(vec![
         TokenTree::Ident(Ident::new("quote", Span::call_site())),
         TokenTree::Punct(Punct::new(':', Spacing::Joint)),
         TokenTree::Punct(Punct::new(':', Spacing::Alone)),
@@ -424,19 +444,27 @@ fn quote_group(out: &mut Vec<TokenTree>, ctx: &Context, group: Group, interp: &m
                     TokenTree::Ident(Ident::new(delimiter, Span::call_site())),
                     TokenTree::Punct(Punct::new(',', Spacing::Alone)),
                 ];
-                quote_fully(group.stream().into_iter(), &ctx.span_token, &mut inner, interp);
+                quote_fully(group.stream().into_iter(), &ctx, &mut inner, interp);
                 inner
             }),
         )),
         TokenTree::Punct(Punct::new(';', Spacing::Alone)),
-        TokenTree::Ident(Ident::new("__q", Span::call_site())),
-        TokenTree::Punct(Punct::new('.', Spacing::Alone)),
-        TokenTree::Ident(Ident::new("set_span", Span::call_site())),
-        TokenTree::Group(Group::new(
-            Delimiter::Parenthesis,
-            TokenStream::from_iter(vec![ctx.span_token.clone()]),
-        )),
-        TokenTree::Punct(Punct::new(';', Spacing::Alone)),
+    ]);
+
+    if !ctx.default_span {
+        out.extend(vec![
+            TokenTree::Ident(Ident::new("__q", Span::call_site())),
+            TokenTree::Punct(Punct::new('.', Spacing::Alone)),
+            TokenTree::Ident(Ident::new("set_span", Span::call_site())),
+            TokenTree::Group(Group::new(
+                Delimiter::Parenthesis,
+                TokenStream::from_iter(vec![ctx.span_token.clone()]),
+            )),
+            TokenTree::Punct(Punct::new(';', Spacing::Alone)),
+        ]);
+    }
+
+    out.extend(vec![
         TokenTree::Ident(Ident::new("quote", Span::call_site())),
         TokenTree::Punct(Punct::new(':', Spacing::Joint)),
         TokenTree::Punct(Punct::new(':', Spacing::Alone)),

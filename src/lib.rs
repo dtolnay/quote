@@ -348,9 +348,12 @@ pub use quote_impl::*;
 /// ```
 #[macro_export(local_inner_macros)]
 macro_rules! quote {
-    ($($tt:tt)*) => {
-        quote_spanned!($crate::__rt::Span::call_site()=> $($tt)*)
-    };
+    ($($tt:tt)*) => {{
+        let mut _s = $crate::__rt::TokenStream::new();
+        let _span = $crate::__rt::Span::call_site();
+        quote_each_token_default_span!(_s _span $($tt)*);
+        _s
+    }};
 }
 
 /// Same as `quote!`, but applies a given span to all tokens originating within

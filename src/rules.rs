@@ -98,6 +98,14 @@ macro_rules! multi_zip_expr {
 
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
+macro_rules! quote_each_token_default_span {
+    ($tokens:ident $span:ident $($tt:tt)*) => {
+        quote_each_token!($tokens $span $($tt)*);
+    };
+}
+
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
 macro_rules! quote_each_token {
     ($tokens:ident $span:ident) => {};
 
