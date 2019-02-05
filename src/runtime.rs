@@ -6,10 +6,7 @@ fn is_ident_start(c: u8) -> bool {
 }
 
 fn is_ident_continue(c: u8) -> bool {
-    (b'a' <= c && c <= b'z')
-        || (b'A' <= c && c <= b'Z')
-        || c == b'_'
-        || (b'0' <= c && c <= b'9')
+    (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_' || (b'0' <= c && c <= b'9')
 }
 
 fn is_ident(token: &str) -> bool {
