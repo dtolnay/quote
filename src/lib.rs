@@ -333,7 +333,9 @@ pub mod __rt;
 /// ```
 #[macro_export(local_inner_macros)]
 macro_rules! quote {
-    ($($tt:tt)*) => (quote_spanned!($crate::__rt::Span::call_site()=> $($tt)*));
+    ($($tt:tt)*) => {
+        quote_spanned!($crate::__rt::Span::call_site()=> $($tt)*)
+    };
 }
 
 /// Same as `quote!`, but applies a given span to all tokens originating within
@@ -431,14 +433,12 @@ macro_rules! quote {
 /// named `Sync` that is implemented for their type.
 #[macro_export(local_inner_macros)]
 macro_rules! quote_spanned {
-    ($span:expr=> $($tt:tt)*) => {
-        {
-            let mut _s = $crate::__rt::TokenStream::new();
-            let _span = $span;
-            quote_each_token!(_s _span $($tt)*);
-            _s
-        }
-    };
+    ($span:expr=> $($tt:tt)*) => {{
+        let mut _s = $crate::__rt::TokenStream::new();
+        let _span = $span;
+        quote_each_token!(_s _span $($tt)*);
+        _s
+    }};
 }
 
 // Extract the names of all #metavariables and pass them to the $finish macro.
