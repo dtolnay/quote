@@ -146,7 +146,18 @@ fn quote_fully(input: TokenIter, ctx: &Context, out: &mut Vec<TokenTree>, interp
     )));
 }
 
-fn quote_each_token(mut input: TokenIter, ctx: &Context, out: &mut Vec<TokenTree>, interp: &mut Vec<Ident>) {
+enum Basic {
+    Ident(Ident),
+    Punct(Punct),
+}
+
+fn quote_each_token(
+    mut input: TokenIter,
+    ctx: &Context,
+    out: &mut Vec<TokenTree>,
+    interp: &mut Vec<Ident>,
+) {
+    let mut basic = Vec::new();
     let mut reparse = VecDeque::new();
     loop {
         let token = if let Some(token) = reparse.pop_front() {
@@ -154,6 +165,7 @@ fn quote_each_token(mut input: TokenIter, ctx: &Context, out: &mut Vec<TokenTree
         } else if let Some(token) = input.next() {
             token
         } else {
+            quote_basic(out, &ctx, &mut basic);
             return;
         };
         match token {
@@ -162,6 +174,7 @@ fn quote_each_token(mut input: TokenIter, ctx: &Context, out: &mut Vec<TokenTree
                     match input.next() {
                         Some(TokenTree::Ident(var)) => {
                             interp.push(var.clone());
+                            quote_basic(out, &ctx, &mut basic);
                             quote_interpolation(out, &ctx, var);
                         }
                         Some(TokenTree::Group(group)) => {
@@ -169,31 +182,112 @@ fn quote_each_token(mut input: TokenIter, ctx: &Context, out: &mut Vec<TokenTree
                                 match parse_separator(&mut input) {
                                     Separator::Valid(sep) => {
                                         let stream = group.stream();
+                                        quote_basic(out, &ctx, &mut basic);
                                         quote_repetition(out, &ctx, stream, sep, interp);
                                     }
                                     Separator::Invalid(undo) => {
-                                        quote_punct(out, &ctx, punct);
+                                        basic.push(Basic::Punct(punct));
                                         reparse.push_back(TokenTree::Group(group));
                                         reparse.extend(undo);
                                     }
                                 }
                             } else {
-                                quote_punct(out, &ctx, punct);
+                                basic.push(Basic::Punct(punct));
                                 reparse.push_back(TokenTree::Group(group));
                             }
                         }
                         next => {
-                            quote_punct(out, &ctx, punct);
+                            basic.push(Basic::Punct(punct));
                             reparse.extend(next);
                         }
                     }
                 } else {
-                    quote_punct(out, &ctx, punct);
+                    basic.push(Basic::Punct(punct));
                 }
             }
-            TokenTree::Ident(ident) => quote_ident(out, &ctx, ident),
-            TokenTree::Group(group) => quote_group(out, &ctx, group, interp),
-            TokenTree::Literal(literal) => quote_literal(out, &ctx, literal),
+            TokenTree::Ident(ident) => basic.push(Basic::Ident(ident)),
+            TokenTree::Group(group) => {
+                quote_basic(out, &ctx, &mut basic);
+                quote_group(out, &ctx, group, interp);
+            }
+            TokenTree::Literal(literal) => {
+                quote_basic(out, &ctx, &mut basic);
+                quote_literal(out, &ctx, literal)
+            }
+        }
+    }
+}
+
+fn quote_basic(out: &mut Vec<TokenTree>, ctx: &Context, basic: &mut Vec<Basic>) {
+    match basic.len() {
+        0 => {}
+        1 => match basic.pop().unwrap() {
+            Basic::Ident(ident) => quote_ident(out, ctx, ident),
+            Basic::Punct(punct) => quote_punct(out, ctx, punct),
+        },
+        _ => {
+            let mut elements = Vec::new();
+            for element in basic.drain(..) {
+                elements.extend(vec![
+                    TokenTree::Punct(Punct::new('&', Spacing::Alone)),
+                    TokenTree::Ident(Ident::new("quote", Span::call_site())),
+                    TokenTree::Punct(Punct::new(':', Spacing::Joint)),
+                    TokenTree::Punct(Punct::new(':', Spacing::Alone)),
+                    TokenTree::Ident(Ident::new("__rt", Span::call_site())),
+                    TokenTree::Punct(Punct::new(':', Spacing::Joint)),
+                    TokenTree::Punct(Punct::new(':', Spacing::Alone)),
+                    TokenTree::Ident(Ident::new("basic", Span::call_site())),
+                    TokenTree::Punct(Punct::new(':', Spacing::Joint)),
+                    TokenTree::Punct(Punct::new(':', Spacing::Alone)),
+                    TokenTree::Ident(Ident::new(
+                        match &element {
+                            Basic::Ident(_) => "Word",
+                            Basic::Punct(punct) => match punct.spacing() {
+                                Spacing::Joint => "Joint",
+                                Spacing::Alone => "Alone",
+                            },
+                        },
+                        Span::call_site(),
+                    )),
+                    TokenTree::Group(Group::new(
+                        Delimiter::Parenthesis,
+                        TokenStream::from_iter(vec![TokenTree::Literal(match element {
+                            Basic::Ident(ident) => Literal::string(&ident.to_string()),
+                            Basic::Punct(punct) => Literal::character(punct.as_char()),
+                        })]),
+                    )),
+                    TokenTree::Punct(Punct::new(',', Spacing::Alone)),
+                ]);
+            }
+            out.extend(vec![
+                TokenTree::Ident(Ident::new("quote", Span::call_site())),
+                TokenTree::Punct(Punct::new(':', Spacing::Joint)),
+                TokenTree::Punct(Punct::new(':', Spacing::Alone)),
+                TokenTree::Ident(Ident::new("__rt", Span::call_site())),
+                TokenTree::Punct(Punct::new(':', Spacing::Joint)),
+                TokenTree::Punct(Punct::new(':', Spacing::Alone)),
+                TokenTree::Ident(Ident::new("basic", Span::call_site())),
+                TokenTree::Punct(Punct::new(':', Spacing::Joint)),
+                TokenTree::Punct(Punct::new(':', Spacing::Alone)),
+                TokenTree::Ident(Ident::new("quote", Span::call_site())),
+                TokenTree::Group(Group::new(
+                    Delimiter::Parenthesis,
+                    TokenStream::from_iter(vec![
+                        TokenTree::Punct(Punct::new('&', Spacing::Alone)),
+                        TokenTree::Ident(Ident::new("mut", Span::call_site())),
+                        ctx.out_token.clone(),
+                        TokenTree::Punct(Punct::new(',', Spacing::Alone)),
+                        ctx.span_token.clone(),
+                        TokenTree::Punct(Punct::new(',', Spacing::Alone)),
+                        TokenTree::Punct(Punct::new('&', Spacing::Alone)),
+                        TokenTree::Group(Group::new(
+                            Delimiter::Bracket,
+                            TokenStream::from_iter(elements),
+                        )),
+                    ]),
+                )),
+                TokenTree::Punct(Punct::new(';', Spacing::Alone)),
+            ]);
         }
     }
 }
@@ -594,7 +688,10 @@ fn quote_repetition(
     } else {
         content
     };
-    out.push(TokenTree::Group(Group::new(Delimiter::Brace, TokenStream::from_iter(body))));
+    out.push(TokenTree::Group(Group::new(
+        Delimiter::Brace,
+        TokenStream::from_iter(body),
+    )));
 }
 
 fn nested_tuples_pat(interp: &[Ident], enumerate: bool) -> TokenTree {
@@ -603,18 +700,24 @@ fn nested_tuples_pat(interp: &[Ident], enumerate: bool) -> TokenTree {
     }
     let mut pat = TokenTree::Ident(interp[0].clone());
     for ident in &interp[1..] {
-        pat = TokenTree::Group(Group::new(Delimiter::Parenthesis, TokenStream::from_iter(vec![
-            pat,
-            TokenTree::Punct(Punct::new(',', Spacing::Alone)),
-            TokenTree::Ident(ident.clone()),
-        ])));
+        pat = TokenTree::Group(Group::new(
+            Delimiter::Parenthesis,
+            TokenStream::from_iter(vec![
+                pat,
+                TokenTree::Punct(Punct::new(',', Spacing::Alone)),
+                TokenTree::Ident(ident.clone()),
+            ]),
+        ));
     }
     if enumerate {
-        pat = TokenTree::Group(Group::new(Delimiter::Parenthesis, TokenStream::from_iter(vec![
-            TokenTree::Ident(Ident::new("_i", Span::call_site())),
-            TokenTree::Punct(Punct::new(',', Spacing::Alone)),
-            pat,
-        ])));
+        pat = TokenTree::Group(Group::new(
+            Delimiter::Parenthesis,
+            TokenStream::from_iter(vec![
+                TokenTree::Ident(Ident::new("_i", Span::call_site())),
+                TokenTree::Punct(Punct::new(',', Spacing::Alone)),
+                pat,
+            ]),
+        ));
     }
     pat
 }
@@ -642,9 +745,10 @@ fn multi_zip_expr(interp: &[Ident], out: &mut Vec<TokenTree>, enumerate: bool) {
         out.extend(vec![
             TokenTree::Punct(Punct::new('.', Spacing::Alone)),
             TokenTree::Ident(Ident::new("zip", Span::call_site())),
-            TokenTree::Group(Group::new(Delimiter::Parenthesis, TokenStream::from_iter(vec![
-                TokenTree::Ident(var.clone()),
-            ]))),
+            TokenTree::Group(Group::new(
+                Delimiter::Parenthesis,
+                TokenStream::from_iter(vec![TokenTree::Ident(var.clone())]),
+            )),
         ]);
     }
     if enumerate {

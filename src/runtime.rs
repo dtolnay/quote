@@ -106,3 +106,46 @@ push_punct!(push_shr_eq '>' '>' '=');
 push_punct!(push_star '*');
 push_punct!(push_sub '-');
 push_punct!(push_sub_eq '-' '=');
+
+#[cfg(feature = "proc")]
+pub mod basic {
+    use proc_macro2::{Ident, Punct, Spacing, Span, TokenStream, TokenTree};
+    use std::iter;
+
+    pub trait Trait {
+        fn quote(&self, out: &mut TokenStream, span: Span);
+    }
+
+    pub struct Joint(pub char);
+    pub struct Alone(pub char);
+
+    impl Trait for Joint {
+        fn quote(&self, out: &mut TokenStream, span: Span) {
+            let mut punct = Punct::new(self.0, Spacing::Joint);
+            punct.set_span(span);
+            out.extend(iter::once(TokenTree::Punct(punct)));
+        }
+    }
+    impl Trait for Alone {
+        fn quote(&self, out: &mut TokenStream, span: Span) {
+            let mut punct = Punct::new(self.0, Spacing::Alone);
+            punct.set_span(span);
+            out.extend(iter::once(TokenTree::Punct(punct)));
+        }
+    }
+
+    pub struct Word(pub &'static str);
+
+    impl Trait for Word {
+        fn quote(&self, out: &mut TokenStream, span: Span) {
+            let ident = Ident::new(self.0, span);
+            out.extend(iter::once(TokenTree::Ident(ident)));
+        }
+    }
+
+    pub fn quote(out: &mut TokenStream, span: Span, tokens: &[&dyn Trait]) {
+        for token in tokens {
+            token.quote(out, span);
+        }
+    }
+}
