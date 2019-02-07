@@ -149,6 +149,7 @@ fn quote_fully(input: TokenIter, ctx: &Context, out: &mut Vec<TokenTree>, interp
 enum Basic {
     Ident(Ident),
     Punct(Punct),
+    Interpolation(Ident),
 }
 
 fn quote_each_token(
@@ -174,8 +175,7 @@ fn quote_each_token(
                     match input.next() {
                         Some(TokenTree::Ident(var)) => {
                             interp.push(var.clone());
-                            quote_basic(out, &ctx, &mut basic);
-                            quote_interpolation(out, &ctx, var);
+                            basic.push(Basic::Interpolation(var));
                         }
                         Some(TokenTree::Group(group)) => {
                             if group.delimiter() == Delimiter::Parenthesis {
@@ -224,6 +224,7 @@ fn quote_basic(out: &mut Vec<TokenTree>, ctx: &Context, basic: &mut Vec<Basic>) 
         1 => match basic.pop().unwrap() {
             Basic::Ident(ident) => quote_ident(out, ctx, ident),
             Basic::Punct(punct) => quote_punct(out, ctx, punct),
+            Basic::Interpolation(var) => quote_interpolation(out, ctx, var),
         },
         _ => {
             let mut elements = Vec::new();
@@ -246,15 +247,28 @@ fn quote_basic(out: &mut Vec<TokenTree>, ctx: &Context, basic: &mut Vec<Basic>) 
                                 Spacing::Joint => "Joint",
                                 Spacing::Alone => "Alone",
                             },
+                            Basic::Interpolation(_) => "Interpolation",
                         },
                         Span::call_site(),
                     )),
                     TokenTree::Group(Group::new(
                         Delimiter::Parenthesis,
-                        TokenStream::from_iter(vec![TokenTree::Literal(match element {
-                            Basic::Ident(ident) => Literal::string(&ident.to_string()),
-                            Basic::Punct(punct) => Literal::character(punct.as_char()),
-                        })]),
+                        TokenStream::from_iter(match element {
+                            Basic::Ident(ident) => {
+                                vec![TokenTree::Literal(Literal::string(&ident.to_string()))]
+                            }
+                            Basic::Punct(punct) => {
+                                vec![TokenTree::Literal(Literal::character(punct.as_char()))]
+                            }
+                            Basic::Interpolation(var) => vec![
+                                {
+                                    let mut amp = Punct::new('&', Spacing::Alone);
+                                    amp.set_span(var.span());
+                                    TokenTree::Punct(amp)
+                                },
+                                TokenTree::Ident(var),
+                            ],
+                        }),
                     )),
                     TokenTree::Punct(Punct::new(',', Spacing::Alone)),
                 ]);

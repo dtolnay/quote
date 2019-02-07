@@ -111,6 +111,7 @@ push_punct!(push_sub_eq '-' '=');
 pub mod basic {
     use proc_macro2::{Ident, Punct, Spacing, Span, TokenStream, TokenTree};
     use std::iter;
+    use to_tokens::ToTokens;
 
     pub trait Trait {
         fn quote(&self, out: &mut TokenStream, span: Span);
@@ -140,6 +141,15 @@ pub mod basic {
         fn quote(&self, out: &mut TokenStream, span: Span) {
             let ident = Ident::new(self.0, span);
             out.extend(iter::once(TokenTree::Ident(ident)));
+        }
+    }
+
+    pub struct Interpolation<'a>(pub &'a dyn ToTokens);
+
+    impl<'a> Trait for Interpolation<'a> {
+        fn quote(&self, out: &mut TokenStream, span: Span) {
+            let _ = span;
+            self.0.to_tokens(out);
         }
     }
 
