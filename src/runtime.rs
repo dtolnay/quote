@@ -112,7 +112,7 @@ pub mod basic {
     use proc_macro2::{Ident, Punct, Spacing, Span, TokenStream, TokenTree};
     use std::iter;
 
-    pub trait Trait {
+    pub trait Trait: Sync {
         fn quote(&self, out: &mut TokenStream, span: Span);
     }
 
