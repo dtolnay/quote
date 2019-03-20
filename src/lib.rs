@@ -582,6 +582,13 @@ macro_rules! quote_each_token {
         quote_each_token!($tokens $span $($rest)*);
     };
 
+
+    ($tokens:ident $span:ident ## $($rest:tt)*) => {
+        $crate::__rt::push_pound(&mut $tokens, $span);
+        quote_each_token!($tokens $span $($rest)*);
+    };
+
+
     ($tokens:ident $span:ident # $first:ident $($rest:tt)*) => {
         $crate::ToTokens::to_tokens(&$first, &mut $tokens);
         quote_each_token!($tokens $span $($rest)*);
