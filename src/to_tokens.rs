@@ -2,6 +2,7 @@ use super::TokenStreamExt;
 
 use std::borrow::Cow;
 use std::iter;
+use std::rc::Rc;
 
 use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
@@ -86,6 +87,12 @@ impl<'a, T: ?Sized + ToOwned + ToTokens> ToTokens for Cow<'a, T> {
 }
 
 impl<T: ?Sized + ToTokens> ToTokens for Box<T> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        (**self).to_tokens(tokens);
+    }
+}
+
+impl<T: ?Sized + ToTokens> ToTokens for Rc<T> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         (**self).to_tokens(tokens);
     }
