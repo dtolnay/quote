@@ -166,7 +166,7 @@ fn test_char() {
     let tokens = quote! {
         #zero #pound #quote #apost #newline #heart
     };
-    let expected = "'\\u{0}' '#' '\\\"' '\\'' '\\n' '\\u{2764}'";
+    let expected = "'\\u{0}' '#' '\"' '\\'' '\\n' '\\u{2764}'";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -174,7 +174,7 @@ fn test_char() {
 fn test_str() {
     let s = "\0 a 'b \" c";
     let tokens = quote!(#s);
-    let expected = "\"\\u{0} a \\'b \\\" c\"";
+    let expected = "\"\\u{0} a 'b \\\" c\"";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -182,7 +182,7 @@ fn test_str() {
 fn test_string() {
     let s = "\0 a 'b \" c".to_string();
     let tokens = quote!(#s);
-    let expected = "\"\\u{0} a \\'b \\\" c\"";
+    let expected = "\"\\u{0} a 'b \\\" c\"";
     assert_eq!(expected, tokens.to_string());
 }
 
