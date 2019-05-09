@@ -2,7 +2,7 @@
 name = "quote"
 version = "0.6.12" # don't forget to update html_root_url, version in readme for breaking changes
 authors = ["David Tolnay <dtolnay@gmail.com>"]
-license = "MIT/Apache-2.0"
+license = "MIT OR Apache-2.0"
 description = "Quasi-quoting macro quote!(...)"
 repository = "https://github.com/dtolnay/quote"
 documentation = "https://docs.rs/quote/"
