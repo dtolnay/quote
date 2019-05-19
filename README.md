@@ -225,17 +225,19 @@ recursion limit by adding `#![recursion_limit = "128"]` to your crate. An even
 higher limit may be necessary for especially large invocations. You don't need
 this unless the compiler tells you that you need it.
 
-## License
+<br>
 
-Licensed under either of
+#### License
 
- * Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+<sup>
+Licensed under either of <a href="LICENSE-APACHE">Apache License, Version
+2.0</a> or <a href="LICENSE-MIT">MIT license</a> at your option.
+</sup>
 
-at your option.
+<br>
 
-### Contribution
-
+<sub>
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in this crate by you, as defined in the Apache-2.0 license, shall
 be dual licensed as above, without any additional terms or conditions.
+</sub>
