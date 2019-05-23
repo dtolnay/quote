@@ -10,7 +10,7 @@ fn is_ident_continue(c: u8) -> bool {
 }
 
 fn is_ident(token: &str) -> bool {
-    let mut iter = str.bytes();
+    let mut iter = token.bytes();
     let first_ok = iter.next().map(is_ident_start).unwrap_or(false);
     
     first_ok && iter.all(is_ident_continue)
