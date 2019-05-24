@@ -10,21 +10,10 @@ fn is_ident_continue(c: u8) -> bool {
 }
 
 fn is_ident(token: &str) -> bool {
-    if token.bytes().all(|digit| digit >= b'0' && digit <= b'9') {
-        return false;
-    }
-
-    let mut bytes = token.bytes();
-    let first = bytes.next().unwrap();
-    if !is_ident_start(first) {
-        return false;
-    }
-    for ch in bytes {
-        if !is_ident_continue(ch) {
-            return false;
-        }
-    }
-    true
+    let mut iter = token.bytes();
+    let first_ok = iter.next().map(is_ident_start).unwrap_or(false);
+    
+    first_ok && iter.all(is_ident_continue)
 }
 
 pub fn parse(tokens: &mut TokenStream, span: Span, s: &str) {
