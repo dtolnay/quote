@@ -88,6 +88,7 @@ a pre-existing iterator.
 - `#(#var),*` — the character before the asterisk is used as a separator
 - `#( struct #var; )*` — the repetition can contain other things
 - `#( #k => println!("{}", #v), )*` — even multiple interpolations
+- `#(#var #var)*` - or duplicate interpolations
 
 Note that there is a difference between `#(#var ,)*` and `#(#var),*`—the latter
 does not produce a trailing comma. This matches the behavior of delimiters in
@@ -211,11 +212,8 @@ macro.
 
 - A non-repeating variable may not be interpolated inside of a repeating block
   ([#7]).
-- The same variable may not be interpolated more than once inside of a repeating
-  block ([#8]).
 
 [#7]: https://github.com/dtolnay/quote/issues/7
-[#8]: https://github.com/dtolnay/quote/issues/8
 
 ### Recursion limit
 

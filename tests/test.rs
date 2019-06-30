@@ -234,8 +234,34 @@ fn test_nested_fancy_repetition() {
 
 #[test]
 fn test_empty_repetition() {
+    #[allow(unreachable_code)]
     let tokens = quote!(#(a b)* #(c d),*);
     assert_eq!("", tokens.to_string());
+}
+
+#[test]
+fn test_duplicate_name_repetition() {
+    let foo = &["a", "b"];
+
+    let tokens = quote! {
+        #(#foo: #foo),*
+        #(#foo: #foo),*
+    };
+
+    let expected = r#""a" : "a" , "b" : "b" "a" : "a" , "b" : "b""#;
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_duplicate_name_repetition_no_copy() {
+    let foo = vec!["a".to_owned(), "b".to_owned()];
+
+    let tokens = quote! {
+        #(#foo: #foo),*
+    };
+
+    let expected = r#""a" : "a" , "b" : "b""#;
+    assert_eq!(expected, tokens.to_string());
 }
 
 #[test]

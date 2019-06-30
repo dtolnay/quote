@@ -1,5 +1,39 @@
 use ext::TokenStreamExt;
+use ToTokens;
 pub use proc_macro2::*;
+
+// Helper type used within interpolations to allow for repeated binding names.
+// Implements the relevant traits, and exports a dummy `next()` method.
+#[derive(Copy, Clone)]
+pub struct RepInterp<T>(pub T);
+
+impl<T> RepInterp<T> {
+    // This method is intended to look like `Iterator::next`, and is called when
+    // a name is bound multiple times, as the previous binding will shadow the
+    // original `Iterator` object. This allows us to avoid advancing the
+    // iterator multiple times per iteration.
+    #[inline]
+    pub fn next(self) -> Option<T> {
+        Some(self.0)
+    }
+}
+
+impl<T: IntoIterator> IntoIterator for RepInterp<T> {
+    type Item = T::Item;
+    type IntoIter = T::IntoIter;
+
+    #[inline]
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<T: ToTokens> ToTokens for RepInterp<T> {
+    #[inline]
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.0.to_tokens(tokens);
+    }
+}
 
 fn is_ident_start(c: u8) -> bool {
     (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_'
@@ -12,7 +46,7 @@ fn is_ident_continue(c: u8) -> bool {
 fn is_ident(token: &str) -> bool {
     let mut iter = token.bytes();
     let first_ok = iter.next().map(is_ident_start).unwrap_or(false);
-    
+
     first_ok && iter.all(is_ident_continue)
 }
 
