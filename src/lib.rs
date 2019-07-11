@@ -81,7 +81,7 @@
 //! An even higher limit may be necessary for especially large invocations.
 
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote/0.6.12")]
+#![doc(html_root_url = "https://docs.rs/quote/0.6.13")]
 
 #[cfg(all(
     not(all(target_arch = "wasm32", target_os = "unknown")),
