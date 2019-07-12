@@ -275,6 +275,43 @@ fn test_variable_name_conflict() {
 }
 
 #[test]
+fn test_nonrep_in_repetition() {
+    let rep = vec!["a", "b"];
+    let nonrep = "c";
+
+    let tokens = quote! {
+        #(#rep #rep : #nonrep #nonrep),*
+    };
+
+    let expected = r#""a" "a" : "c" "c" , "b" "b" : "c" "c""#;
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_nonrep_only_repetition() {
+    let nonrep = "a";
+
+    // Without the `has_iter` parameter to `__quote_into_iter()`, this would
+    // loop infinitely.
+    let tokens = quote!( #(#nonrep)* );
+    let expected = "";
+
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_nonrep_only_repetition_dup() {
+    let nonrep = "a";
+
+    // If the `__quote_into_iter()` method for `nonrep` produced a real
+    // iterator, this would loop infinitely.
+    let tokens = quote!( #(#nonrep #nonrep)* );
+    let expected = "";
+
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
 fn test_empty_quote() {
     let tokens = quote!();
     assert_eq!("", tokens.to_string());

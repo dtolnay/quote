@@ -1,6 +1,122 @@
 use ext::TokenStreamExt;
-use ToTokens;
 pub use proc_macro2::*;
+use ToTokens;
+
+/// Extension traits used by the implementation of `quote!`. These are defined
+/// in separate traits, rather than as a single trait due to ambiguity issues.
+///
+/// These traits expose a `__quote_into_iter` method which should allow calling
+/// whichever impl happens to be applicable. Calling that method repeatedly on
+/// the returned value should be idempotent.
+pub mod ext {
+    use std::slice;
+    use ToTokens;
+
+    /// Extension trait providing the `__quote_into_iter` method on iterators.
+    pub trait RepIteratorExt: Iterator + Sized {
+        #[inline]
+        fn __quote_into_iter(self, has_iter: &mut bool) -> Self {
+            *has_iter = true;
+            self
+        }
+    }
+
+    impl<T: Iterator> RepIteratorExt for T {}
+
+    /// Extension trait providing the `__quote_into_iter` method for
+    /// non-iterable types. These types don't produce an iterator and don't set
+    /// the `_has_iter` outparameter.
+    pub trait RepToTokensExt {
+        /// Pretend to be an iterator for the purposes of `__quote_into_iter`.
+        /// This allows repeated calls to `__quote_into_iter` to not set the
+        /// `has_iter` outparameter.
+        #[inline]
+        fn next(&self) -> Option<&Self> {
+            Some(self)
+        }
+
+        #[inline]
+        fn __quote_into_iter<'a>(&'a self, _has_iter: &mut bool) -> &'a Self {
+            self
+        }
+    }
+
+    impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
+
+    /// Extension trait providing the `__quote_into_iter` method for types
+    /// convertable into slices.
+    ///
+    /// NOTE: This is implemented manually, rather than by using a blanket impl
+    /// over `AsRef<[T]>` to reduce the chance of ambiguity conflicts with other
+    /// `__quote_into_iter` methods from this module.
+    pub trait RepSliceExt {
+        type Item;
+
+        fn as_slice(&self) -> &[Self::Item];
+
+        #[inline]
+        fn __quote_into_iter<'a>(&'a self, has_iter: &mut bool) -> slice::Iter<'a, Self::Item> {
+            *has_iter = true;
+            self.as_slice().iter()
+        }
+    }
+
+    impl<'a, T: RepSliceExt + ?Sized> RepSliceExt for &'a T {
+        type Item = T::Item;
+
+        #[inline]
+        fn as_slice(&self) -> &[Self::Item] {
+            <T as RepSliceExt>::as_slice(*self)
+        }
+    }
+
+    impl<'a, T: RepSliceExt + ?Sized> RepSliceExt for &'a mut T {
+        type Item = T::Item;
+
+        #[inline]
+        fn as_slice(&self) -> &[Self::Item] {
+            <T as RepSliceExt>::as_slice(*self)
+        }
+    }
+
+    impl<T> RepSliceExt for [T] {
+        type Item = T;
+
+        #[inline]
+        fn as_slice(&self) -> &[Self::Item] {
+            self
+        }
+    }
+
+    impl<T> RepSliceExt for Vec<T> {
+        type Item = T;
+
+        #[inline]
+        fn as_slice(&self) -> &[Self::Item] {
+            &self[..]
+        }
+    }
+
+    macro_rules! array_rep_slice {
+        ($($l:tt)*) => {
+            $(
+                impl<T> RepSliceExt for [T; $l] {
+                    type Item = T;
+
+                    #[inline]
+                    fn as_slice(&self) -> &[Self::Item] {
+                        &self[..]
+                    }
+                }
+            )*
+        }
+    }
+
+    array_rep_slice!(
+        0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+        17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
+    );
+}
 
 // Helper type used within interpolations to allow for repeated binding names.
 // Implements the relevant traits, and exports a dummy `next()` method.
@@ -18,13 +134,20 @@ impl<T> RepInterp<T> {
     }
 }
 
-impl<T: IntoIterator> IntoIterator for RepInterp<T> {
+impl<T: ext::RepSliceExt> ext::RepSliceExt for RepInterp<T> {
     type Item = T::Item;
-    type IntoIter = T::IntoIter;
 
     #[inline]
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+    fn as_slice(&self) -> &[Self::Item] {
+        self.0.as_slice()
+    }
+}
+
+impl<T: Iterator> Iterator for RepInterp<T> {
+    type Item = T::Item;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
     }
 }
 

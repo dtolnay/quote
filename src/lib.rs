@@ -133,14 +133,6 @@ pub mod __rt;
 /// - `#( #k => println!("{}", #v), )*` — even multiple interpolations
 /// - `#(#var #var)*` - or duplicate interpolations
 ///
-/// There are limitations around interpolations in a repetition:
-///
-/// - Every interpolation inside of a repetition must be iterable. If we have
-///   `vec` which is a vector and `ident` which is a single identifier,
-///   `#(#ident #vec)*` is not allowed. Work around this by using
-///   `std::iter::repeat(ident)` to produce an iterable that can be used from
-///   within the repetition.
-///
 /// # Hygiene
 ///
 /// Any interpolated tokens preserve the `Span` information provided by their
@@ -480,34 +472,38 @@ macro_rules! pounded_var_names {
     };
 }
 
-// in:   quote_bind_into_iter!({} a b c d e)
+// in:   quote_bind_into_iter!(has_iter {} a b c d e)
 // out:  #[allow(unused_mut)]
-//       let mut a = a.into_iter();
+//       let mut a = a.__quote_into_iter(&mut has_iter);
 //       #[allow(unused_mut)]
-//       let mut b = b.into_iter();
+//       let mut b = b.__quote_into_iter(&mut has_iter);
 //       #[allow(unused_mut)]
-//       let mut c = b.into_iter();
+//       let mut c = b.__quote_into_iter(&mut has_iter);
 //       #[allow(unused_mut)]
-//       let mut d = b.into_iter();
+//       let mut d = b.__quote_into_iter(&mut has_iter);
 //       #[allow(unused_mut)]
-//       let mut e = b.into_iter();
+//       let mut e = b.__quote_into_iter(&mut has_iter);
 //
-// in:   quote_bind_into_iter!({} a)
+// in:   quote_bind_into_iter!(has_iter {} a)
 // out:  #[allow(unused_mut)]
-//       let mut a = a.into_iter();
+//       let mut a = a.__quote_into_iter(&mut has_iter);
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! quote_bind_into_iter {
-    ({$($acc:tt)*} $next:ident $($rest:ident)*) => {
-        quote_bind_into_iter!({
-            $($acc)*
-            // `mut` may be unused if $next occurs multiple times in the list.
-            #[allow(unused_mut)]
-            let mut $next = $next.into_iter();
-        } $($rest)*);
+    ($has_iter:ident {$($acc:tt)*} $next:ident $($rest:ident)*) => {
+        quote_bind_into_iter!(
+            $has_iter
+            {
+                $($acc)*
+                // `mut` may be unused if $next occurs multiple times in the list.
+                #[allow(unused_mut)]
+                let mut $next = $next.__quote_into_iter(&mut $has_iter);
+            }
+            $($rest)*
+        );
     };
 
-    ({$($done:tt)*}) => {
+    ($has_iter:ident {$($done:tt)*}) => {
         $($done)*
     };
 }
@@ -575,10 +571,14 @@ macro_rules! quote_each_token {
 
     ($tokens:ident $span:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
         {
-            pounded_var_names!(quote_bind_into_iter!({}) () $($inner)*);
-            loop {
-                pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
-                quote_each_token!($tokens $span $($inner)*);
+            use $crate::__rt::ext::*;
+            let mut has_iter = false;
+            pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
+            if has_iter {
+                loop {
+                    pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+                    quote_each_token!($tokens $span $($inner)*);
+                }
             }
         }
         quote_each_token!($tokens $span $($rest)*);
@@ -586,15 +586,19 @@ macro_rules! quote_each_token {
 
     ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt * $($rest:tt)*) => {
         {
+            use $crate::__rt::ext::*;
             let mut _i = 0usize;
-            pounded_var_names!(quote_bind_into_iter!({}) () $($inner)*);
-            loop {
-                pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
-                if _i > 0 {
-                    quote_each_token!($tokens $span $sep);
+            let mut has_iter = false;
+            pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
+            if has_iter {
+                loop {
+                    pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+                    if _i > 0 {
+                        quote_each_token!($tokens $span $sep);
+                    }
+                    _i += 1;
+                    quote_each_token!($tokens $span $($inner)*);
                 }
-                _i += 1;
-                quote_each_token!($tokens $span $($inner)*);
             }
         }
         quote_each_token!($tokens $span $($rest)*);

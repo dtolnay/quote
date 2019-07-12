@@ -208,13 +208,6 @@ macro.
 
 [`quote_spanned!`]: https://docs.rs/quote/0.6/quote/macro.quote_spanned.html
 
-### Limitations
-
-- A non-repeating variable may not be interpolated inside of a repeating block
-  ([#7]).
-
-[#7]: https://github.com/dtolnay/quote/issues/7
-
 ### Recursion limit
 
 The `quote!` macro relies on deep recursion so some large invocations may fail
