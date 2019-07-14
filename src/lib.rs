@@ -542,35 +542,101 @@ macro_rules! multi_zip_expr {
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! quote_each_token {
-    ($tokens:ident $span:ident) => {};
+    ($tokens:ident $span:ident $($tts:tt)*) => {
+        quote_tokens_with_context!($tokens $span
+            (@ @ @ @ @ @ $($tts)*)
+            (@ @ @ @ @ $($tts)* @)
+            (@ @ @ @ $($tts)* @ @)
+            (@ @ @ $(($tts))* @ @ @)
+            (@ @ $($tts)* @ @ @ @)
+            (@ $($tts)* @ @ @ @ @)
+            ($($tts)* @ @ @ @ @ @)
+        )
+    };
+}
 
-    ($tokens:ident $span:ident # ! $($rest:tt)*) => {
-        quote_each_token!($tokens $span #);
-        quote_each_token!($tokens $span !);
-        quote_each_token!($tokens $span $($rest)*);
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
+macro_rules! quote_tokens_with_context {
+    ($tokens:ident $span:ident ($($b3:tt)*) ($($b2:tt)*) ($($b1:tt)*) ($($curr:tt)*)
+                               ($($a1:tt)*) ($($a2:tt)*) ($($a3:tt)*)) => {
+        $(
+            quote_token_with_context!($tokens $span $b3 $b2 $b1 $curr $a1 $a2 $a3);
+        )*
+    };
+}
+
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
+macro_rules! quote_token_with_context {
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
+        quote_token_with_context2!($tokens $span $b3 $b2 $b1 $curr $a1 $a2 $a3);
+    };
+}
+
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
+macro_rules! quote_token_with_context2 {
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt # ! $a2:tt $a3:tt) => {
+        quote_token!($tokens $span # !);
+    };
+    ($tokens:ident $span:ident $b3:tt $b2:tt # ! $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt # ( $($inner:tt)* ) * $a3:tt) => {
+        quote_token!($tokens $span # ( $($inner)* ) *);
+    };
+    ($tokens:ident $span:ident $b3:tt $b2:tt # ( $($inner:tt)* ) * $a2:tt $a3:tt) => {};
+    ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) * $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt # ( $($inner:tt)* ) $sep:tt *) => {
+        quote_token!($tokens $span # ( $($inner)* ) $sep *);
+    };
+    ($tokens:ident $span:ident $b3:tt $b2:tt # ( $($inner:tt)* ) $sep:tt * $a3:tt) => {};
+    ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) $sep:tt * $a2:tt $a3:tt) => {};
+    ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt * $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt # [ $($inner:tt)* ] $a2:tt $a3:tt) => {
+        quote_token!($tokens $span # [ $($inner)* ]);
+    };
+    ($tokens:ident $span:ident $b3:tt $b2:tt # [ $($inner:tt)* ] $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt # $first:ident $a2:tt $a3:tt) => {
+        quote_token!($tokens $span # $first);
+    };
+    ($tokens:ident $span:ident $b3:tt $b2:tt # $first:ident $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt $curr:tt $a1:tt $a2:tt $a3:tt) => {
+        quote_token!($tokens $span $curr);
+    };
+}
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
+macro_rules! quote_token {
+    ($tokens:ident $span:ident # !) => {
+        quote_token!($tokens $span #);
+        quote_token!($tokens $span !);
     };
 
-    ($tokens:ident $span:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
+    ($tokens:ident $span:ident # ( $($inner:tt)* ) *) => {
         for pounded_var_names!(nested_tuples_pat () $($inner)*)
         in pounded_var_names!(multi_zip_expr () $($inner)*) {
             quote_each_token!($tokens $span $($inner)*);
         }
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt * $($rest:tt)*) => {
+    ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt *) => {
         for (_i, pounded_var_names!(nested_tuples_pat () $($inner)*))
         in pounded_var_names!(multi_zip_expr () $($inner)*).into_iter().enumerate() {
             if _i > 0 {
-                quote_each_token!($tokens $span $sep);
+                quote_token!($tokens $span $sep);
             }
             quote_each_token!($tokens $span $($inner)*);
         }
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident # [ $($inner:tt)* ] $($rest:tt)*) => {
-        quote_each_token!($tokens $span #);
+    ($tokens:ident $span:ident # [ $($inner:tt)* ]) => {
+        quote_token!($tokens $span #);
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
@@ -579,15 +645,13 @@ macro_rules! quote_each_token {
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
         });
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident # $first:ident $($rest:tt)*) => {
+    ($tokens:ident $span:ident # $first:ident) => {
         $crate::ToTokens::to_tokens(&$first, &mut $tokens);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ( $($first:tt)* ) $($rest:tt)*) => {
+    ($tokens:ident $span:ident ( $($first:tt)* )) => {
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Parenthesis,
@@ -596,10 +660,9 @@ macro_rules! quote_each_token {
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
         });
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident [ $($first:tt)* ] $($rest:tt)*) => {
+    ($tokens:ident $span:ident [ $($first:tt)* ]) => {
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Bracket,
@@ -608,10 +671,9 @@ macro_rules! quote_each_token {
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
         });
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident { $($first:tt)* } $($rest:tt)*) => {
+    ($tokens:ident $span:ident { $($first:tt)* }) => {
         $tokens.extend({
             let mut g = $crate::__rt::Group::new(
                 $crate::__rt::Delimiter::Brace,
@@ -620,232 +682,186 @@ macro_rules! quote_each_token {
             g.set_span($span);
             Some($crate::__rt::TokenTree::from(g))
         });
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident + $($rest:tt)*) => {
+    ($tokens:ident $span:ident +) => {
         $crate::__rt::push_add(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident += $($rest:tt)*) => {
+    ($tokens:ident $span:ident +=) => {
         $crate::__rt::push_add_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident & $($rest:tt)*) => {
+    ($tokens:ident $span:ident &) => {
         $crate::__rt::push_and(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident && $($rest:tt)*) => {
+    ($tokens:ident $span:ident &&) => {
         $crate::__rt::push_and_and(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident &= $($rest:tt)*) => {
+    ($tokens:ident $span:ident &=) => {
         $crate::__rt::push_and_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident @ $($rest:tt)*) => {
+    ($tokens:ident $span:ident @) => {
         $crate::__rt::push_at(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ! $($rest:tt)*) => {
+    ($tokens:ident $span:ident !) => {
         $crate::__rt::push_bang(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ^ $($rest:tt)*) => {
+    ($tokens:ident $span:ident ^) => {
         $crate::__rt::push_caret(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ^= $($rest:tt)*) => {
+    ($tokens:ident $span:ident ^=) => {
         $crate::__rt::push_caret_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident : $($rest:tt)*) => {
+    ($tokens:ident $span:ident :) => {
         $crate::__rt::push_colon(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident :: $($rest:tt)*) => {
+    ($tokens:ident $span:ident ::) => {
         $crate::__rt::push_colon2(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident , $($rest:tt)*) => {
+    ($tokens:ident $span:ident ,) => {
         $crate::__rt::push_comma(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident / $($rest:tt)*) => {
+    ($tokens:ident $span:ident /) => {
         $crate::__rt::push_div(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident /= $($rest:tt)*) => {
+    ($tokens:ident $span:ident /=) => {
         $crate::__rt::push_div_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident . $($rest:tt)*) => {
+    ($tokens:ident $span:ident .) => {
         $crate::__rt::push_dot(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident .. $($rest:tt)*) => {
+    ($tokens:ident $span:ident ..) => {
         $crate::__rt::push_dot2(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ... $($rest:tt)*) => {
+    ($tokens:ident $span:ident ...) => {
         $crate::__rt::push_dot3(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ..= $($rest:tt)*) => {
+    ($tokens:ident $span:ident ..=) => {
         $crate::__rt::push_dot_dot_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident = $($rest:tt)*) => {
+    ($tokens:ident $span:ident =) => {
         $crate::__rt::push_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident == $($rest:tt)*) => {
+    ($tokens:ident $span:ident ==) => {
         $crate::__rt::push_eq_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident >= $($rest:tt)*) => {
+    ($tokens:ident $span:ident >=) => {
         $crate::__rt::push_ge(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident > $($rest:tt)*) => {
+    ($tokens:ident $span:ident >) => {
         $crate::__rt::push_gt(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident <= $($rest:tt)*) => {
+    ($tokens:ident $span:ident <=) => {
         $crate::__rt::push_le(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident < $($rest:tt)*) => {
+    ($tokens:ident $span:ident <) => {
         $crate::__rt::push_lt(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident *= $($rest:tt)*) => {
+    ($tokens:ident $span:ident *=) => {
         $crate::__rt::push_mul_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident != $($rest:tt)*) => {
+    ($tokens:ident $span:ident !=) => {
         $crate::__rt::push_ne(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident | $($rest:tt)*) => {
+    ($tokens:ident $span:ident |) => {
         $crate::__rt::push_or(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident |= $($rest:tt)*) => {
+    ($tokens:ident $span:ident |=) => {
         $crate::__rt::push_or_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident || $($rest:tt)*) => {
+    ($tokens:ident $span:ident ||) => {
         $crate::__rt::push_or_or(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident # $($rest:tt)*) => {
+    ($tokens:ident $span:ident #) => {
         $crate::__rt::push_pound(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ? $($rest:tt)*) => {
+    ($tokens:ident $span:ident ?) => {
         $crate::__rt::push_question(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident -> $($rest:tt)*) => {
+    ($tokens:ident $span:ident ->) => {
         $crate::__rt::push_rarrow(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident <- $($rest:tt)*) => {
+    ($tokens:ident $span:ident <-) => {
         $crate::__rt::push_larrow(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident % $($rest:tt)*) => {
+    ($tokens:ident $span:ident %) => {
         $crate::__rt::push_rem(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident %= $($rest:tt)*) => {
+    ($tokens:ident $span:ident %=) => {
         $crate::__rt::push_rem_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident => $($rest:tt)*) => {
+    ($tokens:ident $span:ident =>) => {
         $crate::__rt::push_fat_arrow(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident ; $($rest:tt)*) => {
+    ($tokens:ident $span:ident ;) => {
         $crate::__rt::push_semi(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident << $($rest:tt)*) => {
+    ($tokens:ident $span:ident <<) => {
         $crate::__rt::push_shl(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident <<= $($rest:tt)*) => {
+    ($tokens:ident $span:ident <<=) => {
         $crate::__rt::push_shl_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident >> $($rest:tt)*) => {
+    ($tokens:ident $span:ident >>) => {
         $crate::__rt::push_shr(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident >>= $($rest:tt)*) => {
+    ($tokens:ident $span:ident >>=) => {
         $crate::__rt::push_shr_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident * $($rest:tt)*) => {
+    ($tokens:ident $span:ident *) => {
         $crate::__rt::push_star(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident - $($rest:tt)*) => {
+    ($tokens:ident $span:ident -) => {
         $crate::__rt::push_sub(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident -= $($rest:tt)*) => {
+    ($tokens:ident $span:ident -=) => {
         $crate::__rt::push_sub_eq(&mut $tokens, $span);
-        quote_each_token!($tokens $span $($rest)*);
     };
 
-    ($tokens:ident $span:ident $first:tt $($rest:tt)*) => {
+    ($tokens:ident $span:ident $first:tt) => {
         $crate::__rt::parse(&mut $tokens, $span, quote_stringify!($first));
-        quote_each_token!($tokens $span $($rest)*);
     };
 }
 
