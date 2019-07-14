@@ -18,6 +18,10 @@ name = "quote"
 [dependencies]
 proc-macro2 = { version = "0.4.21", default-features = false }
 
+[dev-dependencies]
+rustversion = "0.1"
+trybuild = "1.0"
+
 [features]
 default = ["proc-macro"]
 # Disabling the proc-macro feature removes the dynamic library dependency on
