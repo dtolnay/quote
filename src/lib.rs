@@ -132,20 +132,6 @@ pub mod __rt;
 /// - `#( struct #var; )*` — the repetition can contain other tokens
 /// - `#( #k => println!("{}", #v), )*` — even multiple interpolations
 ///
-/// There are two limitations around interpolations in a repetition:
-///
-/// - Every interpolation inside of a repetition must be a distinct variable.
-///   That is, `#(#a #a)*` is not allowed. Work around this by collecting `a`
-///   into a vector and taking references `a1 = &a` and `a2 = &a` which you use
-///   inside the repetition: `#(#a1 #a2)*`. Where possible, use meaningful names
-///   that indicate the distinct role of each copy.
-///
-/// - Every interpolation inside of a repetition must be iterable. If we have
-///   `vec` which is a vector and `ident` which is a single identifier,
-///   `#(#ident #vec)*` is not allowed. Work around this by using
-///   `std::iter::repeat(ident)` to produce an iterable that can be used from
-///   within the repetition.
-///
 /// # Hygiene
 ///
 /// Any interpolated tokens preserve the `Span` information provided by their
@@ -443,99 +429,131 @@ macro_rules! quote_spanned {
 
 // Extract the names of all #metavariables and pass them to the $finish macro.
 //
-// in:   pounded_var_names!(then () a #b c #( #d )* #e)
+// in:   pounded_var_names!(then!(()) () a #b c #( #d )* #e)
 // out:  then!(() b d e)
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! pounded_var_names {
-    ($finish:ident ($($found:ident)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) # $first:ident $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)* $first) $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # $first:ident $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)* $first) $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) ( $($inner:tt)* ) $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) ( $($inner:tt)* ) $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) [ $($inner:tt)* ] $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) [ $($inner:tt)* ] $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) { $($inner:tt)* } $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($inner)* $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) { $($inner:tt)* } $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*) $ignore:tt $($rest:tt)*) => {
-        pounded_var_names!($finish ($($found)*) $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) $ignore:tt $($rest:tt)*) => {
+        pounded_var_names!($finish!($($extra)*) ($($found)*) $($rest)*)
     };
 
-    ($finish:ident ($($found:ident)*)) => {
-        $finish!(() $($found)*)
-    };
-}
-
-// in:   nested_tuples_pat!(() a b c d e)
-// out:  ((((a b) c) d) e)
-//
-// in:   nested_tuples_pat!(() a)
-// out:  a
-#[macro_export(local_inner_macros)]
-#[doc(hidden)]
-macro_rules! nested_tuples_pat {
-    (()) => {
-        &()
-    };
-
-    (() $first:ident $($rest:ident)*) => {
-        nested_tuples_pat!(($first) $($rest)*)
-    };
-
-    (($pat:pat) $first:ident $($rest:ident)*) => {
-        nested_tuples_pat!((($pat, $first)) $($rest)*)
-    };
-
-    (($done:pat)) => {
-        $done
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*)) => {
+        $finish!($($extra)* $($found)*)
     };
 }
 
-// in:   multi_zip_expr!(() a b c d e)
-// out:  a.into_iter().zip(b).zip(c).zip(d).zip(e)
+// in:   quote_bind_into_iter!(has_iter {} a b c d e)
+// out:  #[allow(unused_mut)]
+//       let mut a = a.__quote_into_iter(&mut has_iter);
+//       #[allow(unused_mut)]
+//       let mut b = b.__quote_into_iter(&mut has_iter);
+//       #[allow(unused_mut)]
+//       let mut c = b.__quote_into_iter(&mut has_iter);
+//       #[allow(unused_mut)]
+//       let mut d = b.__quote_into_iter(&mut has_iter);
+//       #[allow(unused_mut)]
+//       let mut e = b.__quote_into_iter(&mut has_iter);
 //
-// in:   multi_zip_iter!(() a)
-// out:  a
+// in:   quote_bind_into_iter!(has_iter {} a)
+// out:  #[allow(unused_mut)]
+//       let mut a = a.__quote_into_iter(&mut has_iter);
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
-macro_rules! multi_zip_expr {
-    (()) => {
-        &[]
+macro_rules! quote_bind_into_iter {
+    ($has_iter:ident {$($acc:tt)*} $next:ident $($rest:ident)*) => {
+        quote_bind_into_iter!(
+            $has_iter
+            {
+                $($acc)*
+                // `mut` may be unused if $next occurs multiple times in the list.
+                #[allow(unused_mut)]
+                let mut $next = $next.__quote_into_iter(&mut $has_iter);
+            }
+            $($rest)*
+        );
     };
 
-    (() $single:ident) => {
-        $single
+    ($has_iter:ident {$($done:tt)*}) => {
+        $($done)*
+    };
+}
+
+// in:   quote_bind_next_or_break!({} a b c d e)
+// out:  let a = match a.next() {
+//           Some(_x) => $crate::__rt::RepInterp(_x),
+//           None => break,
+//       };
+//       let b = match b.next() {
+//           Some(_x) => $crate::__rt::RepInterp(_x),
+//           None => break,
+//       };
+//       let c = match c.next() {
+//           Some(_x) => $crate::__rt::RepInterp(_x),
+//           None => break,
+//       };
+//       let d = match d.next() {
+//           Some(_x) => $crate::__rt::RepInterp(_x),
+//           None => break,
+//       };
+//       let e = match e.next() {
+//           Some(_x) => $crate::__rt::RepInterp(_x),
+//           None => break,
+//       };
+//
+// in:   quote_bind_next_or_break!({} a)
+// out:  let a = match a.next() {
+//           Some(_x) => $crate::__rt::RepInterp(_x),
+//           None => break,
+//       };
+//
+// in:   quote_bind_next_or_break!({})
+// out:  break;
+#[macro_export(local_inner_macros)]
+#[doc(hidden)]
+macro_rules! quote_bind_next_or_break {
+    ({}) => { break; };
+
+    ({$($acc:tt)*} $next:ident $($rest:ident)*) => {
+        quote_bind_next_or_break!({
+            $($acc)*
+            let $next = match $next.next() {
+                Some(_x) => $crate::__rt::RepInterp(_x),
+                None => break,
+            };
+        } $($rest)*);
     };
 
-    (() $first:ident $($rest:ident)*) => {
-        multi_zip_expr!(($first.into_iter()) $($rest)*)
-    };
-
-    (($zips:expr) $first:ident $($rest:ident)*) => {
-        multi_zip_expr!(($zips.zip($first)) $($rest)*)
-    };
-
-    (($done:expr)) => {
-        $done
+    ({$($done:tt)*}) => {
+        $($done)*
     };
 }
 
@@ -551,20 +569,36 @@ macro_rules! quote_each_token {
     };
 
     ($tokens:ident $span:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
-        for pounded_var_names!(nested_tuples_pat () $($inner)*)
-        in pounded_var_names!(multi_zip_expr () $($inner)*) {
-            quote_each_token!($tokens $span $($inner)*);
+        {
+            use $crate::__rt::ext::*;
+            let mut has_iter = false;
+            pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
+            if has_iter {
+                loop {
+                    pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+                    quote_each_token!($tokens $span $($inner)*);
+                }
+            }
         }
         quote_each_token!($tokens $span $($rest)*);
     };
 
     ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt * $($rest:tt)*) => {
-        for (_i, pounded_var_names!(nested_tuples_pat () $($inner)*))
-        in pounded_var_names!(multi_zip_expr () $($inner)*).into_iter().enumerate() {
-            if _i > 0 {
-                quote_each_token!($tokens $span $sep);
+        {
+            use $crate::__rt::ext::*;
+            let mut _i = 0usize;
+            let mut has_iter = false;
+            pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
+            if has_iter {
+                loop {
+                    pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+                    if _i > 0 {
+                        quote_each_token!($tokens $span $sep);
+                    }
+                    _i += 1;
+                    quote_each_token!($tokens $span $($inner)*);
+                }
             }
-            quote_each_token!($tokens $span $($inner)*);
         }
         quote_each_token!($tokens $span $($rest)*);
     };
