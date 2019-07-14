@@ -1,5 +1,5 @@
 [package]
-name = "quote"
+name = "quote-next"
 version = "0.6.13" # don't forget to update html_root_url, version in readme for breaking changes
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -10,6 +10,10 @@ keywords = ["syn"]
 categories = ["development-tools::procedural-macro-helpers"]
 readme = "README.md"
 include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
+publish = false # contains breaking changes
+
+[lib]
+name = "quote"
 
 [dependencies]
 proc-macro2 = { version = "0.4.21", default-features = false }
