@@ -1,6 +1,7 @@
 use ext::TokenStreamExt;
 pub use proc_macro2::*;
-use ToTokens;
+use {ToTokens, IdentFragment};
+use std::fmt;
 
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
@@ -263,3 +264,89 @@ push_punct!(push_shr_eq '>' '>' '=');
 push_punct!(push_star '*');
 push_punct!(push_sub '-');
 push_punct!(push_sub_eq '-' '=');
+
+// Helper method for constructing identifiers from the `format_ident!` macro,
+// handling `r#` prefixes.
+//
+// Directly parsing the input string may produce a valid identifier,
+// although the input string was invalid, due to ignored characters such as
+// whitespace and comments. Instead, we always create a non-raw identifier
+// to validate that the string is OK, and only parse again if needed.
+//
+// The `is_ident` method defined above is insufficient for validation, as it
+// will reject non-ASCII identifiers.
+pub fn mk_ident(id: &str, span: Option<Span>) -> Ident {
+    let span = span.unwrap_or_else(Span::call_site);
+
+    let is_raw = id.starts_with("r#");
+    let unraw = Ident::new(if is_raw { &id[2..] } else { id }, span);
+    if !is_raw {
+        return unraw;
+    }
+
+    // At this point, the identifier is raw, and the unraw-ed version of it was
+    // successfully converted into an identifier. Try to produce a valid raw
+    // identifier by running the `TokenStream` parser, and unwrapping the first
+    // token as an `Ident`.
+    //
+    // FIXME: When `Ident::new_raw` becomes stable, this method should be
+    // updated to call it when available.
+    match id.parse::<TokenStream>() {
+        Ok(ts) => {
+            let mut iter = ts.into_iter();
+            match (iter.next(), iter.next()) {
+                (Some(TokenTree::Ident(mut id)), None) => {
+                    id.set_span(span);
+                    id
+                }
+                _ => unreachable!("valid raw ident fails to parse"),
+            }
+        }
+        Err(_) => unreachable!("valid raw ident fails to parse"),
+    }
+}
+
+// Adapts from `IdentFragment` to `fmt::Display` for use by the `format_ident!`
+// macro, and exposes span information from these fragments.
+//
+// This struct also has forwarding implementations of the formatting traits
+// `Octal`, `LowerHex`, `UpperHex`, and `Binary` to allow for their use within
+// `format_ident!`.
+#[derive(Copy, Clone)]
+pub struct IdentFragmentAdapter<T: IdentFragment>(pub T);
+
+impl<T: IdentFragment> IdentFragmentAdapter<T> {
+    pub fn span(&self) -> Option<Span> {
+        self.0.span()
+    }
+}
+
+impl<T: IdentFragment> fmt::Display for IdentFragmentAdapter<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        IdentFragment::fmt(&self.0, f)
+    }
+}
+
+impl<T: IdentFragment + fmt::Octal> fmt::Octal for IdentFragmentAdapter<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Octal::fmt(&self.0, f)
+    }
+}
+
+impl<T: IdentFragment + fmt::LowerHex> fmt::LowerHex for IdentFragmentAdapter<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::LowerHex::fmt(&self.0, f)
+    }
+}
+
+impl<T: IdentFragment + fmt::UpperHex> fmt::UpperHex for IdentFragmentAdapter<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::UpperHex::fmt(&self.0, f)
+    }
+}
+
+impl<T: IdentFragment + fmt::Binary> fmt::Binary for IdentFragmentAdapter<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Binary::fmt(&self.0, f)
+    }
+}

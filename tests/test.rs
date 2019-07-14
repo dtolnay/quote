@@ -338,7 +338,7 @@ fn test_cow() {
 #[test]
 fn test_closure() {
     fn field_i(i: usize) -> Ident {
-        Ident::new(&format!("__field{}", i), Span::call_site())
+        format_ident!("__field{}", i)
     }
 
     let fields = (0usize..3)
@@ -355,4 +355,34 @@ fn test_append_tokens() {
     let b = quote!(b);
     a.append_all(b);
     assert_eq!("a b", a.to_string());
+}
+
+#[test]
+fn test_format_ident() {
+    let id0 = format_ident!("Aa");
+    let id1 = format_ident!("Hello{x}", x = id0);
+    let id2 = format_ident!("Hello{x}", x = 5usize);
+    let id3 = format_ident!("Hello{}_{x}", id0, x = 10usize);
+    let id4 = format_ident!("Aa", span = Span::call_site());
+
+    assert_eq!(id0, "Aa");
+    assert_eq!(id1, "HelloAa");
+    assert_eq!(id2, "Hello5");
+    assert_eq!(id3, "HelloAa_10");
+    assert_eq!(id4, "Aa");
+
+    // XXX: No way to test spans are set correctly?
+}
+
+#[test]
+fn test_format_ident_strip_raw() {
+    let id = format_ident!("r#struct");
+    let my_id = format_ident!("MyId{}", id);
+    let raw_my_id = format_ident!("r#MyId{}", id);
+
+    assert_eq!(id, "r#struct");
+    assert_eq!(my_id, "MyIdstruct");
+    assert_eq!(raw_my_id, "r#MyIdstruct");
+
+    // XXX: No way to test spans are set correctly?
 }
