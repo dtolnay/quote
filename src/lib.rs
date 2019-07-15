@@ -471,21 +471,13 @@ macro_rules! pounded_var_names {
     };
 }
 
-// in:   quote_bind_into_iter!(has_iter {} a b c d e)
+// in:   quote_bind_into_iter!(has_iter {} a b c)
 // out:  #[allow(unused_mut)]
 //       let mut a = a.__quote_into_iter(&mut has_iter);
 //       #[allow(unused_mut)]
 //       let mut b = b.__quote_into_iter(&mut has_iter);
 //       #[allow(unused_mut)]
 //       let mut c = b.__quote_into_iter(&mut has_iter);
-//       #[allow(unused_mut)]
-//       let mut d = b.__quote_into_iter(&mut has_iter);
-//       #[allow(unused_mut)]
-//       let mut e = b.__quote_into_iter(&mut has_iter);
-//
-// in:   quote_bind_into_iter!(has_iter {} a)
-// out:  #[allow(unused_mut)]
-//       let mut a = a.__quote_into_iter(&mut has_iter);
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! quote_bind_into_iter {
@@ -507,7 +499,7 @@ macro_rules! quote_bind_into_iter {
     };
 }
 
-// in:   quote_bind_next_or_break!({} a b c d e)
+// in:   quote_bind_next_or_break!({} a b c)
 // out:  let a = match a.next() {
 //           Some(_x) => $crate::__rt::RepInterp(_x),
 //           None => break,
@@ -517,20 +509,6 @@ macro_rules! quote_bind_into_iter {
 //           None => break,
 //       };
 //       let c = match c.next() {
-//           Some(_x) => $crate::__rt::RepInterp(_x),
-//           None => break,
-//       };
-//       let d = match d.next() {
-//           Some(_x) => $crate::__rt::RepInterp(_x),
-//           None => break,
-//       };
-//       let e = match e.next() {
-//           Some(_x) => $crate::__rt::RepInterp(_x),
-//           None => break,
-//       };
-//
-// in:   quote_bind_next_or_break!({} a)
-// out:  let a = match a.next() {
 //           Some(_x) => $crate::__rt::RepInterp(_x),
 //           None => break,
 //       };
