@@ -423,7 +423,7 @@ macro_rules! quote {
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {{
         let mut _s = $crate::__rt::TokenStream::new();
-        let _span = $span;
+        let _span: $crate::__rt::Span = $span;
         quote_each_token!(_s _span $($tt)*);
         _s
     }};
