@@ -475,11 +475,14 @@ macro_rules! pounded_var_names {
 
 // in:   quote_bind_into_iter!(has_iter {} a b c)
 // out:  #[allow(unused_mut)]
-//       let mut a = a.__quote_into_iter(&mut has_iter);
+//       let (mut a, i) = a.__quote_into_iter();
+//       let has_iter = has_iter | i;
 //       #[allow(unused_mut)]
-//       let mut b = b.__quote_into_iter(&mut has_iter);
+//       let (mut b, i) = b.__quote_into_iter();
+//       let has_iter = has_iter | i;
 //       #[allow(unused_mut)]
-//       let mut c = b.__quote_into_iter(&mut has_iter);
+//       let (mut c, i) = b.__quote_into_iter();
+//       let has_iter = has_iter | i;
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! quote_bind_into_iter {
@@ -490,7 +493,8 @@ macro_rules! quote_bind_into_iter {
                 $($acc)*
                 // `mut` may be unused if $next occurs multiple times in the list.
                 #[allow(unused_mut)]
-                let mut $next = $next.__quote_into_iter(&mut $has_iter);
+                let (mut $next, i) = $next.__quote_into_iter();
+                let $has_iter = $has_iter | i;
             }
             $($rest)*
         );
@@ -516,11 +520,20 @@ macro_rules! quote_bind_into_iter {
 //       };
 //
 // in:   quote_bind_next_or_break!({})
-// out:  break;
+// out:  if true {
+//           break;
+//       }
 #[macro_export(local_inner_macros)]
 #[doc(hidden)]
 macro_rules! quote_bind_next_or_break {
-    ({}) => { break; };
+    ({}) => {
+        // The code will fail to compile because there are no iterators used
+        // inside of this repetition. The following is just here to bypass some
+        // unreachable statement warnings.
+        if true {
+            break;
+        }
+    };
 
     ({$($acc:tt)*} $next:ident $($rest:ident)*) => {
         quote_bind_next_or_break!({
@@ -551,13 +564,12 @@ macro_rules! quote_each_token {
     ($tokens:ident $span:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
         {
             use $crate::__rt::ext::*;
-            let mut has_iter = false;
+            let has_iter = $crate::__rt::logic::False;
             pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
-            if has_iter {
-                loop {
-                    pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
-                    quote_each_token!($tokens $span $($inner)*);
-                }
+            $crate::__rt::require_has_iter(has_iter);
+            loop {
+                pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+                quote_each_token!($tokens $span $($inner)*);
             }
         }
         quote_each_token!($tokens $span $($rest)*);
@@ -567,17 +579,16 @@ macro_rules! quote_each_token {
         {
             use $crate::__rt::ext::*;
             let mut _i = 0usize;
-            let mut has_iter = false;
+            let has_iter = $crate::__rt::logic::False;
             pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
-            if has_iter {
-                loop {
-                    pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
-                    if _i > 0 {
-                        quote_each_token!($tokens $span $sep);
-                    }
-                    _i += 1;
-                    quote_each_token!($tokens $span $($inner)*);
+            $crate::__rt::require_has_iter(has_iter);
+            loop {
+                pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+                if _i > 0 {
+                    quote_each_token!($tokens $span $sep);
                 }
+                _i += 1;
+                quote_each_token!($tokens $span $($inner)*);
             }
         }
         quote_each_token!($tokens $span $($rest)*);
