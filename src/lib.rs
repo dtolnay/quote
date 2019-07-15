@@ -177,9 +177,11 @@ pub mod __rt;
 /// ```edition2018
 /// # #[cfg(any())]
 /// extern crate proc_macro;
-/// # use proc_macro2 as proc_macro;
+/// # extern crate proc_macro2;
 ///
+/// # #[cfg(any())]
 /// use proc_macro::TokenStream;
+/// # use proc_macro2::TokenStream;
 /// use quote::quote;
 ///
 /// # const IGNORE_TOKENS: &'static str = stringify! {
