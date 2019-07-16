@@ -1,6 +1,38 @@
 use ext::TokenStreamExt;
 pub use proc_macro2::*;
+use std::ops::BitOr;
 use ToTokens;
+
+pub struct HasIterator; // True
+pub struct ThereIsNoIteratorInRepetition; // False
+
+impl BitOr<ThereIsNoIteratorInRepetition> for ThereIsNoIteratorInRepetition {
+    type Output = ThereIsNoIteratorInRepetition;
+    fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> ThereIsNoIteratorInRepetition {
+        ThereIsNoIteratorInRepetition
+    }
+}
+
+impl BitOr<ThereIsNoIteratorInRepetition> for HasIterator {
+    type Output = HasIterator;
+    fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> HasIterator {
+        HasIterator
+    }
+}
+
+impl BitOr<HasIterator> for ThereIsNoIteratorInRepetition {
+    type Output = HasIterator;
+    fn bitor(self, _rhs: HasIterator) -> HasIterator {
+        HasIterator
+    }
+}
+
+impl BitOr<HasIterator> for HasIterator {
+    type Output = HasIterator;
+    fn bitor(self, _rhs: HasIterator) -> HasIterator {
+        HasIterator
+    }
+}
 
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
@@ -9,15 +41,15 @@ use ToTokens;
 /// whichever impl happens to be applicable. Calling that method repeatedly on
 /// the returned value should be idempotent.
 pub mod ext {
+    use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use std::slice;
     use ToTokens;
 
     /// Extension trait providing the `__quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {
         #[inline]
-        fn __quote_into_iter(self, has_iter: &mut bool) -> Self {
-            *has_iter = true;
-            self
+        fn __quote_into_iter(self) -> (Self, HasIter) {
+            (self, HasIter)
         }
     }
 
@@ -36,8 +68,8 @@ pub mod ext {
         }
 
         #[inline]
-        fn __quote_into_iter<'a>(&'a self, _has_iter: &mut bool) -> &'a Self {
-            self
+        fn __quote_into_iter<'a>(&'a self) -> (&'a Self, DoesNotHaveIter) {
+            (self, DoesNotHaveIter)
         }
     }
 
@@ -55,9 +87,8 @@ pub mod ext {
         fn as_slice(&self) -> &[Self::Item];
 
         #[inline]
-        fn __quote_into_iter<'a>(&'a self, has_iter: &mut bool) -> slice::Iter<'a, Self::Item> {
-            *has_iter = true;
-            self.as_slice().iter()
+        fn __quote_into_iter<'a>(&'a self) -> (slice::Iter<'a, Self::Item>, HasIter) {
+            (self.as_slice().iter(), HasIter)
         }
     }
 

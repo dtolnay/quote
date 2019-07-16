@@ -233,13 +233,6 @@ fn test_nested_fancy_repetition() {
 }
 
 #[test]
-fn test_empty_repetition() {
-    #[allow(unreachable_code)]
-    let tokens = quote!(#(a b)* #(c d),*);
-    assert_eq!("", tokens.to_string());
-}
-
-#[test]
 fn test_duplicate_name_repetition() {
     let foo = &["a", "b"];
 
@@ -284,30 +277,6 @@ fn test_nonrep_in_repetition() {
     };
 
     let expected = r#""a" "a" : "c" "c" , "b" "b" : "c" "c""#;
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
-fn test_nonrep_only_repetition() {
-    let nonrep = "a";
-
-    // Without the `has_iter` parameter to `__quote_into_iter()`, this would
-    // loop infinitely.
-    let tokens = quote!( #(#nonrep)* );
-    let expected = "";
-
-    assert_eq!(expected, tokens.to_string());
-}
-
-#[test]
-fn test_nonrep_only_repetition_dup() {
-    let nonrep = "a";
-
-    // If the `__quote_into_iter()` method for `nonrep` produced a real
-    // iterator, this would loop infinitely.
-    let tokens = quote!( #(#nonrep #nonrep)* );
-    let expected = "";
-
     assert_eq!(expected, tokens.to_string());
 }
 
