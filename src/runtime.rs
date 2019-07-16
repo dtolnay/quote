@@ -1,45 +1,38 @@
 use ext::TokenStreamExt;
 pub use proc_macro2::*;
+use std::ops::BitOr;
 use ToTokens;
 
-pub mod logic {
-    use std::ops::BitOr;
+pub struct HasIterator; // True
+pub struct ThereIsNoIteratorInRepetition; // False
 
-    pub struct True;
-    pub struct False;
-
-    impl BitOr<False> for False {
-        type Output = False;
-        fn bitor(self, _rhs: False) -> False {
-            False
-        }
-    }
-
-    impl BitOr<False> for True {
-        type Output = True;
-        fn bitor(self, _rhs: False) -> True {
-            True
-        }
-    }
-
-    impl BitOr<True> for False {
-        type Output = True;
-        fn bitor(self, _rhs: True) -> True {
-            True
-        }
-    }
-
-    impl BitOr<True> for True {
-        type Output = True;
-        fn bitor(self, _rhs: True) -> True {
-            True
-        }
+impl BitOr<ThereIsNoIteratorInRepetition> for ThereIsNoIteratorInRepetition {
+    type Output = ThereIsNoIteratorInRepetition;
+    fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> ThereIsNoIteratorInRepetition {
+        ThereIsNoIteratorInRepetition
     }
 }
 
-pub trait HasIter {}
-impl HasIter for logic::True {}
-pub fn require_has_iter<T: HasIter>(_: T) {}
+impl BitOr<ThereIsNoIteratorInRepetition> for HasIterator {
+    type Output = HasIterator;
+    fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> HasIterator {
+        HasIterator
+    }
+}
+
+impl BitOr<HasIterator> for ThereIsNoIteratorInRepetition {
+    type Output = HasIterator;
+    fn bitor(self, _rhs: HasIterator) -> HasIterator {
+        HasIterator
+    }
+}
+
+impl BitOr<HasIterator> for HasIterator {
+    type Output = HasIterator;
+    fn bitor(self, _rhs: HasIterator) -> HasIterator {
+        HasIterator
+    }
+}
 
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
@@ -48,10 +41,9 @@ pub fn require_has_iter<T: HasIter>(_: T) {}
 /// whichever impl happens to be applicable. Calling that method repeatedly on
 /// the returned value should be idempotent.
 pub mod ext {
+    use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use std::slice;
     use ToTokens;
-
-    use super::logic::{False as DoesNotHaveIter, True as HasIter};
 
     /// Extension trait providing the `__quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {

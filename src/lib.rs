@@ -564,9 +564,9 @@ macro_rules! quote_each_token {
     ($tokens:ident $span:ident # ( $($inner:tt)* ) * $($rest:tt)*) => {
         {
             use $crate::__rt::ext::*;
-            let has_iter = $crate::__rt::logic::False;
+            let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
             pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
-            $crate::__rt::require_has_iter(has_iter);
+            let _: $crate::__rt::HasIterator = has_iter;
             loop {
                 pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
                 quote_each_token!($tokens $span $($inner)*);
@@ -579,9 +579,9 @@ macro_rules! quote_each_token {
         {
             use $crate::__rt::ext::*;
             let mut _i = 0usize;
-            let has_iter = $crate::__rt::logic::False;
+            let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
             pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
-            $crate::__rt::require_has_iter(has_iter);
+            let _: $crate::__rt::HasIterator = has_iter;
             loop {
                 pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
                 if _i > 0 {
