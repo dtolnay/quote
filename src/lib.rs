@@ -451,8 +451,8 @@ macro_rules! pounded_var_names {
         $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # $first:ident $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)* $first) $($rest)*)
+    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # $var:ident $($rest:tt)*) => {
+        $crate::pounded_var_names!($finish!($($extra)*) ($($found)* $var) $($rest)*)
     };
 
     ($finish:ident!($($extra:tt)*) ($($found:ident)*) ( $($inner:tt)* ) $($rest:tt)*) => {
@@ -620,10 +620,10 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
     ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
 
-    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) $first:ident $a2:tt $a3:tt) => {
-        $crate::ToTokens::to_tokens(&$first, &mut $tokens);
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
+        $crate::ToTokens::to_tokens(&$var, &mut $tokens);
     };
-    ($tokens:ident $span:ident $b3:tt $b2:tt # ($first:ident) $a1:tt $a2:tt $a3:tt) => {};
+    ($tokens:ident $span:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
         $crate::quote_token!($tokens $span $curr);
     };
@@ -841,7 +841,7 @@ macro_rules! quote_token {
         $crate::__rt::push_sub_eq(&mut $tokens, $span);
     };
 
-    ($tokens:ident $span:ident $first:tt) => {
-        $crate::__rt::parse(&mut $tokens, $span, stringify!($first));
+    ($tokens:ident $span:ident $other:tt) => {
+        $crate::__rt::parse(&mut $tokens, $span, stringify!($other));
     };
 }
