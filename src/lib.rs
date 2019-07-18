@@ -610,7 +610,7 @@ macro_rules! quote_token_with_context {
         loop {
             $crate::pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
             if _i > 0 {
-                $crate::quote_each_token!($tokens $span $sep);
+                $crate::quote_token!($tokens $span $sep);
             }
             _i += 1;
             $crate::quote_each_token!($tokens $span $($inner)*);
