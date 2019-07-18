@@ -69,10 +69,7 @@ macro_rules! ident_fragment_display {
 }
 
 ident_fragment_display!(bool, str, String);
-ident_fragment_display!(u8, u16, u32, u64, usize);
-
-#[cfg(integer128)]
-ident_fragment_display!(u128);
+ident_fragment_display!(u8, u16, u32, u64, u128, usize);
 
 // XXX: Should we implement `IdentFragment` for signed integers? It's a touch
 // inconvenient that the default inferred type for integer literals isn't a
