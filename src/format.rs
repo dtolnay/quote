@@ -98,44 +98,48 @@
 /// ```
 #[macro_export]
 macro_rules! format_ident {
-    // Final State
-    (@@ [$span:expr, $($o:tt)*] $(,)*) => {
+    ($f:expr) => {
+        $crate::format_ident_impl!([
+            ::std::option::Option::None,
+            $f
+        ])
+    };
+
+    ($f:expr, $($t:tt)*) => {
+        $crate::format_ident_impl!([
+            ::std::option::Option::None,
+            $f
+        ] $($t)*,)
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! format_ident_impl {
+    // Final state
+    ([$span:expr, $($o:tt)*] $(,)*) => {
         $crate::__rt::mk_ident(&format!($($o)*), $span)
     };
 
-    // Span Argument
-    (@@ [$_sp:expr, $($o:tt)*] span = $span:expr, $($t:tt)*) => {
-        format_ident!(@@ [
+    // Span argument
+    ([$_sp:expr, $($o:tt)*] span = $span:expr, $($t:tt)*) => {
+        $crate::format_ident_impl!([
             ::std::option::Option::Some::<$crate::__rt::Span>($span),
             $($o)*
         ] $($t)*)
     };
 
-    // Named Arguments
-    (@@ [$span:expr, $($o:tt)*] $i:ident = $e:expr, $($t:tt)*) => {
+    // Named arguments
+    ([$span:expr, $($o:tt)*] $i:ident = $e:expr, $($t:tt)*) => {
         match $crate::__rt::IdentFragmentAdapter(&$e) {
-            arg => format_ident!(@@ [$span.or(arg.span()), $($o)*, $i = arg] $($t)*),
+            arg => $crate::format_ident_impl!([$span.or(arg.span()), $($o)*, $i = arg] $($t)*),
         }
     };
 
-    // Positional Arguments
-    (@@ [$span:expr, $($o:tt)*] $e:expr, $($t:tt)*) => {
+    // Positional arguments
+    ([$span:expr, $($o:tt)*] $e:expr, $($t:tt)*) => {
         match $crate::__rt::IdentFragmentAdapter(&$e) {
-            arg => format_ident!(@@ [$span.or(arg.span()), $($o)*, arg] $($t)*),
+            arg => $crate::format_ident_impl!([$span.or(arg.span()), $($o)*, arg] $($t)*),
         }
-    };
-
-    // Argument Options
-    ($f:expr) => {
-        format_ident!(@@ [
-            ::std::option::Option::None,
-            $f
-        ])
-    };
-    ($f:expr, $($t:tt)*) => {
-        format_ident!(@@ [
-            ::std::option::Option::None,
-            $f
-        ] $($t)*,)
     };
 }
