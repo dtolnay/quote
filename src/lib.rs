@@ -508,7 +508,7 @@ macro_rules! quote_bind_into_iter {
     };
 }
 
-// in:   quote_bind_next_or_break!({} a b c)
+// in:   quote_bind_next_or_break!(a b c)
 // out:  let a = match a.next() {
 //           Some(_x) => $crate::__rt::RepInterp(_x),
 //           None => break,
@@ -522,14 +522,14 @@ macro_rules! quote_bind_into_iter {
 //           None => break,
 //       };
 //
-// in:   quote_bind_next_or_break!({})
+// in:   quote_bind_next_or_break!()
 // out:  if true {
 //           break;
 //       }
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_bind_next_or_break {
-    ({}) => {
+    () => {
         // The code will fail to compile because there are no iterators used
         // inside of this repetition. The following is just here to bypass some
         // unreachable statement warnings.
@@ -538,18 +538,13 @@ macro_rules! quote_bind_next_or_break {
         }
     };
 
-    ({$($acc:tt)*} $next:ident $($rest:ident)*) => {
-        $crate::quote_bind_next_or_break!({
-            $($acc)*
-            let $next = match $next.next() {
+    ($($var:ident)*) => {
+        $(
+            let $var = match $var.next() {
                 Some(_x) => $crate::__rt::RepInterp(_x),
                 None => break,
             };
-        } $($rest)*);
-    };
-
-    ({$($done:tt)*}) => {
-        $($done)*
+        )*
     };
 }
 
@@ -594,7 +589,7 @@ macro_rules! quote_token_with_context {
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
         let _: $crate::__rt::HasIterator = has_iter;
         loop {
-            $crate::pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+            $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             $crate::quote_each_token!($tokens $span $($inner)*);
         }
     }};
@@ -608,7 +603,7 @@ macro_rules! quote_token_with_context {
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
         let _: $crate::__rt::HasIterator = has_iter;
         loop {
-            $crate::pounded_var_names!(quote_bind_next_or_break!({}) () $($inner)*);
+            $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             if _i > 0 {
                 $crate::quote_token!($tokens $span $sep);
             }
