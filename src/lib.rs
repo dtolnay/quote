@@ -432,96 +432,70 @@ macro_rules! quote_spanned {
     }};
 }
 
-// Extract the names of all #metavariables and pass them to the $finish macro.
+// Extract the names of all #metavariables and pass them to the $call macro.
 //
-// in:   pounded_var_names!(then!(()) () a #b c #( #d )* #e)
-// out:  then!(() b d e)
+// in:   pounded_var_names!(then!(...) a #b c #( #d )* #e)
+// out:  then!(... b);
+//       then!(... d);
+//       then!(... e);
 #[macro_export]
 #[doc(hidden)]
 macro_rules! pounded_var_names {
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
+    ($call:ident!($($extra:tt)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
+        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
+    ($call:ident!($($extra:tt)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
+        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # { $($inner:tt)* } $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
+    ($call:ident!($($extra:tt)*) # { $($inner:tt)* } $($rest:tt)*) => {
+        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) # $var:ident $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)* $var) $($rest)*)
+    ($call:ident!($($extra:tt)*) # $var:ident $($rest:tt)*) => {
+        $crate::$call!($($extra)* $var);
+        $crate::pounded_var_names!($call!($($extra)*) $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) ( $($inner:tt)* ) $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
+    ($call:ident!($($extra:tt)*) ( $($inner:tt)* ) $($rest:tt)*) => {
+        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) [ $($inner:tt)* ] $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
+    ($call:ident!($($extra:tt)*) [ $($inner:tt)* ] $($rest:tt)*) => {
+        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) { $($inner:tt)* } $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($inner)* $($rest)*)
+    ($call:ident!($($extra:tt)*) { $($inner:tt)* } $($rest:tt)*) => {
+        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*) $ignore:tt $($rest:tt)*) => {
-        $crate::pounded_var_names!($finish!($($extra)*) ($($found)*) $($rest)*)
+    ($call:ident!($($extra:tt)*) $ignore:tt $($rest:tt)*) => {
+        $crate::pounded_var_names!($call!($($extra)*) $($rest)*)
     };
 
-    ($finish:ident!($($extra:tt)*) ($($found:ident)*)) => {
-        $crate::$finish!($($extra)* $($found)*)
-    };
+    ($call:ident!($($extra:tt)*)) => {};
 }
 
-// in:   quote_bind_into_iter!(has_iter a b c)
-// out:  #[allow(unused_mut)]
-//       let (mut a, i) = a.__quote_into_iter();
-//       let has_iter = has_iter | i;
-//       #[allow(unused_mut)]
-//       let (mut b, i) = b.__quote_into_iter();
-//       let has_iter = has_iter | i;
-//       #[allow(unused_mut)]
-//       let (mut c, i) = b.__quote_into_iter();
-//       let has_iter = has_iter | i;
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_bind_into_iter {
-    ($has_iter:ident $($var:ident)*) => {
-        $(
-            // `mut` may be unused if $var occurs multiple times in the list.
-            #[allow(unused_mut)]
-            let (mut $var, i) = $var.__quote_into_iter();
-            let $has_iter = $has_iter | i;
-        )*
+    ($has_iter:ident $var:ident) => {
+        // `mut` may be unused if $var occurs multiple times in the list.
+        #[allow(unused_mut)]
+        let (mut $var, i) = $var.__quote_into_iter();
+        let $has_iter = $has_iter | i;
     };
 }
 
-// in:   quote_bind_next_or_break!(a b c)
-// out:  let a = match a.next() {
-//           Some(_x) => $crate::__rt::RepInterp(_x),
-//           None => break,
-//       };
-//       let b = match b.next() {
-//           Some(_x) => $crate::__rt::RepInterp(_x),
-//           None => break,
-//       };
-//       let c = match c.next() {
-//           Some(_x) => $crate::__rt::RepInterp(_x),
-//           None => break,
-//       };
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_bind_next_or_break {
-    ($($var:ident)*) => {
-        $(
-            let $var = match $var.next() {
-                Some(_x) => $crate::__rt::RepInterp(_x),
-                None => break,
-            };
-        )*
+    ($var:ident) => {
+        let $var = match $var.next() {
+            Some(_x) => $crate::__rt::RepInterp(_x),
+            None => break,
+        };
     };
 }
 
