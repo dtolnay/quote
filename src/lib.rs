@@ -441,40 +441,44 @@ macro_rules! quote_spanned {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! pounded_var_names {
-    ($call:ident!($($extra:tt)*) # ( $($inner:tt)* ) $($rest:tt)*) => {
-        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
+    ($call:ident! $extra:tt $($tts:tt)*) => {
+        $crate::pounded_var_names_with_context!($call! $extra
+            (@ $($tts)*)
+            ($($tts)* @)
+        )
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! pounded_var_names_with_context {
+    ($call:ident! $extra:tt ($($b1:tt)*) ($($curr:tt)*)) => {
+        $(
+            $crate::pounded_var_with_context!($call! $extra $b1 $curr);
+        )*
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! pounded_var_with_context {
+    ($call:ident! $extra:tt $b1:tt ( $($inner:tt)* )) => {
+        $crate::pounded_var_names!($call! $extra $($inner)*);
     };
 
-    ($call:ident!($($extra:tt)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
-        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
+    ($call:ident! $extra:tt $b1:tt [ $($inner:tt)* ]) => {
+        $crate::pounded_var_names!($call! $extra $($inner)*);
     };
 
-    ($call:ident!($($extra:tt)*) # { $($inner:tt)* } $($rest:tt)*) => {
-        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
+    ($call:ident! $extra:tt $b1:tt { $($inner:tt)* }) => {
+        $crate::pounded_var_names!($call! $extra $($inner)*);
     };
 
-    ($call:ident!($($extra:tt)*) # $var:ident $($rest:tt)*) => {
+    ($call:ident!($($extra:tt)*) # $var:ident) => {
         $crate::$call!($($extra)* $var);
-        $crate::pounded_var_names!($call!($($extra)*) $($rest)*)
     };
 
-    ($call:ident!($($extra:tt)*) ( $($inner:tt)* ) $($rest:tt)*) => {
-        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
-    };
-
-    ($call:ident!($($extra:tt)*) [ $($inner:tt)* ] $($rest:tt)*) => {
-        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
-    };
-
-    ($call:ident!($($extra:tt)*) { $($inner:tt)* } $($rest:tt)*) => {
-        $crate::pounded_var_names!($call!($($extra)*) $($inner)* $($rest)*)
-    };
-
-    ($call:ident!($($extra:tt)*) $ignore:tt $($rest:tt)*) => {
-        $crate::pounded_var_names!($call!($($extra)*) $($rest)*)
-    };
-
-    ($call:ident!($($extra:tt)*)) => {};
+    ($call:ident! $extra:tt $b1:tt $curr:tt) => {};
 }
 
 #[macro_export]
