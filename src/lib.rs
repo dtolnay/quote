@@ -476,7 +476,7 @@ macro_rules! pounded_var_names {
     };
 }
 
-// in:   quote_bind_into_iter!(has_iter {} a b c)
+// in:   quote_bind_into_iter!(has_iter a b c)
 // out:  #[allow(unused_mut)]
 //       let (mut a, i) = a.__quote_into_iter();
 //       let has_iter = has_iter | i;
@@ -489,22 +489,13 @@ macro_rules! pounded_var_names {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_bind_into_iter {
-    ($has_iter:ident {$($acc:tt)*} $next:ident $($rest:ident)*) => {
-        $crate::quote_bind_into_iter!(
-            $has_iter
-            {
-                $($acc)*
-                // `mut` may be unused if $next occurs multiple times in the list.
-                #[allow(unused_mut)]
-                let (mut $next, i) = $next.__quote_into_iter();
-                let $has_iter = $has_iter | i;
-            }
-            $($rest)*
-        );
-    };
-
-    ($has_iter:ident {$($done:tt)*}) => {
-        $($done)*
+    ($has_iter:ident $($var:ident)*) => {
+        $(
+            // `mut` may be unused if $var occurs multiple times in the list.
+            #[allow(unused_mut)]
+            let (mut $var, i) = $var.__quote_into_iter();
+            let $has_iter = $has_iter | i;
+        )*
     };
 }
 
@@ -586,7 +577,7 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__rt::ext::*;
         let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
-        $crate::pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
+        $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
         let _: $crate::__rt::HasIterator = has_iter;
         loop {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
@@ -600,7 +591,7 @@ macro_rules! quote_token_with_context {
         use $crate::__rt::ext::*;
         let mut _i = 0usize;
         let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
-        $crate::pounded_var_names!(quote_bind_into_iter!(has_iter {}) () $($inner)*);
+        $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
         let _: $crate::__rt::HasIterator = has_iter;
         loop {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
