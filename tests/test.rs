@@ -355,3 +355,57 @@ fn test_format_ident_strip_raw() {
 
     // XXX: No way to test spans are set correctly?
 }
+
+#[test]
+fn test_outer_line_comment() {
+    let tokens = quote! {
+        /// doc
+    };
+    let expected = "# [ doc = r\" doc\" ]";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_inner_line_comment() {
+    let tokens = quote! {
+        //! doc
+    };
+    let expected = "# ! [ doc = r\" doc\" ]";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_outer_block_comment() {
+    let tokens = quote! {
+        /** doc */
+    };
+    let expected = "# [ doc = r\" doc \" ]";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_inner_block_comment() {
+    let tokens = quote! {
+        /*! doc */
+    };
+    let expected = "# ! [ doc = r\" doc \" ]";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_outer_attr() {
+    let tokens = quote! {
+        #[inline]
+    };
+    let expected = "# [ inline ]";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_inner_attr() {
+    let tokens = quote! {
+        #![no_std]
+    };
+    let expected = "# ! [ no_std ]";
+    assert_eq!(expected, tokens.to_string());
+}
