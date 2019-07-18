@@ -512,23 +512,9 @@ macro_rules! quote_bind_into_iter {
 //           Some(_x) => $crate::__rt::RepInterp(_x),
 //           None => break,
 //       };
-//
-// in:   quote_bind_next_or_break!()
-// out:  if true {
-//           break;
-//       }
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_bind_next_or_break {
-    () => {
-        // The code will fail to compile because there are no iterators used
-        // inside of this repetition. The following is just here to bypass some
-        // unreachable statement warnings.
-        if true {
-            break;
-        }
-    };
-
     ($($var:ident)*) => {
         $(
             let $var = match $var.next() {
@@ -579,7 +565,13 @@ macro_rules! quote_token_with_context {
         let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
         let _: $crate::__rt::HasIterator = has_iter;
-        loop {
+        // This is `while true` instead of `loop` because if there are no
+        // iterators used inside of this repetition then the body would not
+        // contain any `break`, so the compiler would emit unreachable code
+        // warnings on anything below the loop. We use has_iter to detect and
+        // fail to compile when there are no iterators, so here we just work
+        // around the unneeded extra warning.
+        while true {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             $crate::quote_each_token!($tokens $span $($inner)*);
         }
@@ -593,7 +585,7 @@ macro_rules! quote_token_with_context {
         let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
         let _: $crate::__rt::HasIterator = has_iter;
-        loop {
+        while true {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             if _i > 0 {
                 $crate::quote_token!($tokens $span $sep);
