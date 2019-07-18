@@ -98,18 +98,18 @@
 /// ```
 #[macro_export]
 macro_rules! format_ident {
-    ($f:expr) => {
+    ($fmt:expr) => {
         $crate::format_ident_impl!([
             ::std::option::Option::None,
-            $f
+            $fmt
         ])
     };
 
-    ($f:expr, $($t:tt)*) => {
+    ($fmt:expr, $($rest:tt)*) => {
         $crate::format_ident_impl!([
             ::std::option::Option::None,
-            $f
-        ] $($t)*,)
+            $fmt
+        ] $($rest)*,)
     };
 }
 
@@ -117,29 +117,29 @@ macro_rules! format_ident {
 #[doc(hidden)]
 macro_rules! format_ident_impl {
     // Final state
-    ([$span:expr, $($o:tt)*] $(,)*) => {
-        $crate::__rt::mk_ident(&format!($($o)*), $span)
+    ([$span:expr, $($fmt:tt)*] $(,)*) => {
+        $crate::__rt::mk_ident(&format!($($fmt)*), $span)
     };
 
     // Span argument
-    ([$_sp:expr, $($o:tt)*] span = $span:expr, $($t:tt)*) => {
+    ([$old:expr, $($fmt:tt)*] span = $span:expr, $($rest:tt)*) => {
         $crate::format_ident_impl!([
             ::std::option::Option::Some::<$crate::__rt::Span>($span),
-            $($o)*
-        ] $($t)*)
+            $($fmt)*
+        ] $($rest)*)
     };
 
     // Named arguments
-    ([$span:expr, $($o:tt)*] $i:ident = $e:expr, $($t:tt)*) => {
-        match $crate::__rt::IdentFragmentAdapter(&$e) {
-            arg => $crate::format_ident_impl!([$span.or(arg.span()), $($o)*, $i = arg] $($t)*),
+    ([$span:expr, $($fmt:tt)*] $name:ident = $arg:expr, $($rest:tt)*) => {
+        match $crate::__rt::IdentFragmentAdapter(&$arg) {
+            arg => $crate::format_ident_impl!([$span.or(arg.span()), $($fmt)*, $name = arg] $($rest)*),
         }
     };
 
     // Positional arguments
-    ([$span:expr, $($o:tt)*] $e:expr, $($t:tt)*) => {
-        match $crate::__rt::IdentFragmentAdapter(&$e) {
-            arg => $crate::format_ident_impl!([$span.or(arg.span()), $($o)*, arg] $($t)*),
+    ([$span:expr, $($fmt:tt)*] $arg:expr, $($rest:tt)*) => {
+        match $crate::__rt::IdentFragmentAdapter(&$arg) {
+            arg => $crate::format_ident_impl!([$span.or(arg.span()), $($fmt)*, arg] $($rest)*),
         }
     };
 }
