@@ -14,43 +14,36 @@ pub trait IdentFragment {
     /// Span associated with this [`IdentFragment`].
     ///
     /// If non-`None`, may be inherited by formatted identifiers.
-    #[inline]
     fn span(&self) -> Option<Span> {
         None
     }
 }
 
 impl<'a, T: IdentFragment + ?Sized> IdentFragment for &'a T {
-    #[inline]
     fn span(&self) -> Option<Span> {
         <T as IdentFragment>::span(*self)
     }
 
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         IdentFragment::fmt(*self, f)
     }
 }
 
 impl<'a, T: IdentFragment + ?Sized> IdentFragment for &'a mut T {
-    #[inline]
     fn span(&self) -> Option<Span> {
         <T as IdentFragment>::span(*self)
     }
 
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         IdentFragment::fmt(*self, f)
     }
 }
 
 impl IdentFragment for Ident {
-    #[inline]
     fn span(&self) -> Option<Span> {
         Some(self.span())
     }
 
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let id = self.to_string();
         if id.starts_with("r#") {
@@ -67,7 +60,6 @@ macro_rules! ident_fragment_display {
     ($($T:ty),*) => {
         $(
             impl IdentFragment for $T {
-                #[inline]
                 fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                     fmt::Display::fmt(self, f)
                 }

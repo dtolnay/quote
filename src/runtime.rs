@@ -48,7 +48,6 @@ pub mod ext {
 
     /// Extension trait providing the `__quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {
-        #[inline]
         fn __quote_into_iter(self) -> (Self, HasIter) {
             (self, HasIter)
         }
@@ -63,12 +62,10 @@ pub mod ext {
         /// Pretend to be an iterator for the purposes of `__quote_into_iter`.
         /// This allows repeated calls to `__quote_into_iter` to not set the
         /// `has_iter` outparameter.
-        #[inline]
         fn next(&self) -> Option<&Self> {
             Some(self)
         }
 
-        #[inline]
         fn __quote_into_iter<'a>(&'a self) -> (&'a Self, DoesNotHaveIter) {
             (self, DoesNotHaveIter)
         }
@@ -87,7 +84,6 @@ pub mod ext {
 
         fn as_slice(&self) -> &[Self::Item];
 
-        #[inline]
         fn __quote_into_iter<'a>(&'a self) -> (slice::Iter<'a, Self::Item>, HasIter) {
             (self.as_slice().iter(), HasIter)
         }
@@ -96,7 +92,6 @@ pub mod ext {
     impl<'a, T: RepSliceExt + ?Sized> RepSliceExt for &'a T {
         type Item = T::Item;
 
-        #[inline]
         fn as_slice(&self) -> &[Self::Item] {
             <T as RepSliceExt>::as_slice(*self)
         }
@@ -105,7 +100,6 @@ pub mod ext {
     impl<'a, T: RepSliceExt + ?Sized> RepSliceExt for &'a mut T {
         type Item = T::Item;
 
-        #[inline]
         fn as_slice(&self) -> &[Self::Item] {
             <T as RepSliceExt>::as_slice(*self)
         }
@@ -114,7 +108,6 @@ pub mod ext {
     impl<T> RepSliceExt for [T] {
         type Item = T;
 
-        #[inline]
         fn as_slice(&self) -> &[Self::Item] {
             self
         }
@@ -123,7 +116,6 @@ pub mod ext {
     impl<T> RepSliceExt for Vec<T> {
         type Item = T;
 
-        #[inline]
         fn as_slice(&self) -> &[Self::Item] {
             &self[..]
         }
@@ -135,7 +127,6 @@ pub mod ext {
                 impl<T> RepSliceExt for [T; $l] {
                     type Item = T;
 
-                    #[inline]
                     fn as_slice(&self) -> &[Self::Item] {
                         &self[..]
                     }
@@ -160,7 +151,6 @@ impl<T> RepInterp<T> {
     // a name is bound multiple times, as the previous binding will shadow the
     // original `Iterator` object. This allows us to avoid advancing the
     // iterator multiple times per iteration.
-    #[inline]
     pub fn next(self) -> Option<T> {
         Some(self.0)
     }
@@ -169,7 +159,6 @@ impl<T> RepInterp<T> {
 impl<T: ext::RepSliceExt> ext::RepSliceExt for RepInterp<T> {
     type Item = T::Item;
 
-    #[inline]
     fn as_slice(&self) -> &[Self::Item] {
         self.0.as_slice()
     }
@@ -184,7 +173,6 @@ impl<T: Iterator> Iterator for RepInterp<T> {
 }
 
 impl<T: ToTokens> ToTokens for RepInterp<T> {
-    #[inline]
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.0.to_tokens(tokens);
     }
