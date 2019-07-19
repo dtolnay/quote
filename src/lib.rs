@@ -88,7 +88,6 @@
     feature = "proc-macro"
 ))]
 extern crate proc_macro;
-extern crate proc_macro2;
 
 mod ext;
 mod format;
@@ -100,9 +99,9 @@ mod to_tokens;
 #[path = "runtime.rs"]
 pub mod __rt;
 
-pub use ext::TokenStreamExt;
-pub use ident_fragment::IdentFragment;
-pub use to_tokens::ToTokens;
+pub use crate::ext::TokenStreamExt;
+pub use crate::ident_fragment::IdentFragment;
+pub use crate::to_tokens::ToTokens;
 
 /// The whole point.
 ///

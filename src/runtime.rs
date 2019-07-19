@@ -1,8 +1,8 @@
-use ext::TokenStreamExt;
-pub use proc_macro2::*;
+use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use std::fmt;
 use std::ops::BitOr;
-use {IdentFragment, ToTokens};
+
+pub use proc_macro2::*;
 
 pub struct HasIterator; // True
 pub struct ThereIsNoIteratorInRepetition; // False
@@ -43,8 +43,8 @@ impl BitOr<HasIterator> for HasIterator {
 /// the returned value should be idempotent.
 pub mod ext {
     use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
+    use crate::ToTokens;
     use std::slice;
-    use ToTokens;
 
     /// Extension trait providing the `__quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {

@@ -2,12 +2,8 @@
 
 use std::borrow::Cow;
 
-extern crate proc_macro2;
-#[macro_use]
-extern crate quote;
-
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::TokenStreamExt;
+use quote::{format_ident, quote, TokenStreamExt};
 
 struct X;
 
