@@ -70,13 +70,3 @@ macro_rules! ident_fragment_display {
 
 ident_fragment_display!(bool, str, String);
 ident_fragment_display!(u8, u16, u32, u64, u128, usize);
-
-// XXX: Should we implement `IdentFragment` for signed integers? It's a touch
-// inconvenient that the default inferred type for integer literals isn't a
-// valid `IdentFragment`.
-
-// XXX: Should `IdentFragment` be implemented for types like `NonZeroUsize`
-// ident_fragment_display!(
-//     num::NonZeroU8, num::NonZeroU16, num::NonZeroU32,
-//     num::NonZeroU64, num::NonZeroU128, num::NonZeroUsize
-// );

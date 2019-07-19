@@ -336,8 +336,6 @@ fn test_format_ident() {
     assert_eq!(id2, "Hello5");
     assert_eq!(id3, "HelloAa_10");
     assert_eq!(id4, "Aa");
-
-    // XXX: No way to test spans are set correctly?
 }
 
 #[test]
@@ -349,8 +347,6 @@ fn test_format_ident_strip_raw() {
     assert_eq!(id, "r#struct");
     assert_eq!(my_id, "MyIdstruct");
     assert_eq!(raw_my_id, "r#MyIdstruct");
-
-    // XXX: No way to test spans are set correctly?
 }
 
 #[test]
