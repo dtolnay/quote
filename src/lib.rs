@@ -486,7 +486,7 @@ macro_rules! quote_bind_into_iter {
     ($has_iter:ident $var:ident) => {
         // `mut` may be unused if $var occurs multiple times in the list.
         #[allow(unused_mut)]
-        let (mut $var, i) = $var.__quote_into_iter();
+        let (mut $var, i) = $var.quote_into_iter();
         let $has_iter = $has_iter | i;
     };
 }

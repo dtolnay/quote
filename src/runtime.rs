@@ -38,7 +38,7 @@ impl BitOr<HasIterator> for HasIterator {
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
 ///
-/// These traits expose a `__quote_into_iter` method which should allow calling
+/// These traits expose a `quote_into_iter` method which should allow calling
 /// whichever impl happens to be applicable. Calling that method repeatedly on
 /// the returned value should be idempotent.
 pub mod ext {
@@ -46,45 +46,45 @@ pub mod ext {
     use crate::ToTokens;
     use std::slice;
 
-    /// Extension trait providing the `__quote_into_iter` method on iterators.
+    /// Extension trait providing the `quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {
-        fn __quote_into_iter(self) -> (Self, HasIter) {
+        fn quote_into_iter(self) -> (Self, HasIter) {
             (self, HasIter)
         }
     }
 
     impl<T: Iterator> RepIteratorExt for T {}
 
-    /// Extension trait providing the `__quote_into_iter` method for
+    /// Extension trait providing the `quote_into_iter` method for
     /// non-iterable types. These types don't produce an iterator and don't set
     /// the `_has_iter` outparameter.
     pub trait RepToTokensExt {
-        /// Pretend to be an iterator for the purposes of `__quote_into_iter`.
-        /// This allows repeated calls to `__quote_into_iter` to not set the
+        /// Pretend to be an iterator for the purposes of `quote_into_iter`.
+        /// This allows repeated calls to `quote_into_iter` to not set the
         /// `has_iter` outparameter.
         fn next(&self) -> Option<&Self> {
             Some(self)
         }
 
-        fn __quote_into_iter<'a>(&'a self) -> (&'a Self, DoesNotHaveIter) {
+        fn quote_into_iter<'a>(&'a self) -> (&'a Self, DoesNotHaveIter) {
             (self, DoesNotHaveIter)
         }
     }
 
     impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
 
-    /// Extension trait providing the `__quote_into_iter` method for types
+    /// Extension trait providing the `quote_into_iter` method for types
     /// convertable into slices.
     ///
     /// NOTE: This is implemented manually, rather than by using a blanket impl
     /// over `AsRef<[T]>` to reduce the chance of ambiguity conflicts with other
-    /// `__quote_into_iter` methods from this module.
+    /// `quote_into_iter` methods from this module.
     pub trait RepSliceExt {
         type Item;
 
         fn as_slice(&self) -> &[Self::Item];
 
-        fn __quote_into_iter<'a>(&'a self) -> (slice::Iter<'a, Self::Item>, HasIter) {
+        fn quote_into_iter<'a>(&'a self) -> (slice::Iter<'a, Self::Item>, HasIter) {
             (self.as_slice().iter(), HasIter)
         }
     }
