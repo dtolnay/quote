@@ -66,7 +66,7 @@ pub mod ext {
             Some(self)
         }
 
-        fn quote_into_iter<'a>(&'a self) -> (&'a Self, DoesNotHaveIter) {
+        fn quote_into_iter(&self) -> (&Self, DoesNotHaveIter) {
             (self, DoesNotHaveIter)
         }
     }
@@ -84,7 +84,7 @@ pub mod ext {
 
         fn as_slice(&self) -> &[Self::Item];
 
-        fn quote_into_iter<'a>(&'a self) -> (slice::Iter<'a, Self::Item>, HasIter) {
+        fn quote_into_iter(&self) -> (slice::Iter<Self::Item>, HasIter) {
             (self.as_slice().iter(), HasIter)
         }
     }
