@@ -56,12 +56,12 @@ pub mod ext {
     impl<T: Iterator> RepIteratorExt for T {}
 
     /// Extension trait providing the `quote_into_iter` method for
-    /// non-iterable types. These types don't produce an iterator and don't set
-    /// the `_has_iter` outparameter.
+    /// non-iterable types. These types interpolate the same value in each
+    /// iteration of the repetition.
     pub trait RepToTokensExt {
         /// Pretend to be an iterator for the purposes of `quote_into_iter`.
-        /// This allows repeated calls to `quote_into_iter` to not set the
-        /// `has_iter` outparameter.
+        /// This allows repeated calls to `quote_into_iter` to continue
+        /// correctly returning DoesNotHaveIter.
         fn next(&self) -> Option<&Self> {
             Some(self)
         }
