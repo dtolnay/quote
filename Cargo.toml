@@ -17,7 +17,7 @@ publish = false # contains breaking changes
 name = "quote"
 
 [dependencies]
-proc-macro2 = { version = "0.4.21", default-features = false }
+proc-macro2-next = { version = "0.4.21", default-features = false }
 
 [dev-dependencies]
 rustversion = "0.1"
@@ -27,7 +27,10 @@ trybuild = "1.0"
 default = ["proc-macro"]
 # Disabling the proc-macro feature removes the dynamic library dependency on
 # libproc_macro in the rustc compiler.
-proc-macro = ["proc-macro2/proc-macro"]
+proc-macro = ["proc-macro2-next/proc-macro"]
 
 [badges]
 travis-ci = { repository = "dtolnay/quote" }
+
+[patch.crates-io]
+proc-macro2-next = { git = "https://github.com/alexcrichton/proc-macro2", branch = "next" }
