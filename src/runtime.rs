@@ -42,6 +42,7 @@ impl BitOr<HasIterator> for HasIterator {
 /// whichever impl happens to be applicable. Calling that method repeatedly on
 /// the returned value should be idempotent.
 pub mod ext {
+    use super::RepInterp;
     use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use crate::ToTokens;
     use std::slice;
@@ -73,62 +74,54 @@ pub mod ext {
 
     impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
 
-    /// Extension trait providing the `quote_into_iter` method for types
-    /// convertable into slices.
-    ///
-    /// NOTE: This is implemented manually, rather than by using a blanket impl
-    /// over `AsRef<[T]>` to reduce the chance of ambiguity conflicts with other
-    /// `quote_into_iter` methods from this module.
-    pub trait RepSliceExt {
-        type Item;
+    /// Extension trait providing the `quote_into_iter` method for types that
+    /// can be referenced as an iterator.
+    pub trait RepAsIteratorExt<'q> {
+        type Iter: Iterator;
 
-        fn as_slice(&self) -> &[Self::Item];
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter);
+    }
 
-        fn quote_into_iter(&self) -> (slice::Iter<Self::Item>, HasIter) {
-            (self.as_slice().iter(), HasIter)
+    impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a T {
+        type Iter = T::Iter;
+
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+            <T as RepAsIteratorExt>::quote_into_iter(*self)
         }
     }
 
-    impl<'a, T: RepSliceExt + ?Sized> RepSliceExt for &'a T {
-        type Item = T::Item;
+    impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a mut T {
+        type Iter = T::Iter;
 
-        fn as_slice(&self) -> &[Self::Item] {
-            <T as RepSliceExt>::as_slice(*self)
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+            <T as RepAsIteratorExt>::quote_into_iter(*self)
         }
     }
 
-    impl<'a, T: RepSliceExt + ?Sized> RepSliceExt for &'a mut T {
-        type Item = T::Item;
+    impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
+        type Iter = slice::Iter<'q, T>;
 
-        fn as_slice(&self) -> &[Self::Item] {
-            <T as RepSliceExt>::as_slice(*self)
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+            (self.iter(), HasIter)
         }
     }
 
-    impl<T> RepSliceExt for [T] {
-        type Item = T;
+    impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T> {
+        type Iter = slice::Iter<'q, T>;
 
-        fn as_slice(&self) -> &[Self::Item] {
-            self
-        }
-    }
-
-    impl<T> RepSliceExt for Vec<T> {
-        type Item = T;
-
-        fn as_slice(&self) -> &[Self::Item] {
-            &self[..]
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+            (self.iter(), HasIter)
         }
     }
 
     macro_rules! array_rep_slice {
         ($($l:tt)*) => {
             $(
-                impl<T> RepSliceExt for [T; $l] {
-                    type Item = T;
+                impl<'q, T: 'q> RepAsIteratorExt<'q> for [T; $l] {
+                    type Iter = slice::Iter<'q, T>;
 
-                    fn as_slice(&self) -> &[Self::Item] {
-                        &self[..]
+                    fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+                        (self.iter(), HasIter)
                     }
                 }
             )*
@@ -139,6 +132,14 @@ pub mod ext {
         0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
         17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
     );
+
+    impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T> {
+        type Iter = T::Iter;
+
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+            self.0.quote_into_iter()
+        }
+    }
 }
 
 // Helper type used within interpolations to allow for repeated binding names.
@@ -153,14 +154,6 @@ impl<T> RepInterp<T> {
     // iterator multiple times per iteration.
     pub fn next(self) -> Option<T> {
         Some(self.0)
-    }
-}
-
-impl<T: ext::RepSliceExt> ext::RepSliceExt for RepInterp<T> {
-    type Item = T::Item;
-
-    fn as_slice(&self) -> &[Self::Item] {
-        self.0.as_slice()
     }
 }
 
