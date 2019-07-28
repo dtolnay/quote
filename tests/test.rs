@@ -1,6 +1,7 @@
 #![cfg_attr(feature = "cargo-clippy", allow(blacklisted_name))]
 
 use std::borrow::Cow;
+use std::collections::BTreeSet;
 
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{format_ident, quote, TokenStreamExt};
@@ -244,6 +245,20 @@ fn test_duplicate_name_repetition_no_copy() {
 
     let tokens = quote! {
         #(#foo: #foo),*
+    };
+
+    let expected = r#""a" : "a" , "b" : "b""#;
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_btreeset_repetition() {
+    let mut set = BTreeSet::new();
+    set.insert("a".to_owned());
+    set.insert("b".to_owned());
+
+    let tokens = quote! {
+        #(#set: #set),*
     };
 
     let expected = r#""a" : "a" , "b" : "b""#;
