@@ -1,6 +1,6 @@
 [package]
 name = "quote-next"
-version = "0.6.13" # don't forget to update html_root_url, version in readme for breaking changes
+version = "1.0.0-rc1" # don't forget to update html_root_url, version in readme for breaking changes
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Quasi-quoting macro quote!(...)"
@@ -11,13 +11,12 @@ categories = ["development-tools::procedural-macro-helpers"]
 readme = "README.md"
 include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 edition = "2018"
-publish = false # contains breaking changes
 
 [lib]
 name = "quote"
 
 [dependencies]
-proc-macro2-next = { version = "0.4.21", default-features = false }
+proc-macro2-next = { version = "1.0.0-rc1", default-features = false }
 
 [dev-dependencies]
 rustversion = "0.1"
@@ -31,6 +30,3 @@ proc-macro = ["proc-macro2-next/proc-macro"]
 
 [badges]
 travis-ci = { repository = "dtolnay/quote" }
-
-[patch.crates-io]
-proc-macro2-next = { git = "https://github.com/alexcrichton/proc-macro2", branch = "next" }
