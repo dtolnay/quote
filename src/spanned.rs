@@ -2,17 +2,17 @@ use crate::ToTokens;
 use proc_macro2::{Span, TokenStream};
 
 pub trait Spanned {
-    fn span(&self) -> Span;
+    fn __span(&self) -> Span;
 }
 
 impl Spanned for Span {
-    fn span(&self) -> Span {
+    fn __span(&self) -> Span {
         *self
     }
 }
 
 impl<T: ToTokens> Spanned for T {
-    fn span(&self) -> Span {
+    fn __span(&self) -> Span {
         join_spans(self.into_token_stream())
     }
 }
