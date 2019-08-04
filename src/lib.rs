@@ -103,6 +103,9 @@ pub use crate::ext::TokenStreamExt;
 pub use crate::ident_fragment::IdentFragment;
 pub use crate::to_tokens::ToTokens;
 
+#[doc(hidden)]
+pub mod spanned;
+
 /// The whole point.
 ///
 /// Performs variable interpolation against the input and produces it as
