@@ -103,6 +103,7 @@ pub use crate::ext::TokenStreamExt;
 pub use crate::ident_fragment::IdentFragment;
 pub use crate::to_tokens::ToTokens;
 
+// Not public API.
 #[doc(hidden)]
 pub mod spanned;
 
