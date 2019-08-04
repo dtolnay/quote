@@ -11,7 +11,7 @@ impl Spanned for Span {
     }
 }
 
-impl<T: ToTokens> Spanned for T {
+impl<T: ?Sized + ToTokens> Spanned for T {
     fn __span(&self) -> Span {
         join_spans(self.into_token_stream())
     }
