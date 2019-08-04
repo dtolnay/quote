@@ -41,7 +41,7 @@
 //! [a]: https://serde.rs/
 //! [`quote_spanned!`]: macro.quote_spanned.html
 //!
-//! ```edition2018
+//! ```
 //! # use quote::quote;
 //! #
 //! # let generics = "";
@@ -180,7 +180,7 @@ pub mod spanned;
 ///
 /// [Syn]: https://github.com/dtolnay/syn
 ///
-/// ```edition2018
+/// ```
 /// # #[cfg(any())]
 /// extern crate proc_macro;
 /// # extern crate proc_macro2;
@@ -224,7 +224,7 @@ pub mod spanned;
 /// produced by `quote!` themselves implement `ToTokens` and so can be
 /// interpolated into later `quote!` invocations to build up a final result.
 ///
-/// ```edition2018
+/// ```
 /// # use quote::quote;
 /// #
 /// let type_definition = quote! {...};
@@ -246,7 +246,7 @@ pub mod spanned;
 /// behavior of concatenating them. The underscore and the identifier will
 /// continue to be two separate tokens as if you had written `_ x`.
 ///
-/// ```edition2018
+/// ```
 /// # use proc_macro2::{self as syn, Span};
 /// # use quote::quote;
 /// #
@@ -262,7 +262,7 @@ pub mod spanned;
 /// The solution is to perform token-level manipulations using the APIs provided
 /// by Syn and proc-macro2.
 ///
-/// ```edition2018
+/// ```
 /// # use proc_macro2::{self as syn, Span};
 /// # use quote::quote;
 /// #
@@ -282,7 +282,7 @@ pub mod spanned;
 /// a constructor called `new`. We have the type in a variable called
 /// `field_type` of type `syn::Type` and want to invoke the constructor.
 ///
-/// ```edition2018
+/// ```
 /// # use quote::quote;
 /// #
 /// # let field_type = quote!(...);
@@ -300,7 +300,7 @@ pub mod spanned;
 /// syntax. Ordinarily in handwritten Rust we would write `Vec::<i32>::new()`
 /// but for macros often the following is more convenient.
 ///
-/// ```edition2018
+/// ```
 /// # use quote::quote;
 /// #
 /// # let field_type = quote!(...);
@@ -315,7 +315,7 @@ pub mod spanned;
 ///
 /// A similar pattern is appropriate for trait methods.
 ///
-/// ```edition2018
+/// ```
 /// # use quote::quote;
 /// #
 /// # let field_type = quote!(...);
@@ -343,7 +343,7 @@ macro_rules! quote {
 ///
 /// [`Span`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html
 ///
-/// ```edition2018
+/// ```
 /// # use proc_macro2::Span;
 /// # use quote::quote_spanned;
 /// #
@@ -382,7 +382,7 @@ macro_rules! quote {
 ///
 /// [`Sync`]: https://doc.rust-lang.org/std/marker/trait.Sync.html
 ///
-/// ```edition2018
+/// ```
 /// # use quote::{quote_spanned, TokenStreamExt, ToTokens};
 /// # use proc_macro2::{Span, TokenStream};
 /// #

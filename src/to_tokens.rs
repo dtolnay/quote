@@ -22,7 +22,7 @@ pub trait ToTokens {
     /// Example implementation for a struct representing Rust paths like
     /// `std::cmp::PartialEq`:
     ///
-    /// ```edition2018
+    /// ```
     /// use proc_macro2::{TokenTree, Spacing, Span, Punct, TokenStream};
     /// use quote::{TokenStreamExt, ToTokens};
     ///

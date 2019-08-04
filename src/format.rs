@@ -33,7 +33,7 @@
 /// final identifier, falling back to [`Span::call_site`] when no identifiers
 /// are provided.
 ///
-/// ```edition2018
+/// ```
 /// # use quote::format_ident;
 /// # let ident = format_ident!("Ident");
 /// // If `ident` is an Ident, the span of `my_ident` will be inherited from it.
@@ -44,7 +44,7 @@
 /// Alternatively, the span can be overridden by passing the `span` named
 /// argument.
 ///
-/// ```edition2018
+/// ```
 /// # use quote::format_ident;
 /// # const IGNORE_TOKENS: &'static str = stringify! {
 /// let my_span = /* ... */;
@@ -64,7 +64,7 @@
 /// # Examples
 ///
 /// Composing raw and non-raw identifiers:
-/// ```edition2018
+/// ```
 /// # use quote::format_ident;
 /// let my_ident = format_ident!("My{}", "Ident");
 /// assert_eq!(my_ident, "MyIdent");
@@ -77,7 +77,7 @@
 /// ```
 ///
 /// Integer formatting options:
-/// ```edition2018
+/// ```
 /// # use quote::format_ident;
 /// let num: u32 = 10;
 ///
