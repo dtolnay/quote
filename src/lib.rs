@@ -333,6 +333,54 @@ pub mod spanned;
 /// }
 /// # ;
 /// ```
+///
+/// ## Interpolating text inside of doc comments
+///
+/// Neither doc comments nor string literals get interpolation behavior in
+/// quote:
+///
+/// ```compile_fail
+/// quote! {
+///     /// try to interpolate: #ident
+///     ///
+///     /// ...
+/// }
+/// ```
+///
+/// ```compile_fail
+/// quote! {
+///     #[doc = "try to interpolate: #ident"]
+/// }
+/// ```
+///
+/// Macro calls in a doc attribute are not valid syntax:
+///
+/// ```compile_fail
+/// quote! {
+///     #[doc = concat!("try to interpolate: ", stringify!(#ident))]
+/// }
+/// ```
+///
+/// Instead the best way to build doc comments that involve variables is by
+/// formatting the doc string literal outside of quote.
+///
+/// ```rust
+/// # use proc_macro2::{Ident, Span};
+/// # use quote::quote;
+/// #
+/// # const IGNORE: &str = stringify! {
+/// let msg = format!(...);
+/// # };
+/// #
+/// # let ident = Ident::new("var", Span::call_site());
+/// # let msg = format!("try to interpolate: {}", ident);
+/// quote! {
+///     #[doc = #msg]
+///     ///
+///     /// ...
+/// }
+/// # ;
+/// ```
 #[macro_export]
 macro_rules! quote {
     ($($tt:tt)*) => {
