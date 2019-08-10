@@ -58,8 +58,8 @@
 ///
 /// # Panics
 ///
-/// This method will panic if the formatted string is not a valid identifier, or
-/// a formatting trait implementation returned an error.
+/// This method will panic if the resulting formatted string is not a valid
+/// identifier.
 ///
 /// # Examples
 ///
