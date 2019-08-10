@@ -1,6 +1,4 @@
-/// Formatting macro for constructing [`Ident`]s.
-///
-/// [`Ident`]: `proc_macro2::Ident`
+/// Formatting macro for constructing `Ident`s.
 ///
 /// # Syntax
 ///
@@ -20,18 +18,20 @@
 ///
 /// # IdentFragment
 ///
-/// Unlike [`format!`], this macro uses the [`IdentFragment`] formatting trait
-/// by default. This trait is like `Display`, with a few differences:
+/// Unlike `format!`, this macro uses the [`IdentFragment`] formatting trait by
+/// default. This trait is like `Display`, with a few differences:
 ///
 /// * `IdentFragment` is only implemented for a limited set of types, such as
 ///    unsigned integers and strings.
 /// * [`Ident`] arguments will have their `r#` prefixes stripped, if present.
 ///
+/// [`Ident`]: `proc_macro2::Ident`
+///
 /// # Hygiene
 ///
-/// The [`Span`] of the first [`Ident`] argument is used as the span of the
-/// final identifier, falling back to [`Span::call_site`] when no identifiers
-/// are provided.
+/// The [`Span`] of the first `Ident` argument is used as the span of the final
+/// identifier, falling back to [`Span::call_site`] when no identifiers are
+/// provided.
 ///
 /// ```
 /// # use quote::format_ident;

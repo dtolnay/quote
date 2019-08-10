@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, Span};
 use std::fmt;
 
-/// Specialized formatting trait used by [`format_ident!`].
+/// Specialized formatting trait used by `format_ident!`.
 ///
 /// [`Ident`] arguments formatted using this trait will have their `r#` prefix
 /// stripped, if present.
@@ -11,7 +11,7 @@ pub trait IdentFragment {
     /// Format this value as an identifier fragment.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result;
 
-    /// Span associated with this [`IdentFragment`].
+    /// Span associated with this `IdentFragment`.
     ///
     /// If non-`None`, may be inherited by formatted identifiers.
     fn span(&self) -> Option<Span> {

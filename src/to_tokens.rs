@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
 
-/// Types that can be interpolated inside a [`quote!`] invocation.
+/// Types that can be interpolated inside a `quote!` invocation.
 ///
 /// [`quote!`]: macro.quote.html
 pub trait ToTokens {
