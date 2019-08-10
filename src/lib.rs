@@ -429,11 +429,7 @@ macro_rules! quote {
 ///
 /// In this example it is important for the where-clause to be spanned with the
 /// line/column information of the user's input type so that error messages are
-/// placed appropriately by the compiler. But it is also incredibly important
-/// that `Sync` resolves at the macro definition site and not the macro call
-/// site. If we resolve `Sync` at the same span that the user's type is going to
-/// be resolved, then they could bypass our check by defining their own trait
-/// named `Sync` that is implemented for their type.
+/// placed appropriately by the compiler.
 #[macro_export]
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {{
