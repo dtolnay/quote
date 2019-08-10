@@ -122,8 +122,8 @@ pub mod spanned;
 /// Repetition is done using `#(...)*` or `#(...),*` again similar to
 /// `macro_rules!`. This iterates through the elements of any variable
 /// interpolated within the repetition and inserts a copy of the repetition body
-/// for each one. The variables in an interpolation may be anything that
-/// implements `IntoIterator`, including `Vec` or a pre-existing iterator.
+/// for each one. The variables in an interpolation may be a `Vec`, slice,
+/// `BTreeSet`, or any `Iterator`.
 ///
 /// - `#(#var)*` — no separators
 /// - `#(#var),*` — the character before the asterisk is used as a separator
@@ -262,6 +262,22 @@ pub mod spanned;
 /// #
 /// let concatenated = format!("_{}", ident);
 /// let varname = syn::Ident::new(&concatenated, ident.span());
+/// quote! {
+///     let mut #varname = 0;
+/// }
+/// # ;
+/// ```
+///
+/// For identifier concatenation specifically, since this is such a common case,
+/// the [`format_ident!`] macro provides a more concise equivalent of the above.
+///
+/// ```
+/// # use proc_macro2::{Ident, Span};
+/// # use quote::{format_ident, quote};
+/// #
+/// # let ident = Ident::new("i", Span::call_site());
+/// #
+/// let varname = format_ident!("_{}", ident);
 /// quote! {
 ///     let mut #varname = 0;
 /// }
