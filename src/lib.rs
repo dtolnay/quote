@@ -6,8 +6,8 @@
 //! Procedural macros in Rust receive a stream of tokens as input, execute
 //! arbitrary Rust code to determine how to manipulate those tokens, and produce
 //! a stream of tokens to hand back to the compiler to compile into the caller's
-//! crate. Quasi-quoting is a solution to one piece of that -- producing tokens
-//! to return to the compiler.
+//! crate. Quasi-quoting is a solution to one piece of that &mdash; producing
+//! tokens to return to the compiler.
 //!
 //! The idea of quasi-quoting is that we write *code* that we treat as *data*.
 //! Within the `quote!` macro, we can write what looks like code to our text
@@ -346,8 +346,9 @@ macro_rules! quote {
 /// # Syntax
 ///
 /// A span expression of type [`Span`], followed by `=>`, followed by the tokens
-/// to quote. The span expression should be brief -- use a variable for anything
-/// more than a few characters. There should be no space before the `=>` token.
+/// to quote. The span expression should be brief &mdash; use a variable for
+/// anything more than a few characters. There should be no space before the
+/// `=>` token.
 ///
 /// [`Span`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html
 ///

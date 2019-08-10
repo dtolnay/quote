@@ -13,8 +13,8 @@ structures into tokens of source code.
 Procedural macros in Rust receive a stream of tokens as input, execute arbitrary
 Rust code to determine how to manipulate those tokens, and produce a stream of
 tokens to hand back to the compiler to compile into the caller's crate.
-Quasi-quoting is a solution to one piece of that -- producing tokens to return
-to the compiler.
+Quasi-quoting is a solution to one piece of that &mdash; producing tokens to
+return to the compiler.
 
 The idea of quasi-quoting is that we write *code* that we treat as *data*.
 Within the `quote!` macro, we can write what looks like code to our text editor
