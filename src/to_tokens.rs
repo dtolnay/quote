@@ -58,13 +58,21 @@ pub trait ToTokens {
     ///
     /// This method is implicitly implemented using `to_tokens`, and acts as a
     /// convenience method for consumers of the `ToTokens` trait.
+    fn to_token_stream(&self) -> TokenStream {
+        let mut tokens = TokenStream::new();
+        self.to_tokens(&mut tokens);
+        tokens
+    }
+
+    /// Convert `self` directly into a `TokenStream` object.
+    ///
+    /// This method is implicitly implemented using `to_tokens`, and acts as a
+    /// convenience method for consumers of the `ToTokens` trait.
     fn into_token_stream(self) -> TokenStream
     where
         Self: Sized,
     {
-        let mut tokens = TokenStream::new();
-        self.to_tokens(&mut tokens);
-        tokens
+        self.to_token_stream()
     }
 }
 
