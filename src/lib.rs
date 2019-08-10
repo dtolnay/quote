@@ -100,8 +100,10 @@ pub mod spanned;
 /// The whole point.
 ///
 /// Performs variable interpolation against the input and produces it as
-/// [`TokenStream`]. For returning tokens to the compiler in a procedural macro, use
-/// `into()` to build a `TokenStream`.
+/// [`proc_macro2::TokenStream`].
+///
+/// Note: for returning tokens to the compiler in a procedural macro, use
+/// `.into()` on the result to convert to [`proc_macro::TokenStream`].
 ///
 /// [`TokenStream`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.TokenStream.html
 ///
