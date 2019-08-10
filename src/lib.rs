@@ -21,12 +21,9 @@
 //! general-purpose Rust quasi-quoting library and is not specific to procedural
 //! macros.
 //!
-//! *Version requirement: Quote supports any compiler version back to Rust's
-//! very first support for procedural macros in Rust 1.15.0.*
-//!
 //! ```toml
 //! [dependencies]
-//! quote = "0.6"
+//! quote-next = "1.0.0-rc2"
 //! ```
 //!
 //! # Example
@@ -72,13 +69,6 @@
 //!     }
 //! };
 //! ```
-//!
-//! # Recursion limit
-//!
-//! The `quote!` macro relies on deep recursion so some large invocations may
-//! fail with "recursion limit reached" when you compile. If it fails, bump up
-//! the recursion limit by adding `#![recursion_limit = "128"]` to your crate.
-//! An even higher limit may be necessary for especially large invocations.
 
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote-next/1.0.0-rc2")]
