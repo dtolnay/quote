@@ -36,14 +36,7 @@ fn join_spans(tokens: TokenStream) -> Span {
         None => return Span::call_site(),
     };
 
-    #[cfg(procmacro2_semver_exempt)]
-    return iter
-        .fold(None, |_prev, next| Some(next))
+    iter.fold(None, |_prev, next| Some(next))
         .and_then(|last| first.join(last))
-        .unwrap_or(first);
-
-    // We can't join spans without procmacro2_semver_exempt so just grab the
-    // first one.
-    #[cfg(not(procmacro2_semver_exempt))]
-    return first;
+        .unwrap_or(first)
 }
