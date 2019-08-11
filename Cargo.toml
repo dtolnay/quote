@@ -16,7 +16,7 @@ edition = "2018"
 name = "quote"
 
 [dependencies]
-proc-macro2-next = { version = "1.0.0-rc1", default-features = false }
+proc-macro2-next = { version = "1.0.0-rc2", default-features = false }
 
 [dev-dependencies]
 rustversion = "0.1"
