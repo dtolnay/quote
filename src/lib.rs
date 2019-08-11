@@ -23,7 +23,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! quote-next = "1.0.0-rc2"
+//! quote-next = "1.0.0-rc3"
 //! ```
 //!
 //! <br>
@@ -73,7 +73,7 @@
 //! ```
 
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote-next/1.0.0-rc2")]
+#![doc(html_root_url = "https://docs.rs/quote-next/1.0.0-rc3")]
 
 #[cfg(all(
     not(all(target_arch = "wasm32", target_os = "unknown")),
