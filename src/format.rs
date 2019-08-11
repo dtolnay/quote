@@ -1,5 +1,7 @@
 /// Formatting macro for constructing `Ident`s.
 ///
+/// <br>
+///
 /// # Syntax
 ///
 /// Syntax is copied from the [`format!`] macro, supporting both positional and
@@ -16,6 +18,8 @@
 ///
 /// See [`std::fmt`] for more information.
 ///
+/// <br>
+///
 /// # IdentFragment
 ///
 /// Unlike `format!`, this macro uses the [`IdentFragment`] formatting trait by
@@ -26,6 +30,8 @@
 /// * [`Ident`] arguments will have their `r#` prefixes stripped, if present.
 ///
 /// [`Ident`]: `proc_macro2::Ident`
+///
+/// <br>
 ///
 /// # Hygiene
 ///
@@ -56,10 +62,14 @@
 /// [`Span`]: `proc_macro2::Span`
 /// [`Span::call_site`]: `proc_macro2::Span::call_site`
 ///
+/// <p><br></p>
+///
 /// # Panics
 ///
 /// This method will panic if the resulting formatted string is not a valid
 /// identifier.
+///
+/// <br>
 ///
 /// # Examples
 ///

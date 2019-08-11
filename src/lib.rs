@@ -26,6 +26,8 @@
 //! quote-next = "1.0.0-rc2"
 //! ```
 //!
+//! <br>
+//!
 //! # Example
 //!
 //! The following quasi-quoted block of code is something you might find in [a]
@@ -107,6 +109,8 @@ pub mod spanned;
 ///
 /// [`TokenStream`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.TokenStream.html
 ///
+/// <br>
+///
 /// # Interpolation
 ///
 /// Variable interpolation is done with `#var` (similar to `$var` in
@@ -130,6 +134,8 @@ pub mod spanned;
 /// - `#( struct #var; )*` — the repetition can contain other tokens
 /// - `#( #k => println!("{}", #v), )*` — even multiple interpolations
 ///
+/// <br>
+///
 /// # Hygiene
 ///
 /// Any interpolated tokens preserve the `Span` information provided by their
@@ -141,6 +147,8 @@ pub mod spanned;
 /// A different span can be provided through the [`quote_spanned!`] macro.
 ///
 /// [`quote_spanned!`]: macro.quote_spanned.html
+///
+/// <br>
 ///
 /// # Return type
 ///
@@ -162,9 +170,11 @@ pub mod spanned;
 ///
 /// [`From`]: https://doc.rust-lang.org/std/convert/trait.From.html
 ///
+/// <br>
+///
 /// # Examples
 ///
-/// ## Procedural macro
+/// ### Procedural macro
 ///
 /// The structure of a basic procedural macro is as follows. Refer to the [Syn]
 /// crate for further useful guidance on using `quote!` as part of a procedural
@@ -209,7 +219,9 @@ pub mod spanned;
 /// }
 /// ```
 ///
-/// ## Combining quoted fragments
+/// <p><br></p>
+///
+/// ### Combining quoted fragments
 ///
 /// Usually you don't end up constructing an entire final `TokenStream` in one
 /// piece. Different parts may come from different helper functions. The tokens
@@ -228,7 +240,9 @@ pub mod spanned;
 /// };
 /// ```
 ///
-/// ## Constructing identifiers
+/// <p><br></p>
+///
+/// ### Constructing identifiers
 ///
 /// Suppose we have an identifier `ident` which came from somewhere in a macro
 /// input and we need to modify it in some way for the macro output. Let's
@@ -284,7 +298,9 @@ pub mod spanned;
 /// # ;
 /// ```
 ///
-/// ## Making method calls
+/// <p><br></p>
+///
+/// ### Making method calls
 ///
 /// Let's say our macro requires some type specified in the macro input to have
 /// a constructor called `new`. We have the type in a variable called
@@ -334,7 +350,9 @@ pub mod spanned;
 /// # ;
 /// ```
 ///
-/// ## Interpolating text inside of doc comments
+/// <p><br></p>
+///
+/// ### Interpolating text inside of doc comments
 ///
 /// Neither doc comments nor string literals get interpolation behavior in
 /// quote:
@@ -382,7 +400,9 @@ pub mod spanned;
 /// # ;
 /// ```
 ///
-/// ## Indexing into a tuple struct
+/// <p><br></p>
+///
+/// ### Indexing into a tuple struct
 ///
 /// When interpolating indices of a tuple or tuple struct, we need them not to
 /// appears suffixed as integer literals by interpolating them as [`syn::Index`]
@@ -448,6 +468,8 @@ macro_rules! quote {
 /// Same as `quote!`, but applies a given span to all tokens originating within
 /// the macro invocation.
 ///
+/// <br>
+///
 /// # Syntax
 ///
 /// A span expression of type [`Span`], followed by `=>`, followed by the tokens
@@ -482,11 +504,15 @@ macro_rules! quote {
 /// being evaluated in the context of the procedural macro and the remaining
 /// tokens being evaluated in the generated code.
 ///
+/// <br>
+///
 /// # Hygiene
 ///
 /// Any interpolated tokens preserve the `Span` information provided by their
 /// `ToTokens` implementation. Tokens that originate within the `quote_spanned!`
 /// invocation are spanned with the given span argument.
+///
+/// <br>
 ///
 /// # Example
 ///
