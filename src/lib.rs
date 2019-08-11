@@ -381,6 +381,63 @@ pub mod spanned;
 /// }
 /// # ;
 /// ```
+///
+/// ## Indexing into a tuple struct
+///
+/// When interpolating indices of a tuple or tuple struct, we need them not to
+/// appears suffixed as integer literals by interpolating them as [`syn::Index`]
+/// instead.
+///
+/// [`syn::Index`]: https://docs.rs/syn/0.15/syn/struct.Index.html
+///
+/// ```compile_fail
+/// let i = 0usize..self.fields.len();
+///
+/// // expands to 0 + self.0usize.heap_size() + self.1usize.heap_size() + ...
+/// // which is not valid syntax
+/// quote! {
+///     0 #( + self.#i.heap_size() )*
+/// }
+/// ```
+///
+/// ```
+/// # use proc_macro2::{Ident, TokenStream};
+/// # use quote::quote;
+/// #
+/// # mod syn {
+/// #     use proc_macro2::{Literal, TokenStream};
+/// #     use quote::{ToTokens, TokenStreamExt};
+/// #
+/// #     pub struct Index(usize);
+/// #
+/// #     impl From<usize> for Index {
+/// #         fn from(i: usize) -> Self {
+/// #             Index(i)
+/// #         }
+/// #     }
+/// #
+/// #     impl ToTokens for Index {
+/// #         fn to_tokens(&self, tokens: &mut TokenStream) {
+/// #             tokens.append(Literal::usize_unsuffixed(self.0));
+/// #         }
+/// #     }
+/// # }
+/// #
+/// # struct Struct {
+/// #     fields: Vec<Ident>,
+/// # }
+/// #
+/// # impl Struct {
+/// #     fn example(&self) -> TokenStream {
+/// let i = (0..self.fields.len()).map(syn::Index::from);
+///
+/// // expands to 0 + self.0.heap_size() + self.1.heap_size() + ...
+/// quote! {
+///     0 #( + self.#i.heap_size() )*
+/// }
+/// #     }
+/// # }
+/// ```
 #[macro_export]
 macro_rules! quote {
     ($($tt:tt)*) => {
