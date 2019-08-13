@@ -1,6 +1,6 @@
 [package]
-name = "quote-next"
-version = "1.0.0-rc3" # don't forget to update html_root_url, version in readme for breaking changes
+name = "quote"
+version = "1.0.0" # don't forget to update html_root_url, version in readme for breaking changes
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Quasi-quoting macro quote!(...)"
@@ -16,7 +16,7 @@ edition = "2018"
 name = "quote"
 
 [dependencies]
-proc-macro2-next = { version = "1.0.0-rc2", default-features = false }
+proc-macro2 = { version = "1.0", default-features = false }
 
 [dev-dependencies]
 rustversion = "0.1"
@@ -26,7 +26,7 @@ trybuild = "1.0"
 default = ["proc-macro"]
 # Disabling the proc-macro feature removes the dynamic library dependency on
 # libproc_macro in the rustc compiler.
-proc-macro = ["proc-macro2-next/proc-macro"]
+proc-macro = ["proc-macro2/proc-macro"]
 
 [badges]
 travis-ci = { repository = "dtolnay/quote" }
