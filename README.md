@@ -8,7 +8,7 @@ Rust Quasi-Quoting
 This crate provides the [`quote!`] macro for turning Rust syntax tree data
 structures into tokens of source code.
 
-[`quote!`]: https://docs.rs/quote/0.6/quote/macro.quote.html
+[`quote!`]: https://docs.rs/quote/1.0/quote/macro.quote.html
 
 Procedural macros in Rust receive a stream of tokens as input, execute arbitrary
 Rust code to determine how to manipulate those tokens, and produce a stream of
@@ -35,7 +35,7 @@ first support for procedural macros in Rust 1.15.0.*
 
 ```toml
 [dependencies]
-quote = "0.6"
+quote = "1.0"
 ```
 
 ## Syntax
@@ -44,13 +44,13 @@ The quote crate provides a [`quote!`] macro within which you can write Rust code
 that gets packaged into a [`TokenStream`] and can be treated as data. You should
 think of `TokenStream` as representing a fragment of Rust source code.
 
-[`TokenStream`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.TokenStream.html
+[`TokenStream`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.TokenStream.html
 
 Within the `quote!` macro, interpolation is done with `#var`. Any type
 implementing the [`quote::ToTokens`] trait can be interpolated. This includes
 most Rust primitive types as well as most of the syntax tree types from [`syn`].
 
-[`quote::ToTokens`]: https://docs.rs/quote/0.6/quote/trait.ToTokens.html
+[`quote::ToTokens`]: https://docs.rs/quote/1.0/quote/trait.ToTokens.html
 [`syn`]: https://github.com/dtolnay/syn
 
 ```rust
@@ -200,30 +200,12 @@ Any interpolated tokens preserve the `Span` information provided by their
 `ToTokens` implementation. Tokens that originate within a `quote!` invocation
 are spanned with [`Span::call_site()`].
 
-[`Span::call_site()`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html#method.call_site
+[`Span::call_site()`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.Span.html#method.call_site
 
 A different span can be provided explicitly through the [`quote_spanned!`]
 macro.
 
-[`quote_spanned!`]: https://docs.rs/quote/0.6/quote/macro.quote_spanned.html
-
-### Limitations
-
-- A non-repeating variable may not be interpolated inside of a repeating block
-  ([#7]).
-- The same variable may not be interpolated more than once inside of a repeating
-  block ([#8]).
-
-[#7]: https://github.com/dtolnay/quote/issues/7
-[#8]: https://github.com/dtolnay/quote/issues/8
-
-### Recursion limit
-
-The `quote!` macro relies on deep recursion so some large invocations may fail
-with "recursion limit reached" when you compile. If it fails, bump up the
-recursion limit by adding `#![recursion_limit = "128"]` to your crate. An even
-higher limit may be necessary for especially large invocations. You don't need
-this unless the compiler tells you that you need it.
+[`quote_spanned!`]: https://docs.rs/quote/1.0/quote/macro.quote_spanned.html
 
 <br>
 

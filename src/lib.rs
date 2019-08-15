@@ -107,7 +107,7 @@ pub mod spanned;
 /// Note: for returning tokens to the compiler in a procedural macro, use
 /// `.into()` on the result to convert to [`proc_macro::TokenStream`].
 ///
-/// [`TokenStream`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.TokenStream.html
+/// [`TokenStream`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.TokenStream.html
 ///
 /// <br>
 ///
@@ -142,7 +142,7 @@ pub mod spanned;
 /// `ToTokens` implementation. Tokens that originate within the `quote!`
 /// invocation are spanned with [`Span::call_site()`].
 ///
-/// [`Span::call_site()`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html#method.call_site
+/// [`Span::call_site()`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.Span.html#method.call_site
 ///
 /// A different span can be provided through the [`quote_spanned!`] macro.
 ///
@@ -408,7 +408,7 @@ pub mod spanned;
 /// appears suffixed as integer literals by interpolating them as [`syn::Index`]
 /// instead.
 ///
-/// [`syn::Index`]: https://docs.rs/syn/0.15/syn/struct.Index.html
+/// [`syn::Index`]: https://docs.rs/syn/1.0/syn/struct.Index.html
 ///
 /// ```compile_fail
 /// let i = 0usize..self.fields.len();
@@ -477,7 +477,7 @@ macro_rules! quote {
 /// anything more than a few characters. There should be no space before the
 /// `=>` token.
 ///
-/// [`Span`]: https://docs.rs/proc-macro2/0.4/proc_macro2/struct.Span.html
+/// [`Span`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.Span.html
 ///
 /// ```
 /// # use proc_macro2::Span;
