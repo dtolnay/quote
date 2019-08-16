@@ -159,6 +159,16 @@ quote! {
 }
 ```
 
+For identifier concatenation specifically, since this is such a common case,
+the `format_ident!` macro provides a more concise equivalent of the above.
+
+```rust
+let varname = format_ident!("_{}", ident);
+quote! {
+    let mut #varname = 0;
+}
+```
+
 ### Making method calls
 
 Let's say our macro requires some type specified in the macro input to have a
