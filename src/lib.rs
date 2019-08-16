@@ -265,8 +265,26 @@ pub mod spanned;
 /// # ;
 /// ```
 ///
-/// The solution is to perform token-level manipulations using the APIs provided
-/// by Syn and proc-macro2.
+/// The solution is to build a new identifier token with the correct value. As
+/// this is such a common case, the [`format_ident!`] macro provides a
+/// convenient utility for doing so correctly.
+///
+/// ```
+/// # use proc_macro2::{Ident, Span};
+/// # use quote::{format_ident, quote};
+/// #
+/// # let ident = Ident::new("i", Span::call_site());
+/// #
+/// let varname = format_ident!("_{}", ident);
+/// quote! {
+///     let mut #varname = 0;
+/// }
+/// # ;
+/// ```
+///
+/// Alternatively, the APIs provided by Syn and proc-macro2 can be used to
+/// directly build the identifier. This is roughly equivalent to the above, but
+/// will not handle `ident` being a raw identifier.
 ///
 /// ```
 /// # use proc_macro2::{self as syn, Span};
@@ -276,22 +294,6 @@ pub mod spanned;
 /// #
 /// let concatenated = format!("_{}", ident);
 /// let varname = syn::Ident::new(&concatenated, ident.span());
-/// quote! {
-///     let mut #varname = 0;
-/// }
-/// # ;
-/// ```
-///
-/// For identifier concatenation specifically, since this is such a common case,
-/// the [`format_ident!`] macro provides a more concise equivalent of the above.
-///
-/// ```
-/// # use proc_macro2::{Ident, Span};
-/// # use quote::{format_ident, quote};
-/// #
-/// # let ident = Ident::new("i", Span::call_site());
-/// #
-/// let varname = format_ident!("_{}", ident);
 /// quote! {
 ///     let mut #varname = 0;
 /// }

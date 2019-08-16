@@ -148,22 +148,24 @@ quote! {
 }
 ```
 
-The solution is to perform token-level manipulations using the APIs provided by
-Syn and proc-macro2.
+The solution is to build a new identifier token with the correct value. As this
+is such a common case, the `format_ident!` macro provides a convenient utility
+for doing so correctly.
 
 ```rust
-let concatenated = format!("_{}", ident);
-let varname = syn::Ident::new(&concatenated, ident.span());
+let varname = format_ident!("_{}", ident);
 quote! {
     let mut #varname = 0;
 }
 ```
 
-For identifier concatenation specifically, since this is such a common case,
-the `format_ident!` macro provides a more concise equivalent of the above.
+Alternatively, the APIs provided by Syn and proc-macro2 can be used to directly
+build the identifier. This is roughly equivalent to the above, but will not
+handle `ident` being a raw identifier.
 
 ```rust
-let varname = format_ident!("_{}", ident);
+let concatenated = format!("_{}", ident);
+let varname = syn::Ident::new(&concatenated, ident.span());
 quote! {
     let mut #varname = 0;
 }
