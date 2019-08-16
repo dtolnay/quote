@@ -73,7 +73,7 @@
 //! ```
 
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote/1.0.0")]
+#![doc(html_root_url = "https://docs.rs/quote/1.0.1")]
 
 #[cfg(all(
     not(all(target_arch = "wasm32", target_os = "unknown")),
