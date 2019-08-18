@@ -413,3 +413,17 @@ fn test_inner_attr() {
     let expected = "# ! [ no_std ]";
     assert_eq!(expected, tokens.to_string());
 }
+
+// https://github.com/dtolnay/quote/issues/130
+#[test]
+fn test_star_after_repetition() {
+    let c = vec!['0', '1'];
+    let tokens = quote! {
+        #(
+            f(#c);
+        )*
+        *out = None;
+    };
+    let expected = "f ( '0' ) ; f ( '1' ) ; * out = None ;";
+    assert_eq!(expected, tokens.to_string());
+}
