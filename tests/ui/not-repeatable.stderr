@@ -2,7 +2,7 @@ error[E0599]: no method named `quote_into_iter` found for type `std::net::Ipv4Ad
  --> $DIR/not-repeatable.rs:6:13
   |
 6 |     let _ = quote! { #(#ip)* };
-  |             ^^^^^^^^^^^^^^^^^^
+  |             ^^^^^^^^^^^^^^^^^^ method not found in `std::net::Ipv4Addr`
   |
   = note: the method `quote_into_iter` exists but the following trait bounds were not satisfied:
           `&mut std::net::Ipv4Addr : quote::__rt::ext::RepIteratorExt`
