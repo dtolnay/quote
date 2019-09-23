@@ -427,3 +427,72 @@ fn test_star_after_repetition() {
     let expected = "f ( '0' ) ; f ( '1' ) ; * out = None ;";
     assert_eq!(expected, tokens.to_string());
 }
+
+#[test]
+fn test_expression() {
+    struct Foo {
+        a: u32,
+        b: String,
+    };
+    let foo = Foo {
+        a: 55,
+        b: "Hello".to_string(),
+    };
+
+    let tokens = quote!(#{foo.a} ( #{foo.b.clone()} ) [ abc #{foo.a + 45} ] { #{&foo.b[1..]} def });
+
+    let expected = r#"55u32 ( "Hello" ) [ abc 100u32 ] { "ello" def }"#;
+
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_duplicate_name_repetition_expression() {
+    let foo = &["a", "b"];
+    let mut i = 0;
+
+    let tokens = quote! {
+        #(#{i += 1; foo}: #{i += 1; foo}),*
+        #(#{i += 1; foo}: #{i += 1; foo})*
+    };
+
+    let expected = r#""a" : "a" , "b" : "b" "a" : "a" "b" : "b""#;
+    assert_eq!(expected, tokens.to_string());
+    assert_eq!(i, 4);
+}
+
+#[test]
+fn test_seprator_expressions() {
+    let v1 = vec![1, 2, 3];
+    let v2 = vec![4];
+    let v3: Vec<u32> = Vec::new();
+    let mut foo1 = 0;
+    let mut foo2 = 0;
+    let mut foo3 = 0;
+
+    let tokens = quote! {
+        [ #( { #{v1.iter()} + #v1 } ) {#{foo1 += 1; foo1}} * ]
+        { #( ( #{v2.iter()} + #v2 ) ) {#{foo2 += 1; foo2}} * }
+        ( #( [ #{v3.iter()} + #v3 ] ) {#{foo3 += 1; foo3}} * )
+    };
+
+    assert_eq!(foo1, 2); // Expression in separator are currently re-evaluated
+    assert_eq!(foo2, 0);
+    assert_eq!(foo3, 0);
+
+    let expected = concat!(
+        "[ { 1i32 + 1i32 } { 1i32 } { 2i32 + 2i32 } { 2i32 } { 3i32 + 3i32 } ] ",
+        "{ ( 4i32 + 4i32 ) } ",
+        "( )"
+    );
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_doc_expression() {
+    let tokens = quote! {
+        #[doc = #{format!("Documentation: {}", "\"Hello\"")}]
+    };
+    let expected = r#"# [ doc = "Documentation: \"Hello\"" ]"#;
+    assert_eq!(expected, tokens.to_string());
+}

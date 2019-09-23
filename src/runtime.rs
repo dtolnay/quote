@@ -35,6 +35,59 @@ impl BitOr<HasIterator> for HasIterator {
     }
 }
 
+pub struct ExpressionVariableStorageEmpty;
+impl ExpressionVariableStorageEmpty {
+    pub fn push<Var>(self, var: Var) -> ExpressionVariableStorage<Var, Self> {
+        ExpressionVariableStorage { var, next: self }
+    }
+}
+
+pub struct ExpressionVariableStorage<Var, Next> {
+    var: Var,
+    next: Next,
+}
+impl<Var, Next> ExpressionVariableStorage<Var, Next> {
+    pub fn push<Var2>(self, var: Var2) -> ExpressionVariableStorage<Var2, Self> {
+        ExpressionVariableStorage { var, next: self }
+    }
+}
+
+pub trait ExpressionVariableStorageTrait {
+    type OnceRemoved;
+    type Next;
+    fn next(self) -> (Self::Next, Self::OnceRemoved);
+}
+impl<V1, V2, N> ExpressionVariableStorageTrait
+    for ExpressionVariableStorage<V1, ExpressionVariableStorage<V2, N>>
+where
+    ExpressionVariableStorage<V2, N>: ExpressionVariableStorageTrait,
+{
+    type OnceRemoved = ExpressionVariableStorage<
+        V1,
+        <ExpressionVariableStorage<V2, N> as ExpressionVariableStorageTrait>::OnceRemoved,
+    >;
+    type Next = <ExpressionVariableStorage<V2, N> as ExpressionVariableStorageTrait>::Next;
+    fn next(self) -> (Self::Next, Self::OnceRemoved) {
+        let (v, next) = self.next.next();
+        (
+            v,
+            ExpressionVariableStorage {
+                var: self.var,
+                next,
+            },
+        )
+    }
+}
+impl<V> ExpressionVariableStorageTrait
+    for ExpressionVariableStorage<V, ExpressionVariableStorageEmpty>
+{
+    type OnceRemoved = ExpressionVariableStorageEmpty;
+    type Next = V;
+    fn next(self) -> (Self::Next, Self::OnceRemoved) {
+        (self.var, ExpressionVariableStorageEmpty)
+    }
+}
+
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
 ///
