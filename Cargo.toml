@@ -12,9 +12,6 @@ readme = "README.md"
 include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 edition = "2018"
 
-[lib]
-name = "quote"
-
 [dependencies]
 proc-macro2 = { version = "1.0", default-features = false }
 
