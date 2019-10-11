@@ -208,6 +208,10 @@ pub fn parse(tokens: &mut TokenStream, span: Span, s: &str) {
     }
 }
 
+pub fn push_ident(tokens: &mut TokenStream, span: Span, s: &str) {
+    tokens.append(Ident::new(s, span));
+}
+
 macro_rules! push_punct {
     ($name:ident $char1:tt) => {
         pub fn $name(tokens: &mut TokenStream, span: Span) {

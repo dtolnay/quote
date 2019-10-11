@@ -942,6 +942,10 @@ macro_rules! quote_token {
         $crate::__rt::push_sub_eq(&mut $tokens, $span);
     };
 
+    ($tokens:ident $span:ident $ident:ident) => {
+        $crate::__rt::push_ident(&mut $tokens, $span, stringify!($ident));
+    };
+
     ($tokens:ident $span:ident $other:tt) => {
         $crate::__rt::parse(&mut $tokens, $span, stringify!($other));
     };
