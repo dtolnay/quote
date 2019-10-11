@@ -16,7 +16,7 @@ edition = "2018"
 proc-macro2 = { version = "1.0", default-features = false }
 
 [dev-dependencies]
-rustversion = "0.1"
+rustversion = "1.0"
 trybuild = "1.0"
 
 [features]
