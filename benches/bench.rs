@@ -3,7 +3,7 @@
 
 extern crate test;
 
-use quote::quote;
+use quote::{quote, quote_extend};
 use test::Bencher;
 
 #[bench]
@@ -190,4 +190,112 @@ fn bench_impl(b: &mut Bencher) {
             }
         }
     });
+}
+
+
+#[bench]
+fn bench_to_tokens(b: &mut Bencher) {
+    use quote::ToTokens;
+    use proc_macro2::TokenStream;
+
+    struct Datum {
+        x: u32,
+        y: u32,
+        z: u32,
+        w: u32,
+    }
+
+    struct Data {
+        x: Datum,
+        y: Datum,
+        z: Datum,
+        w: Datum,
+    }
+
+    impl ToTokens for Datum {
+        fn to_tokens(&self, tokens: &mut TokenStream) {
+            let &Datum{x, y, z, w} = self;
+            tokens.extend(quote! {
+                #x, #y, #z, #w
+            })
+        }
+    }
+    impl ToTokens for Data {
+        fn to_tokens(&self, tokens: &mut TokenStream) {
+            let &Data{ref x, ref y, ref z, ref w} = self;
+            tokens.extend(quote! {
+                #x, #y, #z, #w
+            })
+        }
+    }
+
+    let x = Datum{x:10, y:5, z:3, w:9};
+    let y = Datum{x:10, y:5, z:3, w:9};
+    let z = Datum{x:10, y:5, z:3, w:9};
+    let w = Datum{x:10, y:5, z:3, w:9};
+    let data = Data{x, y, z, w};
+
+    let mut tokens = TokenStream::new();
+    let mut i = 0;
+    b.iter(|| {
+        tokens.extend(quote!( #data #data #data #data ));
+        i += 1;
+        if i == 100 {
+            i = 0;
+            tokens = TokenStream::new();
+        }
+    })
+}
+
+#[bench]
+fn bench_to_tokens_extend(b: &mut Bencher) {
+    use quote::ToTokens;
+    use proc_macro2::TokenStream;
+
+    struct Datum {
+        x: u32,
+        y: u32,
+        z: u32,
+        w: u32,
+    }
+
+    struct Data {
+        x: Datum,
+        y: Datum,
+        z: Datum,
+        w: Datum,
+    }
+
+    impl ToTokens for Datum {
+        fn to_tokens(&self, tokens: &mut TokenStream) {
+            let &Datum{x, y, z, w} = self;
+            quote_extend!(tokens=> #x, #y, #z, #w
+            )
+        }
+    }
+    impl ToTokens for Data {
+        fn to_tokens(&self, tokens: &mut TokenStream) {
+            let &Data{ref x, ref y, ref z, ref w} = self;
+            quote_extend!(tokens=>
+                #x, #y, #z, #w
+            )
+        }
+    }
+    
+    let x = Datum{x:10, y:5, z:3, w:9};
+    let y = Datum{x:10, y:5, z:3, w:9};
+    let z = Datum{x:10, y:5, z:3, w:9};
+    let w = Datum{x:10, y:5, z:3, w:9};
+    let data = Data{x, y, z, w};
+
+    let mut tokens = TokenStream::new();
+    let mut i = 0;
+    b.iter(|| {
+        quote_extend!(&mut tokens=> #data #data #data #data );
+        i += 1;
+        if i == 100 {
+            i = 0;
+            tokens = TokenStream::new();
+        }
+    })
 }

@@ -467,6 +467,63 @@ macro_rules! quote {
     };
 }
 
+/// Same as `quote!`, but extends an existing [`TokenStream`].
+///
+/// <br>
+///
+/// # Syntax
+///
+/// A tokenstream expression of type `&mut TokenStream`, followed by `=>`, followed by the tokens
+/// to quote. The tokenstream expression should be brief &mdash; use a variable for
+/// anything more than a few characters. There should be no space before the
+/// `=>` token.
+///
+/// [`TokenStream`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.TokenStream.html
+///
+/// ```
+/// # use proc_macro2::TokenStream;
+/// # use quote::{ToTokens, quote_extend};
+/// #
+/// # let tokens = &mut TokenStream::new();
+/// # let (x, y, z) = (0, 1, 2);
+/// # const IGNORE_TOKENS: &'static str = stringify! {
+/// struct Data { /* ... */ }
+/// 
+/// impl ToTokens for Data {
+///     fn to_tokens(&self, tokens: &mut TokenStream) {
+///         let (x, y, z) = /* ... */;
+/// 
+/// #   }
+/// # }
+/// # };
+///         // On one line, use parentheses.
+///         quote_extend!(tokens=> #x,);
+/// 
+///         // On multiple lines, place the tokens at the top and use braces.
+///         quote_extend!{tokens=>
+///              #y,
+///              #z,
+///         }
+/// # const IGNORE_TOKENS2: &'static str = stringify! {
+/// # {
+/// #   {
+///     }
+/// }
+/// # };
+/// ```
+///
+/// The lack of space before the `=>` should look jarring to Rust programmers
+/// and this is intentional. The formatting is designed to be visibly
+/// off-balance and draw the eye a particular way, due to the token stream expression
+/// being evaluated in the context of the procedural macro and the remaining
+/// tokens being evaluated in the generated code.
+#[macro_export]
+macro_rules! quote_extend {
+    ($tokens:expr=> $($tt:tt)*) => {
+        $crate::quote_extend_spanned!($tokens,$crate::__rt::Span::call_site()=> $($tt)*)
+    };
+}
+
 /// Same as `quote!`, but applies a given span to all tokens originating within
 /// the macro invocation.
 ///
@@ -566,13 +623,81 @@ macro_rules! quote {
 #[macro_export]
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {{
-        let mut _s = $crate::__rt::TokenStream::new();
-        let _span: $crate::__rt::Span = $span;
-        $crate::quote_each_token!(_s _span $($tt)*);
-        _s
+        let mut _tokens = $crate::__rt::TokenStream::new();
+        $crate::quote_extend_spanned!{&mut _tokens,$span=> $($tt)*}
+        _tokens
     }};
 }
 
+/// Same as `quote_extend!`, but applies a given span to all tokens originating within
+/// the macro invocation.
+///
+/// <br>
+///
+/// # Syntax
+///
+/// A tokenstream expression of type `&mut TokenStream`, followed by a `,`, followed by
+/// a span expression of type [`Span`], followed by `=>`, followed by the tokens to quote.
+/// The tokenstream and span expressions should be brief &mdash; use a variable for anything
+/// more than a few characters. There should be no space before the `=>` token.
+///
+/// [`Span`]: https://docs.rs/proc-macro2/1.0/proc_macro2/struct.Span.html
+///
+/// ```
+/// # use proc_macro2::{Span, TokenStream};
+/// # use quote::{quote_extend_spanned, ToTokens};
+/// #
+/// # let span = Span::call_site();
+/// # let tokens = &mut TokenStream::new();
+/// # let (x, y, z) = (0, 1, 2);
+/// # const IGNORE_TOKENS: &'static str = stringify! {
+/// struct Data { /* ... */ }
+/// 
+/// impl ToTokens for Data {
+///     fn to_tokens(&self, tokens: &mut TokenStream) {
+///         let span = /* ... */;
+///         let (x, y, z) = /* ... */;
+/// 
+/// #   }
+/// # }
+/// # };
+///         // On one line, use parentheses.
+///         quote_extend_spanned!(tokens,span=> #x,);
+/// 
+///         // On multiple lines, place the tokens at the top and use braces.
+///         quote_extend_spanned!{tokens,span=>
+///              #y,
+///              #z,
+///         }
+/// # const IGNORE_TOKENS2: &'static str = stringify! {
+/// # {
+/// #   {
+///     }
+/// }
+/// # };
+/// ```
+///
+/// The lack of space before the `=>` should look jarring to Rust programmers
+/// and this is intentional. The formatting is designed to be visibly
+/// off-balance and draw the eye a particular way, due to the token stream expression
+/// being evaluated in the context of the procedural macro and the remaining
+/// tokens being evaluated in the generated code.
+///
+/// <br>
+///
+/// # Hygiene
+///
+/// Any interpolated tokens preserve the `Span` information provided by their
+/// `ToTokens` implementation. Tokens that originate within the `quote_extend_spanned!`
+/// invocation are spanned with the given span argument.
+#[macro_export]
+macro_rules! quote_extend_spanned {
+    ($tokens:expr,$span:expr=> $($tt:tt)*) => {{
+        let _tokens: &mut $crate::__rt::TokenStream = $tokens;
+        let _span: $crate::__rt::Span = $span;
+        $crate::quote_each_token!(_tokens _span $($tt)*);
+    }};
+}
 // Extract the names of all #metavariables and pass them to the $call macro.
 //
 // in:   pounded_var_names!(then!(...) a #b c #( #d )* #e)
@@ -722,7 +847,7 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
 
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
-        $crate::ToTokens::to_tokens(&$var, &mut $tokens);
+        $crate::ToTokens::to_tokens(&$var, $tokens);
     };
     ($tokens:ident $span:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
@@ -767,186 +892,186 @@ macro_rules! quote_token {
     };
 
     ($tokens:ident $span:ident +) => {
-        $crate::__rt::push_add(&mut $tokens, $span);
+        $crate::__rt::push_add($tokens, $span);
     };
 
     ($tokens:ident $span:ident +=) => {
-        $crate::__rt::push_add_eq(&mut $tokens, $span);
+        $crate::__rt::push_add_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident &) => {
-        $crate::__rt::push_and(&mut $tokens, $span);
+        $crate::__rt::push_and($tokens, $span);
     };
 
     ($tokens:ident $span:ident &&) => {
-        $crate::__rt::push_and_and(&mut $tokens, $span);
+        $crate::__rt::push_and_and($tokens, $span);
     };
 
     ($tokens:ident $span:ident &=) => {
-        $crate::__rt::push_and_eq(&mut $tokens, $span);
+        $crate::__rt::push_and_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident @) => {
-        $crate::__rt::push_at(&mut $tokens, $span);
+        $crate::__rt::push_at($tokens, $span);
     };
 
     ($tokens:ident $span:ident !) => {
-        $crate::__rt::push_bang(&mut $tokens, $span);
+        $crate::__rt::push_bang($tokens, $span);
     };
 
     ($tokens:ident $span:ident ^) => {
-        $crate::__rt::push_caret(&mut $tokens, $span);
+        $crate::__rt::push_caret($tokens, $span);
     };
 
     ($tokens:ident $span:ident ^=) => {
-        $crate::__rt::push_caret_eq(&mut $tokens, $span);
+        $crate::__rt::push_caret_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident :) => {
-        $crate::__rt::push_colon(&mut $tokens, $span);
+        $crate::__rt::push_colon($tokens, $span);
     };
 
     ($tokens:ident $span:ident ::) => {
-        $crate::__rt::push_colon2(&mut $tokens, $span);
+        $crate::__rt::push_colon2($tokens, $span);
     };
 
     ($tokens:ident $span:ident ,) => {
-        $crate::__rt::push_comma(&mut $tokens, $span);
+        $crate::__rt::push_comma($tokens, $span);
     };
 
     ($tokens:ident $span:ident /) => {
-        $crate::__rt::push_div(&mut $tokens, $span);
+        $crate::__rt::push_div($tokens, $span);
     };
 
     ($tokens:ident $span:ident /=) => {
-        $crate::__rt::push_div_eq(&mut $tokens, $span);
+        $crate::__rt::push_div_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident .) => {
-        $crate::__rt::push_dot(&mut $tokens, $span);
+        $crate::__rt::push_dot($tokens, $span);
     };
 
     ($tokens:ident $span:ident ..) => {
-        $crate::__rt::push_dot2(&mut $tokens, $span);
+        $crate::__rt::push_dot2($tokens, $span);
     };
 
     ($tokens:ident $span:ident ...) => {
-        $crate::__rt::push_dot3(&mut $tokens, $span);
+        $crate::__rt::push_dot3($tokens, $span);
     };
 
     ($tokens:ident $span:ident ..=) => {
-        $crate::__rt::push_dot_dot_eq(&mut $tokens, $span);
+        $crate::__rt::push_dot_dot_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident =) => {
-        $crate::__rt::push_eq(&mut $tokens, $span);
+        $crate::__rt::push_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident ==) => {
-        $crate::__rt::push_eq_eq(&mut $tokens, $span);
+        $crate::__rt::push_eq_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident >=) => {
-        $crate::__rt::push_ge(&mut $tokens, $span);
+        $crate::__rt::push_ge($tokens, $span);
     };
 
     ($tokens:ident $span:ident >) => {
-        $crate::__rt::push_gt(&mut $tokens, $span);
+        $crate::__rt::push_gt($tokens, $span);
     };
 
     ($tokens:ident $span:ident <=) => {
-        $crate::__rt::push_le(&mut $tokens, $span);
+        $crate::__rt::push_le($tokens, $span);
     };
 
     ($tokens:ident $span:ident <) => {
-        $crate::__rt::push_lt(&mut $tokens, $span);
+        $crate::__rt::push_lt($tokens, $span);
     };
 
     ($tokens:ident $span:ident *=) => {
-        $crate::__rt::push_mul_eq(&mut $tokens, $span);
+        $crate::__rt::push_mul_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident !=) => {
-        $crate::__rt::push_ne(&mut $tokens, $span);
+        $crate::__rt::push_ne($tokens, $span);
     };
 
     ($tokens:ident $span:ident |) => {
-        $crate::__rt::push_or(&mut $tokens, $span);
+        $crate::__rt::push_or($tokens, $span);
     };
 
     ($tokens:ident $span:ident |=) => {
-        $crate::__rt::push_or_eq(&mut $tokens, $span);
+        $crate::__rt::push_or_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident ||) => {
-        $crate::__rt::push_or_or(&mut $tokens, $span);
+        $crate::__rt::push_or_or($tokens, $span);
     };
 
     ($tokens:ident $span:ident #) => {
-        $crate::__rt::push_pound(&mut $tokens, $span);
+        $crate::__rt::push_pound($tokens, $span);
     };
 
     ($tokens:ident $span:ident ?) => {
-        $crate::__rt::push_question(&mut $tokens, $span);
+        $crate::__rt::push_question($tokens, $span);
     };
 
     ($tokens:ident $span:ident ->) => {
-        $crate::__rt::push_rarrow(&mut $tokens, $span);
+        $crate::__rt::push_rarrow($tokens, $span);
     };
 
     ($tokens:ident $span:ident <-) => {
-        $crate::__rt::push_larrow(&mut $tokens, $span);
+        $crate::__rt::push_larrow($tokens, $span);
     };
 
     ($tokens:ident $span:ident %) => {
-        $crate::__rt::push_rem(&mut $tokens, $span);
+        $crate::__rt::push_rem($tokens, $span);
     };
 
     ($tokens:ident $span:ident %=) => {
-        $crate::__rt::push_rem_eq(&mut $tokens, $span);
+        $crate::__rt::push_rem_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident =>) => {
-        $crate::__rt::push_fat_arrow(&mut $tokens, $span);
+        $crate::__rt::push_fat_arrow($tokens, $span);
     };
 
     ($tokens:ident $span:ident ;) => {
-        $crate::__rt::push_semi(&mut $tokens, $span);
+        $crate::__rt::push_semi($tokens, $span);
     };
 
     ($tokens:ident $span:ident <<) => {
-        $crate::__rt::push_shl(&mut $tokens, $span);
+        $crate::__rt::push_shl($tokens, $span);
     };
 
     ($tokens:ident $span:ident <<=) => {
-        $crate::__rt::push_shl_eq(&mut $tokens, $span);
+        $crate::__rt::push_shl_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident >>) => {
-        $crate::__rt::push_shr(&mut $tokens, $span);
+        $crate::__rt::push_shr($tokens, $span);
     };
 
     ($tokens:ident $span:ident >>=) => {
-        $crate::__rt::push_shr_eq(&mut $tokens, $span);
+        $crate::__rt::push_shr_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident *) => {
-        $crate::__rt::push_star(&mut $tokens, $span);
+        $crate::__rt::push_star($tokens, $span);
     };
 
     ($tokens:ident $span:ident -) => {
-        $crate::__rt::push_sub(&mut $tokens, $span);
+        $crate::__rt::push_sub($tokens, $span);
     };
 
     ($tokens:ident $span:ident -=) => {
-        $crate::__rt::push_sub_eq(&mut $tokens, $span);
+        $crate::__rt::push_sub_eq($tokens, $span);
     };
 
     ($tokens:ident $span:ident $ident:ident) => {
-        $crate::__rt::push_ident(&mut $tokens, $span, stringify!($ident));
+        $crate::__rt::push_ident($tokens, $span, stringify!($ident));
     };
 
     ($tokens:ident $span:ident $other:tt) => {
-        $crate::__rt::parse(&mut $tokens, $span, stringify!($other));
+        $crate::__rt::parse($tokens, $span, stringify!($other));
     };
 }
