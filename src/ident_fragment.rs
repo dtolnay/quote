@@ -19,7 +19,7 @@ pub trait IdentFragment {
     }
 }
 
-impl<'a, T: IdentFragment + ?Sized> IdentFragment for &'a T {
+impl<T: IdentFragment + ?Sized> IdentFragment for &T {
     fn span(&self) -> Option<Span> {
         <T as IdentFragment>::span(*self)
     }
@@ -29,7 +29,7 @@ impl<'a, T: IdentFragment + ?Sized> IdentFragment for &'a T {
     }
 }
 
-impl<'a, T: IdentFragment + ?Sized> IdentFragment for &'a mut T {
+impl<T: IdentFragment + ?Sized> IdentFragment for &mut T {
     fn span(&self) -> Option<Span> {
         <T as IdentFragment>::span(*self)
     }
