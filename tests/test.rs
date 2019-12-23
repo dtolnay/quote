@@ -427,3 +427,9 @@ fn test_star_after_repetition() {
     let expected = "f ( '0' ) ; f ( '1' ) ; * out = None ;";
     assert_eq!(expected, tokens.to_string());
 }
+
+#[test]
+fn test_quote_raw_id() {
+    let id = quote!(r#raw_id);
+    assert_eq!(id.to_string(), "r#raw_id");
+}

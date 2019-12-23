@@ -180,36 +180,24 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
     }
 }
 
-fn is_ident_start(c: u8) -> bool {
-    (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_'
-}
-
-fn is_ident_continue(c: u8) -> bool {
-    (b'a' <= c && c <= b'z') || (b'A' <= c && c <= b'Z') || c == b'_' || (b'0' <= c && c <= b'9')
-}
-
-fn is_ident(token: &str) -> bool {
-    let mut iter = token.bytes();
-    let first_ok = iter.next().map(is_ident_start).unwrap_or(false);
-
-    first_ok && iter.all(is_ident_continue)
-}
-
 pub fn parse(tokens: &mut TokenStream, span: Span, s: &str) {
-    if is_ident(s) {
-        // Fast path, since idents are the most common token.
-        tokens.append(Ident::new(s, span));
-    } else {
-        let s: TokenStream = s.parse().expect("invalid token stream");
-        tokens.extend(s.into_iter().map(|mut t| {
-            t.set_span(span);
-            t
-        }));
-    }
+    let s: TokenStream = s.parse().expect("invalid token stream");
+    tokens.extend(s.into_iter().map(|mut t| {
+        t.set_span(span);
+        t
+    }));
 }
 
 pub fn push_ident(tokens: &mut TokenStream, span: Span, s: &str) {
-    tokens.append(Ident::new(s, span));
+    // Optimization over `mk_ident`, as `s` is guaranteed to be a valid ident.
+    //
+    // FIXME: When `Ident::new_raw` becomes stable, this method should be
+    // updated to call it when available.
+    if s.starts_with("r#") {
+        parse(tokens, span, s);
+    } else {
+        tokens.append(Ident::new(s, span));
+    }
 }
 
 macro_rules! push_punct {
@@ -297,9 +285,6 @@ push_punct!(push_sub_eq '-' '=');
 // although the input string was invalid, due to ignored characters such as
 // whitespace and comments. Instead, we always create a non-raw identifier
 // to validate that the string is OK, and only parse again if needed.
-//
-// The `is_ident` method defined above is insufficient for validation, as it
-// will reject non-ASCII identifiers.
 pub fn mk_ident(id: &str, span: Option<Span>) -> Ident {
     let span = span.unwrap_or_else(Span::call_site);
 
