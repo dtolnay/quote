@@ -91,7 +91,7 @@ mod to_tokens;
 // Not public API.
 #[doc(hidden)]
 #[path = "runtime.rs"]
-pub mod __rt;
+pub mod __private;
 
 pub use crate::ext::TokenStreamExt;
 pub use crate::ident_fragment::IdentFragment;
@@ -465,7 +465,7 @@ pub mod spanned;
 #[macro_export]
 macro_rules! quote {
     ($($tt:tt)*) => {
-        $crate::quote_spanned!($crate::__rt::Span::call_site()=> $($tt)*)
+        $crate::quote_spanned!($crate::__private::Span::call_site()=> $($tt)*)
     };
 }
 
@@ -568,8 +568,8 @@ macro_rules! quote {
 #[macro_export]
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {{
-        let mut _s = $crate::__rt::TokenStream::new();
-        let _span: $crate::__rt::Span = $span;
+        let mut _s = $crate::__private::TokenStream::new();
+        let _span: $crate::__private::Span = $span;
         $crate::quote_each_token!(_s _span $($tt)*);
         _s
     }};
@@ -640,7 +640,7 @@ macro_rules! quote_bind_into_iter {
 macro_rules! quote_bind_next_or_break {
     ($var:ident) => {
         let $var = match $var.next() {
-            Some(_x) => $crate::__rt::RepInterp(_x),
+            Some(_x) => $crate::__private::RepInterp(_x),
             None => break,
         };
     };
@@ -682,10 +682,10 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
 
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
-        use $crate::__rt::ext::*;
-        let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
+        use $crate::__private::ext::*;
+        let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
-        let _: $crate::__rt::HasIterator = has_iter;
+        let _: $crate::__private::HasIterator = has_iter;
         // This is `while true` instead of `loop` because if there are no
         // iterators used inside of this repetition then the body would not
         // contain any `break`, so the compiler would emit unreachable code
@@ -701,11 +701,11 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
 
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => {{
-        use $crate::__rt::ext::*;
+        use $crate::__private::ext::*;
         let mut _i = 0usize;
-        let has_iter = $crate::__rt::ThereIsNoIteratorInRepetition;
+        let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
-        let _: $crate::__rt::HasIterator = has_iter;
+        let _: $crate::__private::HasIterator = has_iter;
         while true {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             if _i > 0 {
@@ -737,218 +737,218 @@ macro_rules! quote_token_with_context {
 macro_rules! quote_token {
     ($tokens:ident $span:ident ( $($inner:tt)* )) => {
         $tokens.extend({
-            let mut g = $crate::__rt::Group::new(
-                $crate::__rt::Delimiter::Parenthesis,
+            let mut g = $crate::__private::Group::new(
+                $crate::__private::Delimiter::Parenthesis,
                 $crate::quote_spanned!($span=> $($inner)*),
             );
             g.set_span($span);
-            Some($crate::__rt::TokenTree::from(g))
+            Some($crate::__private::TokenTree::from(g))
         });
     };
 
     ($tokens:ident $span:ident [ $($inner:tt)* ]) => {
         $tokens.extend({
-            let mut g = $crate::__rt::Group::new(
-                $crate::__rt::Delimiter::Bracket,
+            let mut g = $crate::__private::Group::new(
+                $crate::__private::Delimiter::Bracket,
                 $crate::quote_spanned!($span=> $($inner)*),
             );
             g.set_span($span);
-            Some($crate::__rt::TokenTree::from(g))
+            Some($crate::__private::TokenTree::from(g))
         });
     };
 
     ($tokens:ident $span:ident { $($inner:tt)* }) => {
         $tokens.extend({
-            let mut g = $crate::__rt::Group::new(
-                $crate::__rt::Delimiter::Brace,
+            let mut g = $crate::__private::Group::new(
+                $crate::__private::Delimiter::Brace,
                 $crate::quote_spanned!($span=> $($inner)*),
             );
             g.set_span($span);
-            Some($crate::__rt::TokenTree::from(g))
+            Some($crate::__private::TokenTree::from(g))
         });
     };
 
     ($tokens:ident $span:ident +) => {
-        $crate::__rt::push_add(&mut $tokens, $span);
+        $crate::__private::push_add(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident +=) => {
-        $crate::__rt::push_add_eq(&mut $tokens, $span);
+        $crate::__private::push_add_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident &) => {
-        $crate::__rt::push_and(&mut $tokens, $span);
+        $crate::__private::push_and(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident &&) => {
-        $crate::__rt::push_and_and(&mut $tokens, $span);
+        $crate::__private::push_and_and(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident &=) => {
-        $crate::__rt::push_and_eq(&mut $tokens, $span);
+        $crate::__private::push_and_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident @) => {
-        $crate::__rt::push_at(&mut $tokens, $span);
+        $crate::__private::push_at(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident !) => {
-        $crate::__rt::push_bang(&mut $tokens, $span);
+        $crate::__private::push_bang(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ^) => {
-        $crate::__rt::push_caret(&mut $tokens, $span);
+        $crate::__private::push_caret(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ^=) => {
-        $crate::__rt::push_caret_eq(&mut $tokens, $span);
+        $crate::__private::push_caret_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident :) => {
-        $crate::__rt::push_colon(&mut $tokens, $span);
+        $crate::__private::push_colon(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ::) => {
-        $crate::__rt::push_colon2(&mut $tokens, $span);
+        $crate::__private::push_colon2(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ,) => {
-        $crate::__rt::push_comma(&mut $tokens, $span);
+        $crate::__private::push_comma(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident /) => {
-        $crate::__rt::push_div(&mut $tokens, $span);
+        $crate::__private::push_div(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident /=) => {
-        $crate::__rt::push_div_eq(&mut $tokens, $span);
+        $crate::__private::push_div_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident .) => {
-        $crate::__rt::push_dot(&mut $tokens, $span);
+        $crate::__private::push_dot(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ..) => {
-        $crate::__rt::push_dot2(&mut $tokens, $span);
+        $crate::__private::push_dot2(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ...) => {
-        $crate::__rt::push_dot3(&mut $tokens, $span);
+        $crate::__private::push_dot3(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ..=) => {
-        $crate::__rt::push_dot_dot_eq(&mut $tokens, $span);
+        $crate::__private::push_dot_dot_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident =) => {
-        $crate::__rt::push_eq(&mut $tokens, $span);
+        $crate::__private::push_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ==) => {
-        $crate::__rt::push_eq_eq(&mut $tokens, $span);
+        $crate::__private::push_eq_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident >=) => {
-        $crate::__rt::push_ge(&mut $tokens, $span);
+        $crate::__private::push_ge(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident >) => {
-        $crate::__rt::push_gt(&mut $tokens, $span);
+        $crate::__private::push_gt(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident <=) => {
-        $crate::__rt::push_le(&mut $tokens, $span);
+        $crate::__private::push_le(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident <) => {
-        $crate::__rt::push_lt(&mut $tokens, $span);
+        $crate::__private::push_lt(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident *=) => {
-        $crate::__rt::push_mul_eq(&mut $tokens, $span);
+        $crate::__private::push_mul_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident !=) => {
-        $crate::__rt::push_ne(&mut $tokens, $span);
+        $crate::__private::push_ne(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident |) => {
-        $crate::__rt::push_or(&mut $tokens, $span);
+        $crate::__private::push_or(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident |=) => {
-        $crate::__rt::push_or_eq(&mut $tokens, $span);
+        $crate::__private::push_or_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ||) => {
-        $crate::__rt::push_or_or(&mut $tokens, $span);
+        $crate::__private::push_or_or(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident #) => {
-        $crate::__rt::push_pound(&mut $tokens, $span);
+        $crate::__private::push_pound(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ?) => {
-        $crate::__rt::push_question(&mut $tokens, $span);
+        $crate::__private::push_question(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ->) => {
-        $crate::__rt::push_rarrow(&mut $tokens, $span);
+        $crate::__private::push_rarrow(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident <-) => {
-        $crate::__rt::push_larrow(&mut $tokens, $span);
+        $crate::__private::push_larrow(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident %) => {
-        $crate::__rt::push_rem(&mut $tokens, $span);
+        $crate::__private::push_rem(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident %=) => {
-        $crate::__rt::push_rem_eq(&mut $tokens, $span);
+        $crate::__private::push_rem_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident =>) => {
-        $crate::__rt::push_fat_arrow(&mut $tokens, $span);
+        $crate::__private::push_fat_arrow(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident ;) => {
-        $crate::__rt::push_semi(&mut $tokens, $span);
+        $crate::__private::push_semi(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident <<) => {
-        $crate::__rt::push_shl(&mut $tokens, $span);
+        $crate::__private::push_shl(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident <<=) => {
-        $crate::__rt::push_shl_eq(&mut $tokens, $span);
+        $crate::__private::push_shl_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident >>) => {
-        $crate::__rt::push_shr(&mut $tokens, $span);
+        $crate::__private::push_shr(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident >>=) => {
-        $crate::__rt::push_shr_eq(&mut $tokens, $span);
+        $crate::__private::push_shr_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident *) => {
-        $crate::__rt::push_star(&mut $tokens, $span);
+        $crate::__private::push_star(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident -) => {
-        $crate::__rt::push_sub(&mut $tokens, $span);
+        $crate::__private::push_sub(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident -=) => {
-        $crate::__rt::push_sub_eq(&mut $tokens, $span);
+        $crate::__private::push_sub_eq(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident $ident:ident) => {
-        $crate::__rt::push_ident(&mut $tokens, $span, stringify!($ident));
+        $crate::__private::push_ident(&mut $tokens, $span, stringify!($ident));
     };
 
     ($tokens:ident $span:ident $other:tt) => {
-        $crate::__rt::parse(&mut $tokens, $span, stringify!($other));
+        $crate::__private::parse(&mut $tokens, $span, stringify!($other));
     };
 }

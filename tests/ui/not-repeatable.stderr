@@ -6,11 +6,11 @@ error[E0599]: no method named `quote_into_iter` found for struct `std::net::Ipv4
    |
    = note: the method `quote_into_iter` exists but the following trait bounds were not satisfied:
            `std::net::Ipv4Addr: std::iter::Iterator`
-           which is required by `std::net::Ipv4Addr: quote::__rt::ext::RepIteratorExt`
+           which is required by `std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
            `&std::net::Ipv4Addr: std::iter::Iterator`
-           which is required by `&std::net::Ipv4Addr: quote::__rt::ext::RepIteratorExt`
+           which is required by `&std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
            `std::net::Ipv4Addr: quote::to_tokens::ToTokens`
-           which is required by `std::net::Ipv4Addr: quote::__rt::ext::RepToTokensExt`
+           which is required by `std::net::Ipv4Addr: quote::__private::ext::RepToTokensExt`
            `&mut std::net::Ipv4Addr: std::iter::Iterator`
-           which is required by `&mut std::net::Ipv4Addr: quote::__rt::ext::RepIteratorExt`
+           which is required by `&mut std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
    = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)

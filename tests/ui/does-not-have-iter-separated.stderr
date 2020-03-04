@@ -4,7 +4,7 @@ error[E0308]: mismatched types
 4 |     quote!(#(a b),*);
   |     ^^^^^^^^^^^^^^^^^
   |     |
-  |     expected struct `quote::__rt::HasIterator`, found struct `quote::__rt::ThereIsNoIteratorInRepetition`
+  |     expected struct `quote::__private::HasIterator`, found struct `quote::__private::ThereIsNoIteratorInRepetition`
   |     expected due to this
   |
   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
