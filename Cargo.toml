@@ -27,3 +27,6 @@ proc-macro = ["proc-macro2/proc-macro"]
 
 [badges]
 travis-ci = { repository = "dtolnay/quote" }
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
