@@ -28,8 +28,7 @@ This crate is motivated by the procedural macro use case, but is a
 general-purpose Rust quasi-quoting library and is not specific to procedural
 macros.
 
-*Version requirement: Quote supports any compiler version back to Rust's very
-first support for procedural macros in Rust 1.15.0.*
+*Version requirement: Quote supports rustc 1.31 and up.*
 
 [*Release notes*](https://github.com/dtolnay/quote/releases)
 
