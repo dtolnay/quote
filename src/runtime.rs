@@ -45,8 +45,6 @@ pub mod ext {
     use super::RepInterp;
     use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use crate::ToTokens;
-    use std::collections::btree_set::{self, BTreeSet};
-    use std::slice;
 
     /// Extension trait providing the `quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {
@@ -77,75 +75,27 @@ pub mod ext {
 
     /// Extension trait providing the `quote_into_iter` method for types that
     /// can be referenced as an iterator.
-    pub trait RepAsIteratorExt<'q> {
+    pub trait RepAsIteratorExt {
         type Iter: Iterator;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter);
+        fn quote_into_iter(self) -> (Self::Iter, HasIter);
     }
 
-    impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a T {
+    impl<'q, T> RepAsIteratorExt for &'q T
+    where
+        &'q T: IntoIterator,
+    {
+        type Iter = <Self as IntoIterator>::IntoIter;
+
+        fn quote_into_iter(self) -> (Self::Iter, HasIter) {
+            (self.into_iter(), HasIter)
+        }
+    }
+
+    impl<T: RepAsIteratorExt> RepAsIteratorExt for RepInterp<T> {
         type Iter = T::Iter;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            <T as RepAsIteratorExt>::quote_into_iter(*self)
-        }
-    }
-
-    impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a mut T {
-        type Iter = T::Iter;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            <T as RepAsIteratorExt>::quote_into_iter(*self)
-        }
-    }
-
-    impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
-        type Iter = slice::Iter<'q, T>;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
-        }
-    }
-
-    impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T> {
-        type Iter = slice::Iter<'q, T>;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
-        }
-    }
-
-    impl<'q, T: 'q> RepAsIteratorExt<'q> for BTreeSet<T> {
-        type Iter = btree_set::Iter<'q, T>;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
-        }
-    }
-
-    macro_rules! array_rep_slice {
-        ($($l:tt)*) => {
-            $(
-                impl<'q, T: 'q> RepAsIteratorExt<'q> for [T; $l] {
-                    type Iter = slice::Iter<'q, T>;
-
-                    fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-                        (self.iter(), HasIter)
-                    }
-                }
-            )*
-        }
-    }
-
-    array_rep_slice!(
-        0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
-        17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32
-    );
-
-    impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T> {
-        type Iter = T::Iter;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+        fn quote_into_iter(self) -> (Self::Iter, HasIter) {
             self.0.quote_into_iter()
         }
     }
