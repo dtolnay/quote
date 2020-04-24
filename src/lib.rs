@@ -71,6 +71,7 @@
 //!     }
 //! };
 //! ```
+#![no_std]
 
 #![forbid(unsafe_code)]
 
@@ -82,6 +83,9 @@
     feature = "proc-macro"
 ))]
 extern crate proc_macro;
+
+#[macro_use]
+extern crate alloc;
 
 mod ext;
 mod format;

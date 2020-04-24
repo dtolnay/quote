@@ -1,5 +1,7 @@
 use proc_macro2::{Ident, Span};
-use std::fmt;
+use core::fmt;
+
+use alloc::string::ToString;
 
 /// Specialized formatting trait used by `format_ident!`.
 ///
@@ -68,5 +70,5 @@ macro_rules! ident_fragment_display {
     }
 }
 
-ident_fragment_display!(bool, str, String);
+ident_fragment_display!(bool, str, alloc::string::String);
 ident_fragment_display!(u8, u16, u32, u64, u128, usize);
