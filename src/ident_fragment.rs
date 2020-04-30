@@ -68,5 +68,5 @@ macro_rules! ident_fragment_display {
     }
 }
 
-ident_fragment_display!(bool, str, String);
+ident_fragment_display!(bool, str, String, char);
 ident_fragment_display!(u8, u16, u32, u64, u128, usize);
