@@ -1,7 +1,7 @@
 Rust Quasi-Quoting
 ==================
 
-[![Build Status](https://api.travis-ci.org/dtolnay/quote.svg?branch=master)](https://travis-ci.org/dtolnay/quote)
+[![Build Status](https://img.shields.io/github/workflow/status/dtolnay/quote/CI/master)](https://github.com/dtolnay/quote/actions?query=branch%3Amaster)
 [![Latest Version](https://img.shields.io/crates/v/quote.svg)](https://crates.io/crates/quote)
 [![Rust Documentation](https://img.shields.io/badge/api-rustdoc-blue.svg)](https://docs.rs/quote/)
 
