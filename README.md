@@ -230,6 +230,18 @@ macro.
 
 <br>
 
+## Non-macro code generators
+
+When using `quote` in a build.rs or main.rs and writing the output out to a
+file, consider having the code generator pass the tokens through [rustfmt]
+before writing (either by shelling out to the `rustfmt` binary or by pulling in
+the `rustfmt` library as a dependency). This way if an error occurs in the
+generated code it is convenient for a human to read and debug.
+
+[rustfmt]: https://github.com/rust-lang/rustfmt
+
+<br>
+
 #### License
 
 <sup>
