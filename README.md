@@ -29,14 +29,15 @@ This crate is motivated by the procedural macro use case, but is a
 general-purpose Rust quasi-quoting library and is not specific to procedural
 macros.
 
-*Version requirement: Quote supports rustc 1.31 and up.*
-
-[*Release notes*](https://github.com/dtolnay/quote/releases)
-
 ```toml
 [dependencies]
 quote = "1.0"
 ```
+
+*Version requirement: Quote supports rustc 1.31 and up.*<br>
+[*Release notes*](https://github.com/dtolnay/quote/releases)
+
+<br>
 
 ## Syntax
 
@@ -76,6 +77,8 @@ let tokens = quote! {
 };
 ```
 
+<br>
+
 ## Repetition
 
 Repetition is done using `#(...)*` or `#(...),*` similar to `macro_rules!`. This
@@ -92,6 +95,8 @@ a pre-existing iterator.
 Note that there is a difference between `#(#var ,)*` and `#(#var),*`—the latter
 does not produce a trailing comma. This matches the behavior of delimiters in
 `macro_rules!`.
+
+<br>
 
 ## Returning tokens to the compiler
 
@@ -111,6 +116,8 @@ There is a [`From`]-conversion in both directions so returning the output of
 `proc_macro::TokenStream::from(tokens)`.
 
 [`From`]: https://doc.rust-lang.org/std/convert/trait.From.html
+
+<br>
 
 ## Examples
 
@@ -205,6 +212,8 @@ quote! {
     let value = <#field_type as core::default::Default>::default();
 }
 ```
+
+<br>
 
 ## Hygiene
 
