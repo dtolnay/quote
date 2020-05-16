@@ -238,6 +238,9 @@ before writing (either by shelling out to the `rustfmt` binary or by pulling in
 the `rustfmt` library as a dependency). This way if an error occurs in the
 generated code it is convenient for a human to read and debug.
 
+Be aware that no kind of hygiene or span information is retained when tokens are
+written to a file; the conversion from tokens to source code is lossy.
+
 [rustfmt]: https://github.com/rust-lang/rustfmt
 
 <br>
