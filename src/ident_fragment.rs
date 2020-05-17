@@ -1,4 +1,5 @@
 use proc_macro2::{Ident, Span};
+use std::borrow::Cow;
 use std::fmt;
 
 /// Specialized formatting trait used by `format_ident!`.
@@ -54,16 +55,16 @@ impl IdentFragment for Ident {
     }
 }
 
-impl<'a, T> IdentFragment for std::borrow::Cow<'a, T>
+impl<T> IdentFragment for Cow<'_, T>
 where
-    T: 'a + IdentFragment + ToOwned + ?Sized,
+    T: IdentFragment + ToOwned + ?Sized,
 {
     fn span(&self) -> Option<Span> {
-        T::span(&self)
+        T::span(self)
     }
 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        T::fmt(&self, f)
+        T::fmt(self, f)
     }
 }
 
