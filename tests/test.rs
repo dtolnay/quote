@@ -341,12 +341,14 @@ fn test_format_ident() {
     let id2 = format_ident!("Hello{x}", x = 5usize);
     let id3 = format_ident!("Hello{}_{x}", id0, x = 10usize);
     let id4 = format_ident!("Aa", span = Span::call_site());
+    let id5 = format_ident!("Hello{}", Cow::Borrowed("World"));
 
     assert_eq!(id0, "Aa");
     assert_eq!(id1, "HelloAa");
     assert_eq!(id2, "Hello5");
     assert_eq!(id3, "HelloAa_10");
     assert_eq!(id4, "Aa");
+    assert_eq!(id5, "HelloWorld");
 }
 
 #[test]

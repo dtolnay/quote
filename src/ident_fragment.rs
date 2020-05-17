@@ -54,7 +54,10 @@ impl IdentFragment for Ident {
     }
 }
 
-impl<T: IdentFragment + Clone> IdentFragment for std::borrow::Cow<'_, T> {
+impl<'a, T> IdentFragment for std::borrow::Cow<'a, T>
+where
+    T: 'a + IdentFragment + ToOwned + ?Sized,
+{
     fn span(&self) -> Option<Span> {
         T::span(&self)
     }
