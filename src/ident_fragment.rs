@@ -54,6 +54,16 @@ impl IdentFragment for Ident {
     }
 }
 
+impl<T: IdentFragment + Clone> IdentFragment for std::borrow::Cow<'_, T> {
+    fn span(&self) -> Option<Span> {
+        T::span(&self)
+    }
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        T::fmt(&self, f)
+    }
+}
+
 // Limited set of types which this is implemented for, as we want to avoid types
 // which will often include non-identifier characters in their `Display` impl.
 macro_rules! ident_fragment_display {
