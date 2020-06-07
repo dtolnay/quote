@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use std::collections::BTreeSet;
 
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{format_ident, quote, TokenStreamExt};
+use quote::{format_ident, quote, quote_spanned, TokenStreamExt};
 
 struct X;
 
@@ -17,6 +17,28 @@ impl quote::ToTokens for X {
 #[test]
 fn test_quote_impl() {
     let tokens = quote! {
+        impl<'a, T: ToTokens> ToTokens for &'a T {
+            fn to_tokens(&self, tokens: &mut TokenStream) {
+                (**self).to_tokens(tokens)
+            }
+        }
+    };
+
+    let expected = concat!(
+        "impl < 'a , T : ToTokens > ToTokens for & 'a T { ",
+        "fn to_tokens ( & self , tokens : & mut TokenStream ) { ",
+        "( * * self ) . to_tokens ( tokens ) ",
+        "} ",
+        "}"
+    );
+
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_quote_spanned_impl() {
+    let span = Span::call_site();
+    let tokens = quote_spanned! {span=>
         impl<'a, T: ToTokens> ToTokens for &'a T {
             fn to_tokens(&self, tokens: &mut TokenStream) {
                 (**self).to_tokens(tokens)
