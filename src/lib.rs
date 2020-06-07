@@ -81,7 +81,6 @@
 //! ```
 
 #![forbid(unsafe_code)]
-
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote/1.0.6")]
 
