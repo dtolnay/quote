@@ -838,24 +838,27 @@ macro_rules! quote_token_with_context_spanned {
 #[doc(hidden)]
 macro_rules! quote_token {
     ($tokens:ident ( $($inner:tt)* )) => {
-        $tokens.extend(Some($crate::__private::TokenTree::from($crate::__private::Group::new(
+        $crate::__private::push_group(
+            &mut $tokens,
             $crate::__private::Delimiter::Parenthesis,
             $crate::quote!($($inner)*),
-        ))));
+        );
     };
 
     ($tokens:ident [ $($inner:tt)* ]) => {
-        $tokens.extend(Some($crate::__private::TokenTree::from($crate::__private::Group::new(
+        $crate::__private::push_group(
+            &mut $tokens,
             $crate::__private::Delimiter::Bracket,
             $crate::quote!($($inner)*),
-        ))));
+        );
     };
 
     ($tokens:ident { $($inner:tt)* }) => {
-        $tokens.extend(Some($crate::__private::TokenTree::from($crate::__private::Group::new(
+        $crate::__private::push_group(
+            &mut $tokens,
             $crate::__private::Delimiter::Brace,
             $crate::quote!($($inner)*),
-        ))));
+        );
     };
 
     ($tokens:ident +) => {
@@ -1047,36 +1050,30 @@ macro_rules! quote_token {
 #[doc(hidden)]
 macro_rules! quote_token_spanned {
     ($tokens:ident $span:ident ( $($inner:tt)* )) => {
-        $tokens.extend({
-            let mut g = $crate::__private::Group::new(
-                $crate::__private::Delimiter::Parenthesis,
-                $crate::quote_spanned!($span=> $($inner)*),
-            );
-            g.set_span($span);
-            Some($crate::__private::TokenTree::from(g))
-        });
+        $crate::__private::push_group_spanned(
+            &mut $tokens,
+            $span,
+            $crate::__private::Delimiter::Parenthesis,
+            $crate::quote_spanned!($span=> $($inner)*),
+        );
     };
 
     ($tokens:ident $span:ident [ $($inner:tt)* ]) => {
-        $tokens.extend({
-            let mut g = $crate::__private::Group::new(
-                $crate::__private::Delimiter::Bracket,
-                $crate::quote_spanned!($span=> $($inner)*),
-            );
-            g.set_span($span);
-            Some($crate::__private::TokenTree::from(g))
-        });
+        $crate::__private::push_group_spanned(
+            &mut $tokens,
+            $span,
+            $crate::__private::Delimiter::Bracket,
+            $crate::quote_spanned!($span=> $($inner)*),
+        );
     };
 
     ($tokens:ident $span:ident { $($inner:tt)* }) => {
-        $tokens.extend({
-            let mut g = $crate::__private::Group::new(
-                $crate::__private::Delimiter::Brace,
-                $crate::quote_spanned!($span=> $($inner)*),
-            );
-            g.set_span($span);
-            Some($crate::__private::TokenTree::from(g))
-        });
+        $crate::__private::push_group_spanned(
+            &mut $tokens,
+            $span,
+            $crate::__private::Delimiter::Brace,
+            $crate::quote_spanned!($span=> $($inner)*),
+        );
     };
 
     ($tokens:ident $span:ident +) => {

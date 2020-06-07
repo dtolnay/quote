@@ -180,6 +180,21 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
     }
 }
 
+pub fn push_group(tokens: &mut TokenStream, delimiter: Delimiter, inner: TokenStream) {
+    tokens.append(Group::new(delimiter, inner));
+}
+
+pub fn push_group_spanned(
+    tokens: &mut TokenStream,
+    span: Span,
+    delimiter: Delimiter,
+    inner: TokenStream,
+) {
+    let mut g = Group::new(delimiter, inner);
+    g.set_span(span);
+    tokens.append(g);
+}
+
 pub fn parse(tokens: &mut TokenStream, s: &str) {
     let s: TokenStream = s.parse().expect("invalid token stream");
     tokens.extend(s);
