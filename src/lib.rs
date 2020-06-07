@@ -472,6 +472,9 @@ pub mod spanned;
 /// ```
 #[macro_export]
 macro_rules! quote {
+    () => {
+        $crate::__private::TokenStream::new()
+    };
     ($($tt:tt)*) => {{
         let mut _s = $crate::__private::TokenStream::new();
         $crate::quote_each_token!(_s $($tt)*);
@@ -577,6 +580,10 @@ macro_rules! quote {
 /// placed appropriately by the compiler.
 #[macro_export]
 macro_rules! quote_spanned {
+    ($span:expr=>) => {{
+        let _: $crate::__private::Span = $span;
+        $crate::__private::TokenStream::new()
+    }};
     ($span:expr=> $($tt:tt)*) => {{
         let mut _s = $crate::__private::TokenStream::new();
         let _span: $crate::__private::Span = $span;
