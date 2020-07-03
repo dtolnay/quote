@@ -188,6 +188,6 @@ fn bench_impl(b: &mut Bencher) {
                     )
                 }
             }
-        };
+        }
     });
 }

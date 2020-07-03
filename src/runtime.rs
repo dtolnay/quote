@@ -181,7 +181,7 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
 }
 
 pub fn push_group(tokens: &mut TokenStream, delimiter: Delimiter, inner: TokenStream) {
-    tokens.append(Group::new(delimiter, inner));
+    tokens.push_group(delimiter, inner);
 }
 
 pub fn push_group_spanned(
