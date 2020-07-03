@@ -196,8 +196,8 @@ pub fn push_group_spanned(
 }
 
 pub fn parse(tokens: &mut TokenStream, s: &str) {
-    let s: TokenStream = s.parse().expect("invalid token stream");
-    tokens.extend(s);
+    tokens.push_str(s);
+    tokens.push_str(" ");
 }
 
 pub fn parse_spanned(tokens: &mut TokenStream, span: Span, s: &str) {
@@ -209,15 +209,7 @@ pub fn parse_spanned(tokens: &mut TokenStream, span: Span, s: &str) {
 }
 
 pub fn push_ident(tokens: &mut TokenStream, s: &str) {
-    // Optimization over `mk_ident`, as `s` is guaranteed to be a valid ident.
-    //
-    // FIXME: When `Ident::new_raw` becomes stable, this method should be
-    // updated to call it when available.
-    if s.starts_with("r#") {
-        parse(tokens, s);
-    } else {
-        tokens.append(Ident::new(s, Span::call_site()));
-    }
+    parse(tokens, s);
 }
 
 pub fn push_ident_spanned(tokens: &mut TokenStream, span: Span, s: &str) {

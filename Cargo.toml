@@ -13,7 +13,7 @@ include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-A
 edition = "2018"
 
 [dependencies]
-proc-macro2 = { version = "1.0", default-features = false }
+proc-macro2 = { version = "1.0", path = "../proc-macro2", default-features = false }
 
 [dev-dependencies]
 rustversion = "1.0"
