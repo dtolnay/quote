@@ -9,7 +9,7 @@ error[E0599]: no method named `quote_into_iter` found for struct `std::net::Ipv4
            which is required by `std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
            `&std::net::Ipv4Addr: std::iter::Iterator`
            which is required by `&std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
-           `std::net::Ipv4Addr: quote::to_tokens::ToTokens`
+           `std::net::Ipv4Addr: quote::ToTokens`
            which is required by `std::net::Ipv4Addr: quote::__private::ext::RepToTokensExt`
            `&mut std::net::Ipv4Addr: std::iter::Iterator`
            which is required by `&mut std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
