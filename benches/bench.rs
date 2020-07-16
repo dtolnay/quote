@@ -1,5 +1,4 @@
 #![feature(test)]
-#![recursion_limit = "512"]
 
 extern crate test;
 
