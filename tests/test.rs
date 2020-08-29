@@ -222,6 +222,40 @@ fn test_duplicate() {
 }
 
 #[test]
+fn test_conditions(){
+    let foo = true;
+    let ch = 'x';
+    let bar = false;
+
+    let tokens = quote!(#(#foo, #ch)? #(#bar, #ch)?);
+
+    let expected = "'x'";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_nested_conditions(){
+    let foo = true;
+    let bar = true;
+    let ch = 'x';
+
+    let tokens = quote! {#(#foo,#(#bar,#ch)?)?};
+
+    let expected = "'x'";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
+fn test_question_mark_after_condition(){
+    let foo = true;
+    let ch = 'x';
+
+    let tokens = quote! {#(#foo, #ch)??};
+    let expected = "'x' ?";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
 fn test_fancy_repetition() {
     let foo = vec!["a", "b"];
     let bar = vec![true, false];

@@ -769,6 +769,17 @@ macro_rules! quote_token_with_context {
     };
     ($tokens:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
 
+    ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( # $cond:ident, $($inner:tt)+ ) ? $a3:tt) => {{
+       if $cond {
+            $crate::quote_each_token!($tokens $($inner)*);
+       }
+    }};
+    ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) ? $a2:tt $a3:tt) => {};
+    ($tokens:ident $b3:tt # ( $($inner:tt)* ) (?) $a1:tt $a2:tt $a3:tt) => {};
+    ($tokens:ident # ( $($inner:tt)* ) ? (?) $a1:tt $a2:tt $a3:tt) => {
+        $crate::quote_token!($tokens ?);
+    };
+
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
         $crate::ToTokens::to_tokens(&$var, &mut $tokens);
     };
@@ -824,6 +835,17 @@ macro_rules! quote_token_with_context_spanned {
         $crate::quote_token_spanned!($tokens $span *);
     };
     ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( # $cond:ident, $($inner:tt)+ ) ? $a3:tt) => {{
+       if $cond {
+            $crate::quote_each_token!($tokens $span $($inner)*);
+       }
+    }};
+    ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) ? $a2:tt $a3:tt) => {};
+    ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) (?) $a1:tt $a2:tt $a3:tt) => {};
+    ($tokens:ident $span:ident # ( $($inner:tt)* ) ? (?) $a1:tt $a2:tt $a3:tt) => {
+        $crate::quote_token!($tokens $span ?);
+    };
 
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
         $crate::ToTokens::to_tokens(&$var, &mut $tokens);

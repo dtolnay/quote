@@ -79,6 +79,16 @@ let tokens = quote! {
 
 <br>
 
+## Conditions Checkiing
+
+Conditions checking is done using `#(#boolean,...)?` syntax. A boolean value is required as the first argument.
+
+```rust
+#(#var, struct #name; )?
+```
+
+<br>
+
 ## Repetition
 
 Repetition is done using `#(...)*` or `#(...),*` similar to `macro_rules!`. This
