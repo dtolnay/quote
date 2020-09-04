@@ -1,16 +1,25 @@
-error[E0599]: no method named `quote_into_iter` found for struct `std::net::Ipv4Addr` in the current scope
-  --> $DIR/not-repeatable.rs:6:13
-   |
-6  |       let _ = quote! { #(#ip)* };
-   |               ^^^^^^^^^^^^^^^^^^ method not found in `std::net::Ipv4Addr`
-   |
-   = note: the method `quote_into_iter` exists but the following trait bounds were not satisfied:
-           `std::net::Ipv4Addr: std::iter::Iterator`
-           which is required by `std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
-           `&std::net::Ipv4Addr: std::iter::Iterator`
-           which is required by `&std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
-           `std::net::Ipv4Addr: quote::ToTokens`
-           which is required by `std::net::Ipv4Addr: quote::__private::ext::RepToTokensExt`
-           `&mut std::net::Ipv4Addr: std::iter::Iterator`
-           which is required by `&mut std::net::Ipv4Addr: quote::__private::ext::RepIteratorExt`
-   = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0599]: no method named `quote_into_iter` found for struct `Ipv4Addr` in the current scope
+ --> $DIR/not-repeatable.rs:7:13
+  |
+3 | struct Ipv4Addr;
+  | ----------------
+  | |
+  | method `quote_into_iter` not found for this
+  | doesn't satisfy `Ipv4Addr: quote::ToTokens`
+  | doesn't satisfy `Ipv4Addr: quote::__private::ext::RepIteratorExt`
+  | doesn't satisfy `Ipv4Addr: quote::__private::ext::RepToTokensExt`
+  | doesn't satisfy `Ipv4Addr: std::iter::Iterator`
+...
+7 |     let _ = quote! { #(#ip)* };
+  |             ^^^^^^^^^^^^^^^^^^ method not found in `Ipv4Addr`
+  |
+  = note: the method `quote_into_iter` exists but the following trait bounds were not satisfied:
+          `Ipv4Addr: std::iter::Iterator`
+          which is required by `Ipv4Addr: quote::__private::ext::RepIteratorExt`
+          `&Ipv4Addr: std::iter::Iterator`
+          which is required by `&Ipv4Addr: quote::__private::ext::RepIteratorExt`
+          `Ipv4Addr: quote::ToTokens`
+          which is required by `Ipv4Addr: quote::__private::ext::RepToTokensExt`
+          `&mut Ipv4Addr: std::iter::Iterator`
+          which is required by `&mut Ipv4Addr: quote::__private::ext::RepIteratorExt`
+  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
