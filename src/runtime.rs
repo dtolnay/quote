@@ -345,18 +345,16 @@ pub fn mk_ident(id: &str, span: Option<Span>) -> Ident {
     //
     // FIXME: When `Ident::new_raw` becomes stable, this method should be
     // updated to call it when available.
-    match id.parse::<TokenStream>() {
-        Ok(ts) => {
-            let mut iter = ts.into_iter();
-            match (iter.next(), iter.next()) {
-                (Some(TokenTree::Ident(mut id)), None) => {
-                    id.set_span(span);
-                    id
-                }
-                _ => unreachable!("valid raw ident fails to parse"),
-            }
+    let ts = id
+        .parse::<TokenStream>()
+        .expect("valid raw ident fails to parse");
+    let mut iter = ts.into_iter();
+    match (iter.next(), iter.next()) {
+        (Some(TokenTree::Ident(mut id)), None) => {
+            id.set_span(span);
+            id
         }
-        Err(_) => unreachable!("valid raw ident fails to parse"),
+        tts => unreachable!("valid raw ident fails to parse: {:?}", tts),
     }
 }
 
