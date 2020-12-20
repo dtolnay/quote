@@ -82,7 +82,7 @@
 
 #![forbid(unsafe_code)]
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote/1.0.7")]
+#![doc(html_root_url = "https://docs.rs/quote/1.0.8")]
 
 #[cfg(all(
     not(all(target_arch = "wasm32", target_os = "unknown")),
