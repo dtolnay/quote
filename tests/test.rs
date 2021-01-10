@@ -457,3 +457,40 @@ fn test_quote_raw_id() {
     let id = quote!(r#raw_id);
     assert_eq!(id.to_string(), "r#raw_id");
 }
+
+#[test]
+fn test_inline_expr() {
+    fn make(case: bool) -> TokenStream {
+        let quoted_b = quote!(you made this?);
+        quote!(something_before #{
+            if case {
+                quote!(i made this.)
+            } else {
+                quoted_b
+            }
+        } something_after)
+    }
+
+    assert_eq!(make(true).to_string(), "something_before i made this . something_after");
+    assert_eq!(make(false).to_string(), "something_before you made this ? something_after");
+}
+
+
+#[test]
+fn test_inline_expr_spanned() {
+    fn make(case: bool) -> TokenStream {
+        let quoted_b = quote!(you made this?);
+        let span = Span::call_site();
+        quote_spanned!(span=> something_before #{
+            if case {
+                quote!(i made this.)
+            } else {
+                quoted_b
+            }
+        } something_after)
+    }
+
+    assert_eq!(make(true).to_string(), "something_before i made this . something_after");
+    assert_eq!(make(false).to_string(), "something_before you made this ? something_after");
+}
+

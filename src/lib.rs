@@ -732,6 +732,11 @@ macro_rules! quote_tokens_with_context_spanned {
 macro_rules! quote_token_with_context {
     ($tokens:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
 
+    ($tokens:ident $b3:tt $b2:tt $b1:tt (#) { $($inner:tt)* } $a2:tt $a3:tt) => {{
+        $tokens.extend($crate::ToTokens::into_token_stream({ $($inner)* }))
+    }};
+    ($tokens:ident $b3:tt $b2:tt # ({ $($inner:tt)* }) $a1:tt $a2:tt $a3:tt) => {};
+
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
@@ -787,6 +792,11 @@ macro_rules! quote_token_with_context {
 #[doc(hidden)]
 macro_rules! quote_token_with_context_spanned {
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) { $($inner:tt)* } $a2:tt $a3:tt) => {{
+        $tokens.extend($crate::ToTokens::into_token_stream({ $($inner)* }))
+    }};
+    ($tokens:ident $span:ident $b3:tt $b2:tt # ({ $($inner:tt)* }) $a1:tt $a2:tt $a3:tt) => {};
 
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
