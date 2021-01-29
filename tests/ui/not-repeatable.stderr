@@ -1,4 +1,4 @@
-error[E0599]: no method named `quote_into_iter` found for struct `Ipv4Addr` in the current scope
+error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its trait bounds were not satisfied
  --> $DIR/not-repeatable.rs:7:13
   |
 3 | struct Ipv4Addr;
@@ -11,9 +11,9 @@ error[E0599]: no method named `quote_into_iter` found for struct `Ipv4Addr` in t
   | doesn't satisfy `Ipv4Addr: quote::__private::ext::RepToTokensExt`
 ...
 7 |     let _ = quote! { #(#ip)* };
-  |             ^^^^^^^^^^^^^^^^^^ method not found in `Ipv4Addr`
+  |             ^^^^^^^^^^^^^^^^^^ method cannot be called on `Ipv4Addr` due to unsatisfied trait bounds
   |
-  = note: the method `quote_into_iter` exists but the following trait bounds were not satisfied:
+  = note: the following trait bounds were not satisfied:
           `Ipv4Addr: Iterator`
           which is required by `Ipv4Addr: quote::__private::ext::RepIteratorExt`
           `&Ipv4Addr: Iterator`
