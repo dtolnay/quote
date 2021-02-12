@@ -1,6 +1,6 @@
 [package]
 name = "quote"
-version = "1.0.8" # don't forget to update html_root_url, version in readme for breaking changes
+version = "1.0.9" # don't forget to update html_root_url, version in readme for breaking changes
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Quasi-quoting macro quote!(...)"
