@@ -134,7 +134,7 @@ pub mod ext {
                     }
                 }
             )*
-        }
+        };
     }
 
     array_rep_slice!(
