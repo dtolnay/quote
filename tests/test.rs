@@ -79,6 +79,27 @@ fn test_iter() {
 }
 
 #[test]
+fn test_array() {
+    let array: [u8; 40] = [0; 40];
+    let _ = quote!(#(#array #array)*);
+
+    let ref_array: &[u8; 40] = &[0; 40];
+    let _ = quote!(#(#ref_array #ref_array)*);
+
+    let ref_slice: &[u8] = &[0; 40];
+    let _ = quote!(#(#ref_slice #ref_slice)*);
+
+    let array: [X; 2] = [X, X]; // !Copy
+    let _ = quote!(#(#array #array)*);
+
+    let ref_array: &[X; 2] = &[X, X];
+    let _ = quote!(#(#ref_array #ref_array)*);
+
+    let ref_slice: &[X] = &[X, X];
+    let _ = quote!(#(#ref_slice #ref_slice)*);
+}
+
+#[test]
 fn test_advanced() {
     let generics = quote!( <'a, T> );
 
