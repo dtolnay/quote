@@ -22,4 +22,4 @@ error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its
           which is required by `Ipv4Addr: quote::__private::ext::RepToTokensExt`
           `&mut Ipv4Addr: Iterator`
           which is required by `&mut Ipv4Addr: quote::__private::ext::RepIteratorExt`
-  = note: this error originates in a macro (in Nightly builds, run with -Z macro-backtrace for more info)
+  = note: this error originates in the macro `$crate::quote_bind_into_iter` (in Nightly builds, run with -Z macro-backtrace for more info)
