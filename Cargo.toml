@@ -9,7 +9,6 @@ documentation = "https://docs.rs/quote/"
 keywords = ["syn"]
 categories = ["development-tools::procedural-macro-helpers"]
 readme = "README.md"
-include = ["Cargo.toml", "src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 edition = "2018"
 
 [dependencies]
