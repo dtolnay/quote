@@ -91,6 +91,8 @@
     clippy::wrong_self_convention,
 )]
 
+#![cfg_attr(feature = "lazy", feature(once_cell))]
+
 #[cfg(all(
     not(all(target_arch = "wasm32", target_os = "unknown")),
     feature = "proc-macro"

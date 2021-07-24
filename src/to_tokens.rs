@@ -114,6 +114,20 @@ impl<T: ToTokens> ToTokens for Option<T> {
     }
 }
 
+#[cfg(feature = "lazy")]
+impl<T: ToTokens, F: Fn() -> T> ToTokens for std::lazy::Lazy<T, F> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        std::lazy::Lazy::force(self).to_tokens(tokens)
+    }
+}
+
+#[cfg(feature = "lazy")]
+impl<T: ToTokens, F: Fn() -> T> ToTokens for std::lazy::SyncLazy<T, F> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        std::lazy::SyncLazy::force(self).to_tokens(tokens)
+    }
+}
+
 impl ToTokens for str {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(Literal::string(self));

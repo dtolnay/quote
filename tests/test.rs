@@ -1,4 +1,6 @@
+#![cfg_attr(feature = "lazy", feature(once_cell))]
 #![cfg_attr(feature = "cargo-clippy", allow(blacklisted_name))]
+
 
 use std::borrow::Cow;
 use std::collections::BTreeSet;
@@ -353,6 +355,22 @@ fn test_cow() {
 
     let tokens = quote! { #owned #borrowed };
     assert_eq!("owned borrowed", tokens.to_string());
+}
+
+#[test]
+#[cfg(feature = "lazy")]
+fn test_lazy_str() {
+    let l = std::lazy::Lazy::new(|| "str".to_owned());
+    let tokens = quote! { #l };
+    assert_eq!("\"str\"", tokens.to_string());
+}
+
+#[test]
+#[cfg(feature = "lazy")]
+fn test_sync_lazy_str() {
+    static L: std::lazy::SyncLazy<String> = std::lazy::SyncLazy::new(|| "str".to_owned());
+    let tokens = quote! { #L };
+    assert_eq!("\"str\"", tokens.to_string());
 }
 
 #[test]
