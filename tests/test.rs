@@ -1,4 +1,13 @@
-#![cfg_attr(feature = "cargo-clippy", allow(blacklisted_name))]
+#![cfg_attr(
+    feature = "cargo-clippy",
+    allow(
+        blacklisted_name,
+        let_underscore_drop,
+        shadow_unrelated,
+        unseparated_literal_suffix,
+        used_underscore_binding
+    )
+)]
 
 use std::borrow::Cow;
 use std::collections::BTreeSet;
