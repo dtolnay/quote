@@ -745,9 +745,15 @@ macro_rules! quote_token_with_context {
         // warnings on anything below the loop. We use has_iter to detect and
         // fail to compile when there are no iterators, so here we just work
         // around the unneeded extra warning.
-        while true {
+        //
+        // FIXME: temporariliy working around Clippy regression.
+        // https://github.com/rust-lang/rust-clippy/issues/7768
+        loop {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             $crate::quote_each_token!($tokens $($inner)*);
+            if false {
+                break;
+            }
         }
     }};
     ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
@@ -759,13 +765,16 @@ macro_rules! quote_token_with_context {
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
         let _: $crate::__private::HasIterator = has_iter;
-        while true {
+        loop {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             if _i > 0 {
                 $crate::quote_token!($tokens $sep);
             }
             _i += 1;
             $crate::quote_each_token!($tokens $($inner)*);
+            if false {
+                break;
+            }
         }
     }};
     ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
@@ -801,9 +810,15 @@ macro_rules! quote_token_with_context_spanned {
         // warnings on anything below the loop. We use has_iter to detect and
         // fail to compile when there are no iterators, so here we just work
         // around the unneeded extra warning.
-        while true {
+        //
+        // FIXME: temporariliy working around Clippy regression.
+        // https://github.com/rust-lang/rust-clippy/issues/7768
+        loop {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             $crate::quote_each_token_spanned!($tokens $span $($inner)*);
+            if false {
+                break;
+            }
         }
     }};
     ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
@@ -815,13 +830,16 @@ macro_rules! quote_token_with_context_spanned {
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
         let _: $crate::__private::HasIterator = has_iter;
-        while true {
+        loop {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             if _i > 0 {
                 $crate::quote_token_spanned!($tokens $span $sep);
             }
             _i += 1;
             $crate::quote_each_token_spanned!($tokens $span $($inner)*);
+            if false {
+                break;
+            }
         }
     }};
     ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
