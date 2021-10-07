@@ -1,5 +1,5 @@
 error[E0308]: mismatched types
- --> $DIR/wrong-type-span.rs:6:20
+ --> $DIR/tests/ui/wrong-type-span.rs:6:20
   |
 6 |     quote_spanned!(span=> #x);
   |     ---------------^^^^-------
