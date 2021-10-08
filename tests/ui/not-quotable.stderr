@@ -1,5 +1,5 @@
 error[E0277]: the trait bound `Ipv4Addr: ToTokens` is not satisfied
-  --> $DIR/tests/ui/not-quotable.rs:6:13
+  --> tests/ui/not-quotable.rs:6:13
    |
 6  |     let _ = quote! { #ip };
    |             ^^^^^^^^^^^^^^
@@ -8,7 +8,7 @@ error[E0277]: the trait bound `Ipv4Addr: ToTokens` is not satisfied
    |             required by a bound introduced by this call
    |
 note: required by `to_tokens`
-  --> $DIR/src/to_tokens.rs:55:5
+  --> src/to_tokens.rs:55:5
    |
 55 |     fn to_tokens(&self, tokens: &mut TokenStream);
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

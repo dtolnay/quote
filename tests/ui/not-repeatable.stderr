@@ -1,5 +1,5 @@
 error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its trait bounds were not satisfied
-    --> $DIR/tests/ui/not-repeatable.rs:7:13
+    --> tests/ui/not-repeatable.rs:7:13
      |
 3    | struct Ipv4Addr;
      | ----------------
@@ -34,7 +34,7 @@ note: the following traits must be implemented
      | |  }
      | |__^
      |
-    ::: $DIR/src/to_tokens.rs:12:1
+    ::: src/to_tokens.rs:12:1
      |
 12   |  / pub trait ToTokens {
 13   |  |     /// Write `self` to the given `TokenStream`.

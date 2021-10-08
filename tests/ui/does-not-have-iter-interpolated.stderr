@@ -1,5 +1,5 @@
 error[E0308]: mismatched types
- --> $DIR/tests/ui/does-not-have-iter-interpolated.rs:8:5
+ --> tests/ui/does-not-have-iter-interpolated.rs:8:5
   |
 8 |     quote!(#(#nonrep)*);
   |     ^^^^^^^^^^^^^^^^^^^^
