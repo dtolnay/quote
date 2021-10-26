@@ -34,14 +34,14 @@ note: the following traits must be implemented
      | |  }
      | |__^
      |
-    ::: src/to_tokens.rs:12:1
+    ::: src/to_tokens.rs
      |
-12   |  / pub trait ToTokens {
-13   |  |     /// Write `self` to the given `TokenStream`.
-14   |  |     ///
-15   |  |     /// The token append methods provided by the [`TokenStreamExt`] extension
+     |  / pub trait ToTokens {
+     |  |     /// Write `self` to the given `TokenStream`.
+     |  |     ///
+     |  |     /// The token append methods provided by the [`TokenStreamExt`] extension
 ...     |
-76   |  |     }
-77   |  | }
+     |  |     }
+     |  | }
      |  |_^
      = note: this error originates in the macro `$crate::quote_bind_into_iter` (in Nightly builds, run with -Z macro-backtrace for more info)
