@@ -6,24 +6,3 @@ error[E0308]: mismatched types
   |     |              |
   |     |              expected struct `Span`, found `&str`
   |     expected due to this
-
-error[E0283]: type annotations needed for `{integer}`
-  --> tests/ui/wrong-type-span.rs:6:5
-   |
-5  |     let x = 0;
-   |         - consider giving `x` a type
-6  |     quote_spanned!(span=> #x);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^ cannot infer type for type `{integer}`
-   |
-   = note: multiple `impl`s satisfying `{integer}: ToTokens` found in the `quote` crate:
-           - impl ToTokens for i128;
-           - impl ToTokens for i16;
-           - impl ToTokens for i32;
-           - impl ToTokens for i64;
-           and 8 more
-note: required by `to_tokens`
-  --> src/to_tokens.rs:55:5
-   |
-55 |     fn to_tokens(&self, tokens: &mut TokenStream);
-   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   = note: this error originates in the macro `$crate::quote_token_with_context_spanned` (in Nightly builds, run with -Z macro-backtrace for more info)
