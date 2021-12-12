@@ -1,4 +1,5 @@
 #![feature(test)]
+#![allow(clippy::too_many_lines)]
 
 extern crate test;
 

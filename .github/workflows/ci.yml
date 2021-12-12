@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: dtolnay/rust-toolchain@clippy
-      - run: cargo clippy --tests -- -Dclippy::all -Dclippy::pedantic
+      - run: cargo clippy --tests --benches -- -Dclippy::all -Dclippy::pedantic
 
   outdated:
     name: Outdated
