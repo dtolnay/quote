@@ -2,13 +2,17 @@ use quote::quote;
 
 #[allow(unused_macros)]
 macro_rules! benchmark {
-    ($quote:expr) => {
+    (|$ident:ident| $quote:expr) => {
         mod timer;
 
         use proc_macro::TokenStream;
+        use proc_macro2::Ident;
 
         #[proc_macro]
-        pub fn run_quote_benchmark(_input: TokenStream) -> TokenStream {
+        pub fn run_quote_benchmark(input: TokenStream) -> TokenStream {
+            let input = proc_macro2::TokenStream::from(input);
+            let span = input.into_iter().next().unwrap().span();
+            let $ident = Ident::new("Response", span);
             timer::time("macro", || proc_macro::TokenStream::from($quote));
             TokenStream::new()
         }
@@ -19,8 +23,8 @@ macro_rules! benchmark {
 use benchmark;
 
 crate::benchmark! {
-    quote! {
-        impl<'de> _serde::Deserialize<'de> for Response {
+    |ident| quote! {
+        impl<'de> _serde::Deserialize<'de> for #ident {
             fn deserialize<__D>(__deserializer: __D) -> _serde::export::Result<Self, __D::Error>
             where
                 __D: _serde::Deserializer<'de>,
@@ -87,16 +91,16 @@ crate::benchmark! {
                     }
                 }
                 struct __Visitor<'de> {
-                    marker: _serde::export::PhantomData<Response>,
+                    marker: _serde::export::PhantomData<#ident>,
                     lifetime: _serde::export::PhantomData<&'de ()>,
                 }
                 impl<'de> _serde::de::Visitor<'de> for __Visitor<'de> {
-                    type Value = Response;
+                    type Value = #ident;
                     fn expecting(
                         &self,
                         __formatter: &mut _serde::export::Formatter,
                     ) -> _serde::export::fmt::Result {
-                        _serde::export::Formatter::write_str(__formatter, "struct Response")
+                        _serde::export::Formatter::write_str(__formatter, "struct")
                     }
                     #[inline]
                     fn visit_seq<__A>(
@@ -112,7 +116,7 @@ crate::benchmark! {
                                 _serde::export::None => {
                                     return _serde::export::Err(_serde::de::Error::invalid_length(
                                         0usize,
-                                        &"struct Response with 2 elements",
+                                        &"struct with 2 elements",
                                     ));
                                 }
                             };
@@ -122,11 +126,11 @@ crate::benchmark! {
                                 _serde::export::None => {
                                     return _serde::export::Err(_serde::de::Error::invalid_length(
                                         1usize,
-                                        &"struct Response with 2 elements",
+                                        &"struct with 2 elements",
                                     ));
                                 }
                             };
-                        _serde::export::Ok(Response {
+                        _serde::export::Ok(#ident {
                             id: __field0,
                             s: __field1,
                         })
@@ -180,7 +184,7 @@ crate::benchmark! {
                             _serde::export::Some(__field1) => __field1,
                             _serde::export::None => try!(_serde::private::de::missing_field("s")),
                         };
-                        _serde::export::Ok(Response {
+                        _serde::export::Ok(#ident {
                             id: __field0,
                             s: __field1,
                         })
@@ -189,10 +193,10 @@ crate::benchmark! {
                 const FIELDS: &'static [&'static str] = &["id", "s"];
                 _serde::Deserializer::deserialize_struct(
                     __deserializer,
-                    "Response",
+                    stringify!(#ident),
                     FIELDS,
                     __Visitor {
-                        marker: _serde::export::PhantomData::<Response>,
+                        marker: _serde::export::PhantomData::<#ident>,
                         lifetime: _serde::export::PhantomData,
                     },
                 )
