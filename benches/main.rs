@@ -1,9 +1,12 @@
-quote_benchmark::run_quote_benchmark!();
+quote_benchmark::run_quote_benchmark!(_);
 
 mod benchmark {
     macro_rules! benchmark {
-        ($quote:expr) => {
+        (|$ident:ident| $quote:expr) => {
+            use proc_macro2::{Ident, Span};
+
             pub fn quote() -> proc_macro2::TokenStream {
+                let $ident = Ident::new("Response", Span::call_site());
                 $quote
             }
         };
