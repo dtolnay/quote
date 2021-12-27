@@ -279,12 +279,12 @@ pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &st
 }
 
 pub fn push_literal(tokens: &mut TokenStream, repr: &str) {
-    let literal: Literal = repr.parse().expect("invalid token stream");
+    let literal: Literal = repr.parse().expect("invalid literal");
     tokens.extend(iter::once(TokenTree::Literal(literal)));
 }
 
 pub fn push_literal_spanned(tokens: &mut TokenStream, span: Span, repr: &str) {
-    let mut literal: Literal = repr.parse().expect("invalid token stream");
+    let mut literal: Literal = repr.parse().expect("invalid literal");
     literal.set_span(span);
     tokens.extend(iter::once(TokenTree::Literal(literal)));
 }
