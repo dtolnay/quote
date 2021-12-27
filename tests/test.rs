@@ -230,6 +230,34 @@ fn test_string() {
 }
 
 #[test]
+fn test_interpolated_literal() {
+    macro_rules! m {
+        ($literal:literal) => {
+            quote!($literal)
+        };
+    }
+
+    let tokens = m!(1);
+    let expected = "1";
+    assert_eq!(expected, tokens.to_string());
+
+    let tokens = m!(-1);
+    let expected = "- 1";
+    assert_eq!(expected, tokens.to_string());
+
+    // FIXME
+    /*
+    let tokens = m!(true);
+    let expected = "true";
+    assert_eq!(expected, tokens.to_string());
+
+    let tokens = m!(-true);
+    let expected = "- true";
+    assert_eq!(expected, tokens.to_string());
+    */
+}
+
+#[test]
 fn test_ident() {
     let foo = Ident::new("Foo", Span::call_site());
     let bar = Ident::new(&format!("Bar{}", 7), Span::call_site());
