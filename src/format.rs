@@ -29,6 +29,7 @@
 ///    unsigned integers and strings.
 /// * [`Ident`] arguments will have their `r#` prefixes stripped, if present.
 ///
+/// [`IdentFragment`]: crate::IdentFragment
 /// [`Ident`]: proc_macro2::Ident
 ///
 /// <br>
