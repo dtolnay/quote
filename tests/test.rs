@@ -264,6 +264,13 @@ fn test_ident() {
 }
 
 #[test]
+fn test_underscore() {
+    let tokens = quote!(let _;);
+    let expected = "let _ ;";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
 fn test_duplicate() {
     let ch = 'x';
 
