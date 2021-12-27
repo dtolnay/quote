@@ -245,8 +245,6 @@ fn test_interpolated_literal() {
     let expected = "- 1";
     assert_eq!(expected, tokens.to_string());
 
-    // FIXME
-    /*
     let tokens = m!(true);
     let expected = "true";
     assert_eq!(expected, tokens.to_string());
@@ -254,7 +252,6 @@ fn test_interpolated_literal() {
     let tokens = m!(-true);
     let expected = "- true";
     assert_eq!(expected, tokens.to_string());
-    */
 }
 
 #[test]

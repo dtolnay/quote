@@ -279,14 +279,24 @@ pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &st
 }
 
 pub fn push_literal(tokens: &mut TokenStream, repr: &str) {
-    let literal: Literal = repr.parse().expect("invalid literal");
-    tokens.extend(iter::once(TokenTree::Literal(literal)));
+    // Macro_rules's $literal matcher also matches `true`, `-true`, `false`,
+    // `-false` which are not considered valid values for a proc_macro::Literal.
+    if repr.ends_with('e') {
+        parse(tokens, repr);
+    } else {
+        let literal: Literal = repr.parse().expect("invalid literal");
+        tokens.extend(iter::once(TokenTree::Literal(literal)));
+    }
 }
 
 pub fn push_literal_spanned(tokens: &mut TokenStream, span: Span, repr: &str) {
-    let mut literal: Literal = repr.parse().expect("invalid literal");
-    literal.set_span(span);
-    tokens.extend(iter::once(TokenTree::Literal(literal)));
+    if repr.ends_with('e') {
+        parse_spanned(tokens, span, repr);
+    } else {
+        let mut literal: Literal = repr.parse().expect("invalid literal");
+        literal.set_span(span);
+        tokens.extend(iter::once(TokenTree::Literal(literal)));
+    }
 }
 
 macro_rules! push_punct {
