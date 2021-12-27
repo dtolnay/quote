@@ -1070,6 +1070,10 @@ macro_rules! quote_token {
         $crate::__private::push_lifetime(&mut $tokens, stringify!($lifetime));
     };
 
+    ($tokens:ident $literal:literal) => {
+        $crate::__private::push_literal(&mut $tokens, stringify!($literal));
+    };
+
     ($tokens:ident $other:tt) => {
         $crate::__private::parse(&mut $tokens, stringify!($other));
     };
@@ -1287,6 +1291,10 @@ macro_rules! quote_token_spanned {
 
     ($tokens:ident $span:ident $lifetime:lifetime) => {
         $crate::__private::push_lifetime_spanned(&mut $tokens, $span, stringify!($lifetime));
+    };
+
+    ($tokens:ident $span:ident $literal:literal) => {
+        $crate::__private::push_literal_spanned(&mut $tokens, $span, stringify!($literal));
     };
 
     ($tokens:ident $span:ident $other:tt) => {

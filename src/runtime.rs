@@ -1,5 +1,6 @@
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use std::fmt;
+use std::iter;
 use std::ops::BitOr;
 
 pub use proc_macro2::*;
@@ -275,6 +276,17 @@ pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &st
         span,
         state: 0,
     });
+}
+
+pub fn push_literal(tokens: &mut TokenStream, repr: &str) {
+    let literal: Literal = repr.parse().expect("invalid token stream");
+    tokens.extend(iter::once(TokenTree::Literal(literal)));
+}
+
+pub fn push_literal_spanned(tokens: &mut TokenStream, span: Span, repr: &str) {
+    let mut literal: Literal = repr.parse().expect("invalid token stream");
+    literal.set_span(span);
+    tokens.extend(iter::once(TokenTree::Literal(literal)));
 }
 
 macro_rules! push_punct {
