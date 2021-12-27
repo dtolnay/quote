@@ -31,3 +31,8 @@ members = ["benches"]
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
+
+# FIXME: Remove once proc-macro2 has published version 1.0.36. Publish is stuck
+# on GitHub Actions being broken today (2021-12-26).
+[patch.crates-io]
+proc-macro2 = { git = "https://github.com/dtolnay/proc-macro2" }

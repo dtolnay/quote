@@ -284,7 +284,7 @@ pub fn push_literal(tokens: &mut TokenStream, repr: &str) {
     if repr.ends_with('e') {
         parse(tokens, repr);
     } else {
-        let literal: Literal = repr.parse().expect("invalid literal");
+        let literal = unsafe { Literal::from_str_unchecked(repr) };
         tokens.extend(iter::once(TokenTree::Literal(literal)));
     }
 }
@@ -293,7 +293,7 @@ pub fn push_literal_spanned(tokens: &mut TokenStream, span: Span, repr: &str) {
     if repr.ends_with('e') {
         parse_spanned(tokens, span, repr);
     } else {
-        let mut literal: Literal = repr.parse().expect("invalid literal");
+        let mut literal = unsafe { Literal::from_str_unchecked(repr) };
         literal.set_span(span);
         tokens.extend(iter::once(TokenTree::Literal(literal)));
     }
