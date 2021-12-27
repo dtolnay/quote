@@ -317,7 +317,7 @@ fn is_boolean_literal(mut repr: &str) -> bool {
     if repr.starts_with('-') {
         repr = &repr[1..];
     }
-    repr.starts_with(&['t', 'f'])
+    repr.starts_with(['t', 'f'].as_slice())
 }
 
 macro_rules! push_punct {
