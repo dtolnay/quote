@@ -1074,6 +1074,10 @@ macro_rules! quote_token {
         $crate::__private::push_literal(&mut $tokens, stringify!($literal));
     };
 
+    ($tokens:ident _) => {
+        $crate::__private::push_underscore(&mut $tokens);
+    };
+
     ($tokens:ident $other:tt) => {
         $crate::__private::parse(&mut $tokens, stringify!($other));
     };
@@ -1295,6 +1299,10 @@ macro_rules! quote_token_spanned {
 
     ($tokens:ident $span:ident $literal:literal) => {
         $crate::__private::push_literal_spanned(&mut $tokens, $span, stringify!($literal));
+    };
+
+    ($tokens:ident $span:ident _) => {
+        $crate::__private::push_underscore_spanned(&mut $tokens, $span);
     };
 
     ($tokens:ident $span:ident $other:tt) => {

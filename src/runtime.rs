@@ -396,6 +396,14 @@ push_punct!(push_star push_star_spanned '*');
 push_punct!(push_sub push_sub_spanned '-');
 push_punct!(push_sub_eq push_sub_eq_spanned '-' '=');
 
+pub fn push_underscore(tokens: &mut TokenStream) {
+    push_underscore_spanned(tokens, Span::call_site());
+}
+
+pub fn push_underscore_spanned(tokens: &mut TokenStream, span: Span) {
+    tokens.append(Ident::new("_", span));
+}
+
 // Helper method for constructing identifiers from the `format_ident!` macro,
 // handling `r#` prefixes.
 //
