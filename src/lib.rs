@@ -1075,28 +1075,6 @@ macro_rules! quote_token {
     };
 
     ($tokens:ident $other:tt) => {
-        $crate::quote_literal_or_token!($tokens $other);
-    };
-}
-
-#[cfg(not(no_literal_matcher))]
-#[macro_export]
-#[doc(hidden)]
-macro_rules! quote_literal_or_token {
-    ($tokens:ident $literal:literal) => {
-        $crate::__private::push_literal(&mut $tokens, stringify!($literal));
-    };
-
-    ($tokens:ident $other:tt) => {
-        $crate::__private::parse(&mut $tokens, stringify!($other));
-    };
-}
-
-#[cfg(no_literal_matcher)]
-#[macro_export]
-#[doc(hidden)]
-macro_rules! quote_literal_or_token {
-    ($tokens:ident $other:tt) => {
         $crate::__private::parse(&mut $tokens, stringify!($other));
     };
 }
@@ -1319,28 +1297,6 @@ macro_rules! quote_token_spanned {
         $crate::__private::push_underscore_spanned(&mut $tokens, $span);
     };
 
-    ($tokens:ident $span:ident $other:tt) => {
-        $crate::quote_literal_or_token_spanned!($tokens $span $other);
-    };
-}
-
-#[cfg(not(no_literal_matcher))]
-#[macro_export]
-#[doc(hidden)]
-macro_rules! quote_literal_or_token_spanned {
-    ($tokens:ident $span:ident $literal:literal) => {
-        $crate::__private::push_literal_spanned(&mut $tokens, $span, stringify!($literal));
-    };
-
-    ($tokens:ident $span:ident $other:tt) => {
-        $crate::__private::parse_spanned(&mut $tokens, $span, stringify!($other));
-    };
-}
-
-#[cfg(no_literal_matcher)]
-#[macro_export]
-#[doc(hidden)]
-macro_rules! quote_literal_or_token_spanned {
     ($tokens:ident $span:ident $other:tt) => {
         $crate::__private::parse_spanned(&mut $tokens, $span, stringify!($other));
     };

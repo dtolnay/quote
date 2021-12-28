@@ -1,6 +1,5 @@
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use std::fmt;
-use std::iter;
 use std::ops::BitOr;
 
 pub use proc_macro2::*;
@@ -290,34 +289,6 @@ pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &st
         span,
         state: 0,
     });
-}
-
-pub fn push_literal(tokens: &mut TokenStream, repr: &str) {
-    // Macro_rules's $literal matcher also matches `true`, `-true`, `false`,
-    // `-false` which are not considered valid values for a proc_macro::Literal.
-    if is_boolean_literal(repr) {
-        parse(tokens, repr);
-    } else {
-        let literal = unsafe { Literal::from_str_unchecked(repr) };
-        tokens.extend(iter::once(TokenTree::Literal(literal)));
-    }
-}
-
-pub fn push_literal_spanned(tokens: &mut TokenStream, span: Span, repr: &str) {
-    if is_boolean_literal(repr) {
-        parse_spanned(tokens, span, repr);
-    } else {
-        let mut literal = unsafe { Literal::from_str_unchecked(repr) };
-        literal.set_span(span);
-        tokens.extend(iter::once(TokenTree::Literal(literal)));
-    }
-}
-
-fn is_boolean_literal(mut repr: &str) -> bool {
-    if repr.starts_with('-') {
-        repr = &repr[1..];
-    }
-    repr.starts_with(&['t', 'f'][..])
 }
 
 macro_rules! push_punct {
