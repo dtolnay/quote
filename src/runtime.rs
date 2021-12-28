@@ -1,5 +1,6 @@
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use std::fmt;
+use std::iter;
 use std::ops::BitOr;
 
 pub use proc_macro2::*;
@@ -178,7 +179,7 @@ pub fn push_group_spanned(
 
 pub fn parse(tokens: &mut TokenStream, s: &str) {
     let s: TokenStream = s.parse().expect("invalid token stream");
-    tokens.extend(s);
+    tokens.extend(iter::once(s));
 }
 
 pub fn parse_spanned(tokens: &mut TokenStream, span: Span, s: &str) {
