@@ -276,7 +276,7 @@ pub mod spanned;
 /// #
 /// // incorrect
 /// quote! {
-///     let mut _#ident = 0;
+///     let mut _ #ident = 0;
 /// }
 /// # ;
 /// ```

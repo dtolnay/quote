@@ -9,16 +9,16 @@ documentation = "https://docs.rs/quote/"
 keywords = ["syn"]
 categories = ["development-tools::procedural-macro-helpers"]
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 autobenches = false
-rust-version = "1.31"
+rust-version = "1.56.0"
 
 [dependencies]
 proc-macro2 = { version = "1.0.36", default-features = false }
 
 [dev-dependencies]
-rustversion = "1.0"
-trybuild = { version = "1.0.52", features = ["diff"] }
+rustversion = "1.0.6"
+trybuild = { version = "1.0.53", features = ["diff"] }
 
 [features]
 default = ["proc-macro"]
