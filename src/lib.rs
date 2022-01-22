@@ -81,7 +81,7 @@
 //! ```
 
 // Quote types in rustdoc of other crates get linked to here.
-#![doc(html_root_url = "https://docs.rs/quote/1.0.14")]
+#![doc(html_root_url = "https://docs.rs/quote/1.0.15")]
 #![allow(
     clippy::doc_markdown,
     clippy::missing_errors_doc,
