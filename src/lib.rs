@@ -476,6 +476,25 @@ pub mod spanned;
 /// #     }
 /// # }
 /// ```
+///
+/// ### Using multiple variables in repetitions
+///
+/// ```
+/// # fn example() -> proc_macro2::TokenStream {
+/// # use quote::{format_ident, quote};
+/// let names = ["foo", "bar", "baz"];
+/// let idents = names.map(|x| format_ident!("{}", x));
+/// let values = std::iter::successors(Some(1), |n| Some(n + 1));
+///
+/// quote! {
+///     let (foo, bar, baz) = (None, ..);
+///     match input {
+///         // builds: "foo" => foo = map.insert("foo".to_owned(), 1i32),
+///         #( #names =>  #idents = map.insert(#names.to_owned(), #values), )*
+///     }
+/// }
+/// # }
+/// ```
 #[macro_export]
 macro_rules! quote {
     () => {
