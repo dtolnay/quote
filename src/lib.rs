@@ -762,7 +762,7 @@ macro_rules! quote_token_with_context {
         while true {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             if _i > 0 {
-                $crate::quote_token!($tokens $sep);
+                $crate::quote_token!($sep $tokens);
             }
             _i += 1;
             $crate::quote_each_token!($tokens $($inner)*);
@@ -772,7 +772,7 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
     ($tokens:ident # ( $($inner:tt)* ) * (*) $a1:tt $a2:tt $a3:tt) => {
         // https://github.com/dtolnay/quote/issues/130
-        $crate::quote_token!($tokens *);
+        $crate::quote_token!(* $tokens);
     };
     ($tokens:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
 
@@ -781,7 +781,7 @@ macro_rules! quote_token_with_context {
     };
     ($tokens:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
     ($tokens:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
-        $crate::quote_token!($tokens $curr);
+        $crate::quote_token!($curr $tokens);
     };
 }
 
@@ -848,15 +848,15 @@ macro_rules! quote_token_with_context_spanned {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_token {
-    ($tokens:ident $ident:ident) => {
+    ($ident:ident $tokens:ident) => {
         $crate::__private::push_ident(&mut $tokens, stringify!($ident));
     };
 
-    ($tokens:ident ::) => {
+    (:: $tokens:ident) => {
         $crate::__private::push_colon2(&mut $tokens);
     };
 
-    ($tokens:ident ( $($inner:tt)* )) => {
+    (( $($inner:tt)* ) $tokens:ident) => {
         $crate::__private::push_group(
             &mut $tokens,
             $crate::__private::Delimiter::Parenthesis,
@@ -864,7 +864,7 @@ macro_rules! quote_token {
         );
     };
 
-    ($tokens:ident [ $($inner:tt)* ]) => {
+    ([ $($inner:tt)* ] $tokens:ident) => {
         $crate::__private::push_group(
             &mut $tokens,
             $crate::__private::Delimiter::Bracket,
@@ -872,7 +872,7 @@ macro_rules! quote_token {
         );
     };
 
-    ($tokens:ident { $($inner:tt)* }) => {
+    ({ $($inner:tt)* } $tokens:ident) => {
         $crate::__private::push_group(
             &mut $tokens,
             $crate::__private::Delimiter::Brace,
@@ -880,187 +880,187 @@ macro_rules! quote_token {
         );
     };
 
-    ($tokens:ident #) => {
+    (# $tokens:ident) => {
         $crate::__private::push_pound(&mut $tokens);
     };
 
-    ($tokens:ident ,) => {
+    (, $tokens:ident) => {
         $crate::__private::push_comma(&mut $tokens);
     };
 
-    ($tokens:ident .) => {
+    (. $tokens:ident) => {
         $crate::__private::push_dot(&mut $tokens);
     };
 
-    ($tokens:ident ;) => {
+    (; $tokens:ident) => {
         $crate::__private::push_semi(&mut $tokens);
     };
 
-    ($tokens:ident :) => {
+    (: $tokens:ident) => {
         $crate::__private::push_colon(&mut $tokens);
     };
 
-    ($tokens:ident +) => {
+    (+ $tokens:ident) => {
         $crate::__private::push_add(&mut $tokens);
     };
 
-    ($tokens:ident +=) => {
+    (+= $tokens:ident) => {
         $crate::__private::push_add_eq(&mut $tokens);
     };
 
-    ($tokens:ident &) => {
+    (& $tokens:ident) => {
         $crate::__private::push_and(&mut $tokens);
     };
 
-    ($tokens:ident &&) => {
+    (&& $tokens:ident) => {
         $crate::__private::push_and_and(&mut $tokens);
     };
 
-    ($tokens:ident &=) => {
+    (&= $tokens:ident) => {
         $crate::__private::push_and_eq(&mut $tokens);
     };
 
-    ($tokens:ident @) => {
+    (@ $tokens:ident) => {
         $crate::__private::push_at(&mut $tokens);
     };
 
-    ($tokens:ident !) => {
+    (! $tokens:ident) => {
         $crate::__private::push_bang(&mut $tokens);
     };
 
-    ($tokens:ident ^) => {
+    (^ $tokens:ident) => {
         $crate::__private::push_caret(&mut $tokens);
     };
 
-    ($tokens:ident ^=) => {
+    (^= $tokens:ident) => {
         $crate::__private::push_caret_eq(&mut $tokens);
     };
 
-    ($tokens:ident /) => {
+    (/ $tokens:ident) => {
         $crate::__private::push_div(&mut $tokens);
     };
 
-    ($tokens:ident /=) => {
+    (/= $tokens:ident) => {
         $crate::__private::push_div_eq(&mut $tokens);
     };
 
-    ($tokens:ident ..) => {
+    (.. $tokens:ident) => {
         $crate::__private::push_dot2(&mut $tokens);
     };
 
-    ($tokens:ident ...) => {
+    (... $tokens:ident) => {
         $crate::__private::push_dot3(&mut $tokens);
     };
 
-    ($tokens:ident ..=) => {
+    (..= $tokens:ident) => {
         $crate::__private::push_dot_dot_eq(&mut $tokens);
     };
 
-    ($tokens:ident =) => {
+    (= $tokens:ident) => {
         $crate::__private::push_eq(&mut $tokens);
     };
 
-    ($tokens:ident ==) => {
+    (== $tokens:ident) => {
         $crate::__private::push_eq_eq(&mut $tokens);
     };
 
-    ($tokens:ident >=) => {
+    (>= $tokens:ident) => {
         $crate::__private::push_ge(&mut $tokens);
     };
 
-    ($tokens:ident >) => {
+    (> $tokens:ident) => {
         $crate::__private::push_gt(&mut $tokens);
     };
 
-    ($tokens:ident <=) => {
+    (<= $tokens:ident) => {
         $crate::__private::push_le(&mut $tokens);
     };
 
-    ($tokens:ident <) => {
+    (< $tokens:ident) => {
         $crate::__private::push_lt(&mut $tokens);
     };
 
-    ($tokens:ident *=) => {
+    (*= $tokens:ident) => {
         $crate::__private::push_mul_eq(&mut $tokens);
     };
 
-    ($tokens:ident !=) => {
+    (!= $tokens:ident) => {
         $crate::__private::push_ne(&mut $tokens);
     };
 
-    ($tokens:ident |) => {
+    (| $tokens:ident) => {
         $crate::__private::push_or(&mut $tokens);
     };
 
-    ($tokens:ident |=) => {
+    (|= $tokens:ident) => {
         $crate::__private::push_or_eq(&mut $tokens);
     };
 
-    ($tokens:ident ||) => {
+    (|| $tokens:ident) => {
         $crate::__private::push_or_or(&mut $tokens);
     };
 
-    ($tokens:ident ?) => {
+    (? $tokens:ident) => {
         $crate::__private::push_question(&mut $tokens);
     };
 
-    ($tokens:ident ->) => {
+    (-> $tokens:ident) => {
         $crate::__private::push_rarrow(&mut $tokens);
     };
 
-    ($tokens:ident <-) => {
+    (<- $tokens:ident) => {
         $crate::__private::push_larrow(&mut $tokens);
     };
 
-    ($tokens:ident %) => {
+    (% $tokens:ident) => {
         $crate::__private::push_rem(&mut $tokens);
     };
 
-    ($tokens:ident %=) => {
+    (%= $tokens:ident) => {
         $crate::__private::push_rem_eq(&mut $tokens);
     };
 
-    ($tokens:ident =>) => {
+    (=> $tokens:ident) => {
         $crate::__private::push_fat_arrow(&mut $tokens);
     };
 
-    ($tokens:ident <<) => {
+    (<< $tokens:ident) => {
         $crate::__private::push_shl(&mut $tokens);
     };
 
-    ($tokens:ident <<=) => {
+    (<<= $tokens:ident) => {
         $crate::__private::push_shl_eq(&mut $tokens);
     };
 
-    ($tokens:ident >>) => {
+    (>> $tokens:ident) => {
         $crate::__private::push_shr(&mut $tokens);
     };
 
-    ($tokens:ident >>=) => {
+    (>>= $tokens:ident) => {
         $crate::__private::push_shr_eq(&mut $tokens);
     };
 
-    ($tokens:ident *) => {
+    (* $tokens:ident) => {
         $crate::__private::push_star(&mut $tokens);
     };
 
-    ($tokens:ident -) => {
+    (- $tokens:ident) => {
         $crate::__private::push_sub(&mut $tokens);
     };
 
-    ($tokens:ident -=) => {
+    (-= $tokens:ident) => {
         $crate::__private::push_sub_eq(&mut $tokens);
     };
 
-    ($tokens:ident $lifetime:lifetime) => {
+    ($lifetime:lifetime $tokens:ident) => {
         $crate::__private::push_lifetime(&mut $tokens, stringify!($lifetime));
     };
 
-    ($tokens:ident _) => {
+    (_ $tokens:ident) => {
         $crate::__private::push_underscore(&mut $tokens);
     };
 
-    ($tokens:ident $other:tt) => {
+    ($other:tt $tokens:ident) => {
         $crate::__private::parse(&mut $tokens, stringify!($other));
     };
 }
