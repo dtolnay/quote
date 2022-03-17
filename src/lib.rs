@@ -842,9 +842,12 @@ macro_rules! quote_token_with_context_spanned {
 }
 
 // These rules are ordered by approximate token frequency, at least for the
-// first 10 or so, to improve compile times. Similarly, having the `$tokens` at
-// the end allows for failing rules to fail as quickly as possible, and also helps
-// reduce compile times for crates that use `quote!` heavily.
+// first 10 or so, to improve compile times. Having `ident` first is by far the
+// most important because it's typically 2-3x more common than the next most
+// common token.
+//
+// Separately, we put the token being matched in the very front so that failing
+// rules may fail to match as quickly as possible.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_token {
