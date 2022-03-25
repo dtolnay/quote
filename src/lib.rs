@@ -389,14 +389,6 @@ pub mod spanned;
 /// }
 /// ```
 ///
-/// Macro calls in a doc attribute are not valid syntax:
-///
-/// ```compile_fail
-/// quote! {
-///     #[doc = concat!("try to interpolate: ", stringify!(#ident))]
-/// }
-/// ```
-///
 /// Instead the best way to build doc comments that involve variables is by
 /// formatting the doc string literal outside of quote.
 ///
