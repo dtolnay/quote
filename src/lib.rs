@@ -661,6 +661,67 @@ macro_rules! quote_bind_next_or_break {
     };
 }
 
+// The obvious way to implement this macro is as a tt muncher. This
+// implementation does something more complex, for two reasons.
+// - With a tt muncher it's easy to hit Rust's built-in `recursion_limit`,
+//   which this implementation avoids because it isn't tail recursive.
+// - Compile times for a tt muncher are quadratic relative to the length of the
+//   input. This implementation is linear, so it will be faster (potentially
+//   much faster) for long inputs. However, the constant factors of this
+//   implementation are higher than that of a tt muncher, so it is somewhat
+//   slower than a tt muncher if there are many invocations with short inputs.
+//
+// An invocation like this:
+// ```
+// quote_each_token! { _s a b c d e f g h i j }
+// ```
+// expands to this:
+// ```
+// quote_tokens_with_context! (_s
+//   (@   @   @  @   @   @   a   b   c   d   e   f   g  h   i   j)
+//   (@   @   @  @   @   a   b   c   d   e   f   g   h  i   j   @)
+//   (@   @   @  @   a   b   c   d   e   f   g   h   i  j   @   @)
+//   (@   @   @ (a) (b) (c) (d) (e) (f) (g) (h) (i) (j) @   @   @)
+//   (@   @   a  b   c   d   e   f   g   h   i   j   @  @   @   @)
+//   (@   a   b  c   d   e   f   g   h   i   j   @   @  @   @   @)
+//   (a   b   c  d   e   f   g   h   i   j   @   @   @  @   @   @)
+// );
+// ```
+// which expands to this:
+// ```
+// quote_token_with_context! (_s @ @ @  @  @ @ a);
+// quote_token_with_context! (_s @ @ @  @  @ a b);
+// quote_token_with_context! (_s @ @ @  @  a b c);
+// quote_token_with_context! (_s @ @ @ (a) b c d);
+// quote_token_with_context! (_s @ @ a (b) c d e);
+// quote_token_with_context! (_s @ a b (c) d e f);
+// quote_token_with_context! (_s a b c (d) e f g);
+// quote_token_with_context! (_s b c d (e) f g h);
+// quote_token_with_context! (_s c d e (f) g h i);
+// quote_token_with_context! (_s d e f (g) h i j);
+// quote_token_with_context! (_s e f g (h) i j @);
+// quote_token_with_context! (_s f g h (i) j @ @);
+// quote_token_with_context! (_s g h i (j) @ @ @);
+// quote_token_with_context! (_s h i j  @  @ @ @);
+// quote_token_with_context! (_s i j @  @  @ @ @);
+// quote_token_with_context! (_s j @ @  @  @ @ @);
+// ``
+// Without using recursion, we get one invocation of
+// `quote_token_with_context!` for each tt, with three tts of context on either
+// side. This is enough for the longest possible interpolation form (a
+// repetition interpolation with a separator, of the form `# (var) , *`) to be
+// fully represented with the first or last tt in the middle.
+//
+// The middle tt (surrounded by parentheses) is the tt being processed.
+// - When it is a `#`, `quote_token_with_context!` can do an interpolation. The
+//   interpolation kind will depend on the three subsequent tts.
+// - When it is within a later part of an interpolation, it can be ignored,
+//   because the interpolation has already been done.
+// - When it is not part of an interpolation it can be treated normally.
+// - When it is a `@` it can be ignored.
+//
+// The parentheses around the middle tt aren't necessary, but they make the
+// macro definitions easier to read.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_each_token {
@@ -677,6 +738,7 @@ macro_rules! quote_each_token {
     };
 }
 
+// See the comments on `quote_each_token`.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_each_token_spanned {
@@ -693,6 +755,7 @@ macro_rules! quote_each_token_spanned {
     };
 }
 
+// See the comments on `quote_each_token`.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_tokens_with_context {
@@ -707,6 +770,7 @@ macro_rules! quote_tokens_with_context {
     };
 }
 
+// See the comments on `quote_each_token`.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_tokens_with_context_spanned {
@@ -721,11 +785,14 @@ macro_rules! quote_tokens_with_context_spanned {
     };
 }
 
+// See the comments on `quote_each_token`.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_token_with_context {
+    // `@` is the leading/trailing context character. Ignore it.
     ($tokens:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
 
+    // A repetition interpolation with no separator.
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
@@ -742,9 +809,12 @@ macro_rules! quote_token_with_context {
             $crate::quote_each_token!($tokens $($inner)*);
         }
     }};
+    // ... and one step later.
     ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
+    // ... and one step later.
     ($tokens:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
 
+    // A repetition interpolation with a separator.
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => {{
         use $crate::__private::ext::*;
         let mut _i = 0usize;
@@ -760,23 +830,34 @@ macro_rules! quote_token_with_context {
             $crate::quote_each_token!($tokens $($inner)*);
         }
     }};
+    // ... and one step later.
     ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
+    // ... and one step later.
     ($tokens:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
+    // (A special case for `#(var)**`, where the first `*` is treated as the
+    // repetition symbol and the second `*` is treated as an ordinary token.)
     ($tokens:ident # ( $($inner:tt)* ) * (*) $a1:tt $a2:tt $a3:tt) => {
         // https://github.com/dtolnay/quote/issues/130
         $crate::quote_token!(* $tokens);
     };
+    // ... and one step later.
     ($tokens:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
 
+    // A non-repetition interpolation.
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
         $crate::ToTokens::to_tokens(&$var, &mut $tokens);
     };
+    // ... and one step later.
     ($tokens:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
+
+    // An ordinary token, not part of any interpolation.
     ($tokens:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
         $crate::quote_token!($curr $tokens);
     };
 }
 
+// See the comments on `quote_each_token`, and on the individual rules for
+// `quote_token_with_context`.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_token_with_context_spanned {
@@ -787,12 +868,6 @@ macro_rules! quote_token_with_context_spanned {
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!(quote_bind_into_iter!(has_iter) () $($inner)*);
         let _: $crate::__private::HasIterator = has_iter;
-        // This is `while true` instead of `loop` because if there are no
-        // iterators used inside of this repetition then the body would not
-        // contain any `break`, so the compiler would emit unreachable code
-        // warnings on anything below the loop. We use has_iter to detect and
-        // fail to compile when there are no iterators, so here we just work
-        // around the unneeded extra warning.
         while true {
             $crate::pounded_var_names!(quote_bind_next_or_break!() () $($inner)*);
             $crate::quote_each_token_spanned!($tokens $span $($inner)*);
@@ -828,6 +903,7 @@ macro_rules! quote_token_with_context_spanned {
         $crate::ToTokens::to_tokens(&$var, &mut $tokens);
     };
     ($tokens:ident $span:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
+
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
         $crate::quote_token_spanned!($curr $tokens $span);
     };
