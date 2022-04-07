@@ -473,6 +473,28 @@ macro_rules! quote {
     () => {
         $crate::__private::TokenStream::new()
     };
+
+    // Special case rule for a single tt, for performance.
+    ($tt:tt) => {{
+        let mut _s = $crate::__private::TokenStream::new();
+        $crate::quote_token!($tt _s);
+        _s
+    }};
+
+    // Special case rules for two tts, for performance.
+    (# $var:ident) => {{
+        let mut _s = $crate::__private::TokenStream::new();
+        $crate::ToTokens::to_tokens(&$var, &mut _s);
+        _s
+    }};
+    ($tt1:tt $tt2:tt) => {{
+        let mut _s = $crate::__private::TokenStream::new();
+        $crate::quote_token!($tt1 _s);
+        $crate::quote_token!($tt2 _s);
+        _s
+    }};
+
+    // Catch-all rule for all remaining inputs.
     ($($tt:tt)*) => {{
         let mut _s = $crate::__private::TokenStream::new();
         $crate::quote_each_token!(_s $($tt)*);
@@ -582,6 +604,31 @@ macro_rules! quote_spanned {
         let _: $crate::__private::Span = $span;
         $crate::__private::TokenStream::new()
     }};
+
+    // Special case rule for a single tt, for performance.
+    ($span:expr=> $tt:tt) => {{
+        let mut _s = $crate::__private::TokenStream::new();
+        let _span: $crate::__private::Span = $span;
+        $crate::quote_token_spanned!($tt _s _span);
+        _s
+    }};
+
+    // Special case rules for two tts, for performance.
+    ($span:expr=> # $var:ident) => {{
+        let mut _s = $crate::__private::TokenStream::new();
+        let _span: $crate::__private::Span = $span;
+        $crate::ToTokens::to_tokens(&$var, &mut _s);
+        _s
+    }};
+    ($span:expr=> $tt1:tt $tt2:tt) => {{
+        let mut _s = $crate::__private::TokenStream::new();
+        let _span: $crate::__private::Span = $span;
+        $crate::quote_token_spanned!($tt1 _s _span);
+        $crate::quote_token_spanned!($tt2 _s _span);
+        _s
+    }};
+
+    // Catch-all rule for all remaining inputs.
     ($span:expr=> $($tt:tt)*) => {{
         let mut _s = $crate::__private::TokenStream::new();
         let _span: $crate::__private::Span = $span;
