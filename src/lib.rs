@@ -494,7 +494,7 @@ macro_rules! quote {
         _s
     }};
 
-    // Catch-all rule for all remaining inputs.
+    // Rule for any other number of tokens.
     ($($tt:tt)*) => {{
         let mut _s = $crate::__private::TokenStream::new();
         $crate::quote_each_token!(_s $($tt)*);
@@ -616,7 +616,7 @@ macro_rules! quote_spanned {
     // Special case rules for two tts, for performance.
     ($span:expr=> # $var:ident) => {{
         let mut _s = $crate::__private::TokenStream::new();
-        let _span: $crate::__private::Span = $span;
+        let _: $crate::__private::Span = $span;
         $crate::ToTokens::to_tokens(&$var, &mut _s);
         _s
     }};
@@ -628,7 +628,7 @@ macro_rules! quote_spanned {
         _s
     }};
 
-    // Catch-all rule for all remaining inputs.
+    // Rule for any other number of tokens.
     ($span:expr=> $($tt:tt)*) => {{
         let mut _s = $crate::__private::TokenStream::new();
         let _span: $crate::__private::Span = $span;
