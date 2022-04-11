@@ -468,6 +468,15 @@ pub mod spanned;
 /// #     }
 /// # }
 /// ```
+#[cfg(doc)]
+#[macro_export]
+macro_rules! quote {
+    ($($tt:tt)*) => {
+        ...
+    };
+}
+
+#[cfg(not(doc))]
 #[macro_export]
 macro_rules! quote {
     () => {
@@ -598,6 +607,15 @@ macro_rules! quote {
 /// In this example it is important for the where-clause to be spanned with the
 /// line/column information of the user's input type so that error messages are
 /// placed appropriately by the compiler.
+#[cfg(doc)]
+#[macro_export]
+macro_rules! quote_spanned {
+    ($span:expr=> $($tt:tt)*) => {
+        ...
+    };
+}
+
+#[cfg(not(doc))]
 #[macro_export]
 macro_rules! quote_spanned {
     ($span:expr=>) => {{
