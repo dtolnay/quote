@@ -4,6 +4,7 @@ use std::iter;
 use std::ops::BitOr;
 
 pub use proc_macro2::*;
+pub use std::format;
 
 pub struct HasIterator; // True
 pub struct ThereIsNoIteratorInRepetition; // False
