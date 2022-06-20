@@ -129,7 +129,10 @@ macro_rules! format_ident {
 macro_rules! format_ident_impl {
     // Final state
     ([$span:expr, $($fmt:tt)*]) => {
-        $crate::__private::mk_ident(&format!($($fmt)*), $span)
+        $crate::__private::mk_ident(
+            &$crate::__private::format!($($fmt)*),
+            $span,
+        )
     };
 
     // Span argument
