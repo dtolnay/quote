@@ -205,11 +205,12 @@ fn respan_token_tree(mut token: TokenTree, span: Span) -> TokenTree {
 }
 
 pub fn push_ident(tokens: &mut TokenStream, s: &str) {
-    tokens.append(mk_ident(s, None));
+    let span = Span::call_site();
+    push_ident_spanned(tokens, span, s);
 }
 
 pub fn push_ident_spanned(tokens: &mut TokenStream, span: Span, s: &str) {
-    tokens.append(mk_ident(s, Some(span)));
+    tokens.append(ident_maybe_raw(s, span));
 }
 
 pub fn push_lifetime(tokens: &mut TokenStream, lifetime: &str) {
@@ -378,7 +379,10 @@ pub fn push_underscore_spanned(tokens: &mut TokenStream, span: Span) {
 // handling `r#` prefixes.
 pub fn mk_ident(id: &str, span: Option<Span>) -> Ident {
     let span = span.unwrap_or_else(Span::call_site);
+    ident_maybe_raw(id, span)
+}
 
+fn ident_maybe_raw(id: &str, span: Span) -> Ident {
     if id.starts_with("r#") {
         Ident::new_raw(&id[2..], span)
     } else {
