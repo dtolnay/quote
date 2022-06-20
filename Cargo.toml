@@ -14,7 +14,7 @@ autobenches = false
 rust-version = "1.31"
 
 [dependencies]
-proc-macro2 = { version = "1.0.36", default-features = false }
+proc-macro2 = { version = "1.0.40", default-features = false }
 
 [dev-dependencies]
 rustversion = "1.0"

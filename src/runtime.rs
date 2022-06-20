@@ -205,27 +205,11 @@ fn respan_token_tree(mut token: TokenTree, span: Span) -> TokenTree {
 }
 
 pub fn push_ident(tokens: &mut TokenStream, s: &str) {
-    // Optimization over `mk_ident`, as `s` is guaranteed to be a valid ident.
-    //
-    // FIXME: When `Ident::new_raw` becomes stable, this method should be
-    // updated to call it when available.
-    if s.starts_with("r#") {
-        parse(tokens, s);
-    } else {
-        tokens.append(Ident::new(s, Span::call_site()));
-    }
+    tokens.append(mk_ident(s, None));
 }
 
 pub fn push_ident_spanned(tokens: &mut TokenStream, span: Span, s: &str) {
-    // Optimization over `mk_ident`, as `s` is guaranteed to be a valid ident.
-    //
-    // FIXME: When `Ident::new_raw` becomes stable, this method should be
-    // updated to call it when available.
-    if s.starts_with("r#") {
-        parse_spanned(tokens, span, s);
-    } else {
-        tokens.append(Ident::new(s, span));
-    }
+    tokens.append(mk_ident(s, Some(span)));
 }
 
 pub fn push_lifetime(tokens: &mut TokenStream, lifetime: &str) {
@@ -392,36 +376,14 @@ pub fn push_underscore_spanned(tokens: &mut TokenStream, span: Span) {
 
 // Helper method for constructing identifiers from the `format_ident!` macro,
 // handling `r#` prefixes.
-//
-// Directly parsing the input string may produce a valid identifier,
-// although the input string was invalid, due to ignored characters such as
-// whitespace and comments. Instead, we always create a non-raw identifier
-// to validate that the string is OK, and only parse again if needed.
 pub fn mk_ident(id: &str, span: Option<Span>) -> Ident {
     let span = span.unwrap_or_else(Span::call_site);
 
-    let is_raw = id.starts_with("r#");
-    let unraw = Ident::new(if is_raw { &id[2..] } else { id }, span);
-    if !is_raw {
-        return unraw;
+    if id.starts_with("r#") {
+        Ident::new_raw(&id[2..], span)
+    } else {
+        Ident::new(id, span)
     }
-
-    // At this point, the identifier is raw, and the unraw-ed version of it was
-    // successfully converted into an identifier. Try to produce a valid raw
-    // identifier by running the `TokenStream` parser, and unwrapping the first
-    // token as an `Ident`.
-    //
-    // FIXME: When `Ident::new_raw` becomes stable, this method should be
-    // updated to call it when available.
-    if let Ok(ts) = id.parse::<TokenStream>() {
-        let mut iter = ts.into_iter();
-        if let (Some(TokenTree::Ident(mut id)), None) = (iter.next(), iter.next()) {
-            id.set_span(span);
-            return id;
-        }
-    }
-
-    panic!("not allowed as a raw identifier: `{}`", id);
 }
 
 // Adapts from `IdentFragment` to `fmt::Display` for use by the `format_ident!`
