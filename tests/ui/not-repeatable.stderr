@@ -3,8 +3,8 @@ error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its
    |
 3  | struct Ipv4Addr;
    | ---------------
-   | |      |
-   | |      method `quote_into_iter` not found for this struct
+   | |
+   | method `quote_into_iter` not found for this struct
    | doesn't satisfy `Ipv4Addr: Iterator`
    | doesn't satisfy `Ipv4Addr: ToTokens`
    | doesn't satisfy `Ipv4Addr: quote::__private::ext::RepIteratorExt`
