@@ -32,4 +32,4 @@ note: the following traits must be implemented
    |
    | pub trait ToTokens {
    | ^^^^^^^^^^^^^^^^^^
-   = note: this error originates in the macro `$crate::quote_bind_into_iter` (in Nightly builds, run with -Z macro-backtrace for more info)
+   = note: this error originates in the macro `$crate::quote_bind_into_iter` which comes from the expansion of the macro `quote` (in Nightly builds, run with -Z macro-backtrace for more info)
