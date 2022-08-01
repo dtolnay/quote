@@ -1,11 +1,11 @@
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
-use std::fmt;
-use std::iter;
-use std::ops::BitOr;
+use core::fmt;
+use core::iter;
+use core::ops::BitOr;
 
+pub use core::option::Option;
 pub use proc_macro2::*;
 pub use std::format;
-pub use std::option::Option;
 
 pub struct HasIterator; // True
 pub struct ThereIsNoIteratorInRepetition; // False
@@ -48,8 +48,8 @@ pub mod ext {
     use super::RepInterp;
     use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use crate::ToTokens;
+    use core::slice;
     use std::collections::btree_set::{self, BTreeSet};
-    use std::slice;
 
     /// Extension trait providing the `quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {
