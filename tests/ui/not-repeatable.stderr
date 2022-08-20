@@ -23,13 +23,13 @@ error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its
            `&mut Ipv4Addr: Iterator`
            which is required by `&mut Ipv4Addr: ext::RepIteratorExt`
 note: the following traits must be implemented
-  --> $RUST/core/src/iter/traits/iterator.rs
-   |
-   | pub trait Iterator {
-   | ^^^^^^^^^^^^^^^^^^
-   |
-  ::: src/to_tokens.rs
+  --> src/to_tokens.rs
    |
    | pub trait ToTokens {
+   | ^^^^^^^^^^^^^^^^^^
+   |
+  ::: $RUST/core/src/iter/traits/iterator.rs
+   |
+   | pub trait Iterator {
    | ^^^^^^^^^^^^^^^^^^
    = note: this error originates in the macro `$crate::quote_bind_into_iter` which comes from the expansion of the macro `quote` (in Nightly builds, run with -Z macro-backtrace for more info)
