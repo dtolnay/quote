@@ -45,11 +45,8 @@ impl BitOr<HasIterator> for HasIterator {
 /// whichever impl happens to be applicable. Calling that method repeatedly on
 /// the returned value should be idempotent.
 pub mod ext {
-    use super::RepInterp;
     use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use crate::ToTokens;
-    use core::slice;
-    use std::collections::btree_set::{self, BTreeSet};
 
     /// Extension trait providing the `quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {
@@ -59,6 +56,16 @@ pub mod ext {
     }
 
     impl<T: Iterator> RepIteratorExt for T {}
+
+    /// Extension trait providing the `quote_into_iter` method on containers
+    /// implementing IntoIterator.
+    pub trait RepIntoIteratorExt: IntoIterator + Copy + Sized {
+        fn quote_into_iter(self) -> (Self::IntoIter, HasIter) {
+            (self.into_iter(), HasIter)
+        }
+    }
+
+    impl<T: IntoIterator + Copy> RepIntoIteratorExt for T {}
 
     /// Extension trait providing the `quote_into_iter` method for
     /// non-iterable types. These types interpolate the same value in each
@@ -77,62 +84,6 @@ pub mod ext {
     }
 
     impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
-
-    /// Extension trait providing the `quote_into_iter` method for types that
-    /// can be referenced as an iterator.
-    pub trait RepAsIteratorExt<'q> {
-        type Iter: Iterator;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter);
-    }
-
-    impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a T {
-        type Iter = T::Iter;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            <T as RepAsIteratorExt>::quote_into_iter(*self)
-        }
-    }
-
-    impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a mut T {
-        type Iter = T::Iter;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            <T as RepAsIteratorExt>::quote_into_iter(*self)
-        }
-    }
-
-    impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
-        type Iter = slice::Iter<'q, T>;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
-        }
-    }
-
-    impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T> {
-        type Iter = slice::Iter<'q, T>;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
-        }
-    }
-
-    impl<'q, T: 'q> RepAsIteratorExt<'q> for BTreeSet<T> {
-        type Iter = btree_set::Iter<'q, T>;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
-        }
-    }
-
-    impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T> {
-        type Iter = T::Iter;
-
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            self.0.quote_into_iter()
-        }
-    }
 }
 
 // Helper type used within interpolations to allow for repeated binding names.
@@ -150,11 +101,12 @@ impl<T> RepInterp<T> {
     }
 }
 
-impl<T: Iterator> Iterator for RepInterp<T> {
+impl<T: IntoIterator> IntoIterator for RepInterp<T> {
     type Item = T::Item;
+    type IntoIter = T::IntoIter;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        self.0.next()
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
     }
 }
 
