@@ -9,7 +9,6 @@ documentation = "https://docs.rs/quote/"
 edition = "2018"
 keywords = ["macros", "syn"]
 license = "MIT OR Apache-2.0"
-readme = "README.md"
 repository = "https://github.com/dtolnay/quote"
 rust-version = "1.31"
 
