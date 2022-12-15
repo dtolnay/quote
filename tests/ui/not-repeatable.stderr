@@ -22,7 +22,7 @@ error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its
           which is required by `Ipv4Addr: ext::RepToTokensExt`
           `&mut Ipv4Addr: Iterator`
           which is required by `&mut Ipv4Addr: ext::RepIteratorExt`
-note: the following traits must be implemented
+note: the traits `ToTokens` and `Iterator` must be implemented
  --> src/to_tokens.rs
   |
   | pub trait ToTokens {
