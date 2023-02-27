@@ -1,3 +1,5 @@
+#![allow(clippy::cast_lossless, clippy::let_underscore_untyped)]
+
 use quote::quote;
 
 #[allow(unused_macros)]

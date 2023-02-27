@@ -1,4 +1,5 @@
 #![allow(unknown_lints, special_module_name)]
+#![allow(clippy::cast_lossless, clippy::let_underscore_untyped)]
 
 quote_benchmark::run_quote_benchmark!(_);
 
