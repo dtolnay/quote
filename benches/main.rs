@@ -1,3 +1,5 @@
+#![allow(unknown_lints, special_module_name)]
+
 quote_benchmark::run_quote_benchmark!(_);
 
 mod benchmark {
