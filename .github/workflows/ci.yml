@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [stable, beta, 1.56.0]
+        rust: [nightly, stable, beta, 1.56.0]
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v3
@@ -32,24 +32,14 @@ jobs:
         with:
           toolchain: ${{matrix.rust}}
           components: rust-src
-      - run: cargo test
-
-  nightly:
-    name: Rust nightly
-    needs: pre_ci
-    if: needs.pre_ci.outputs.continue
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rust-src
       - name: Enable type layout randomization
         run: echo RUSTFLAGS=${RUSTFLAGS}\ -Zrandomize-layout >> $GITHUB_ENV
+        if: matrix.rust == 'nightly'
       - run: cargo test
       - run: cargo update -Z minimal-versions
+        if: matrix.rust == 'nightly'
       - run: cargo build
+        if: matrix.rust == 'nightly'
 
   msrv:
     name: Rust 1.31.0
