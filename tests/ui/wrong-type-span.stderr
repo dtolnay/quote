@@ -1,8 +1,12 @@
-error[E0308]: mismatched types
+error[E0277]: the trait bound `&str: IntoSpan` is not satisfied
  --> tests/ui/wrong-type-span.rs:6:20
   |
 6 |     quote_spanned!(span=> #x);
   |     ---------------^^^^------
   |     |              |
-  |     |              expected `Span`, found `&str`
-  |     expected due to this
+  |     |              the trait `IntoSpan` is not implemented for `&str`
+  |     required by a bound introduced by this call
+  |
+  = help: the following other types implement trait `IntoSpan`:
+            Span
+            proc_macro2::extra::DelimSpan

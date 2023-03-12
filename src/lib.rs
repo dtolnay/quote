@@ -619,14 +619,14 @@ macro_rules! quote_spanned {
 #[macro_export]
 macro_rules! quote_spanned {
     ($span:expr=>) => {{
-        let _: $crate::__private::Span = $span;
+        let _ = $crate::__private::IntoSpan::into_span($span);
         $crate::__private::TokenStream::new()
     }};
 
     // Special case rule for a single tt, for performance.
     ($span:expr=> $tt:tt) => {{
         let mut _s = $crate::__private::TokenStream::new();
-        let _span: $crate::__private::Span = $span;
+        let _span = $crate::__private::IntoSpan::into_span($span);
         $crate::quote_token_spanned!{$tt _s _span}
         _s
     }};
@@ -634,13 +634,13 @@ macro_rules! quote_spanned {
     // Special case rules for two tts, for performance.
     ($span:expr=> # $var:ident) => {{
         let mut _s = $crate::__private::TokenStream::new();
-        let _: $crate::__private::Span = $span;
+        let _ = $crate::__private::IntoSpan::into_span($span);
         $crate::ToTokens::to_tokens(&$var, &mut _s);
         _s
     }};
     ($span:expr=> $tt1:tt $tt2:tt) => {{
         let mut _s = $crate::__private::TokenStream::new();
-        let _span: $crate::__private::Span = $span;
+        let _span = $crate::__private::IntoSpan::into_span($span);
         $crate::quote_token_spanned!{$tt1 _s _span}
         $crate::quote_token_spanned!{$tt2 _s _span}
         _s
@@ -649,7 +649,7 @@ macro_rules! quote_spanned {
     // Rule for any other number of tokens.
     ($span:expr=> $($tt:tt)*) => {{
         let mut _s = $crate::__private::TokenStream::new();
-        let _span: $crate::__private::Span = $span;
+        let _span = $crate::__private::IntoSpan::into_span($span);
         $crate::quote_each_token_spanned!{_s _span $($tt)*}
         _s
     }};
