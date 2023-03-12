@@ -1,8 +1,8 @@
+use self::into_span::IntoSpan;
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use core::fmt;
 use core::iter;
 use core::ops::BitOr;
-use proc_macro2::extra::DelimSpan;
 use proc_macro2::{Group, Ident, Punct, Spacing, TokenTree};
 
 pub use core::option::Option;
@@ -166,21 +166,31 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
     }
 }
 
-pub trait IntoSpan {
-    fn into_span(self) -> Span;
+#[inline]
+pub fn into_span<S: IntoSpan>(s: S) -> Span {
+    s.into_span()
 }
 
-impl IntoSpan for Span {
-    #[inline]
-    fn into_span(self) -> Span {
-        self
+mod into_span {
+    use proc_macro2::extra::DelimSpan;
+    use proc_macro2::Span;
+
+    pub trait IntoSpan {
+        fn into_span(self) -> Span;
     }
-}
 
-impl IntoSpan for DelimSpan {
-    #[inline]
-    fn into_span(self) -> Span {
-        self.join()
+    impl IntoSpan for Span {
+        #[inline]
+        fn into_span(self) -> Span {
+            self
+        }
+    }
+
+    impl IntoSpan for DelimSpan {
+        #[inline]
+        fn into_span(self) -> Span {
+            self.join()
+        }
     }
 }
 
