@@ -2,9 +2,10 @@ use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use core::fmt;
 use core::iter;
 use core::ops::BitOr;
+use proc_macro2::{Group, Ident, Punct, Spacing, TokenTree};
 
 pub use core::option::Option;
-pub use proc_macro2::*;
+pub use proc_macro2::{Delimiter, Span, TokenStream};
 pub use std::format;
 
 pub struct HasIterator; // True
