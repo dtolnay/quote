@@ -2,6 +2,7 @@ use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use core::fmt;
 use core::iter;
 use core::ops::BitOr;
+use proc_macro2::extra::DelimSpan;
 use proc_macro2::{Group, Ident, Punct, Spacing, TokenTree};
 
 pub use core::option::Option;
@@ -162,6 +163,24 @@ impl<T: Iterator> Iterator for RepInterp<T> {
 impl<T: ToTokens> ToTokens for RepInterp<T> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.0.to_tokens(tokens);
+    }
+}
+
+pub trait IntoSpan {
+    fn into_span(self) -> Span;
+}
+
+impl IntoSpan for Span {
+    #[inline]
+    fn into_span(self) -> Span {
+        self
+    }
+}
+
+impl IntoSpan for DelimSpan {
+    #[inline]
+    fn into_span(self) -> Span {
+        self.join()
     }
 }
 
