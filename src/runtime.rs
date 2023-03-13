@@ -1,7 +1,7 @@
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use core::fmt;
 use core::iter;
-use core::ops::BitOr;
+use core::ops::{BitOr, Deref};
 use proc_macro2::extra::DelimSpan;
 use proc_macro2::{Group, Ident, Punct, Spacing, TokenTree};
 
@@ -166,21 +166,34 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
     }
 }
 
-pub trait IntoSpan {
-    fn into_span(self) -> Span;
+#[repr(transparent)]
+pub struct GetSpan<T>(pub T);
+
+#[repr(transparent)]
+pub struct WrapperDelimSpan {
+    span: DelimSpan,
 }
 
-impl IntoSpan for Span {
+impl GetSpan<Span> {
     #[inline]
-    fn into_span(self) -> Span {
-        self
+    pub fn __into_span(self) -> Span {
+        self.0
     }
 }
 
-impl IntoSpan for DelimSpan {
+impl WrapperDelimSpan {
     #[inline]
-    fn into_span(self) -> Span {
-        self.join()
+    pub fn __into_span(&self) -> Span {
+        self.span.join()
+    }
+}
+
+impl Deref for GetSpan<DelimSpan> {
+    type Target = WrapperDelimSpan;
+
+    #[inline]
+    fn deref(&self) -> &Self::Target {
+        unsafe { &*(self as *const GetSpan<DelimSpan> as *const WrapperDelimSpan) }
     }
 }
 

@@ -1,12 +1,9 @@
-error[E0277]: the trait bound `&str: IntoSpan` is not satisfied
- --> tests/ui/wrong-type-span.rs:6:20
+error[E0599]: no method named `__into_span` found for struct `GetSpan<&str>` in the current scope
+ --> tests/ui/wrong-type-span.rs:6:5
   |
 6 |     quote_spanned!(span=> #x);
-  |     ---------------^^^^------
-  |     |              |
-  |     |              the trait `IntoSpan` is not implemented for `&str`
-  |     required by a bound introduced by this call
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `GetSpan<&str>`
   |
-  = help: the following other types implement trait `IntoSpan`:
-            Span
-            proc_macro2::extra::DelimSpan
+  = note: the method was found for
+          - `GetSpan<Span>`
+  = note: this error originates in the macro `quote_spanned` (in Nightly builds, run with -Z macro-backtrace for more info)
