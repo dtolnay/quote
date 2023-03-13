@@ -197,6 +197,7 @@ mod get_span {
     }
 
     impl<T> GetSpanBase<T> {
+        #[allow(clippy::unused_self)]
         pub fn __into_span(&self) -> T {
             unreachable!()
         }
