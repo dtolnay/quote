@@ -183,7 +183,7 @@ mod get_span {
     impl GetSpan<Span> {
         #[inline]
         pub fn __into_span(self) -> Span {
-            self.0.0
+            (self.0).0
         }
     }
 
