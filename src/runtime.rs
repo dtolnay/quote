@@ -1,4 +1,4 @@
-use self::get_span::{GetSpanInner, GetSpan};
+use self::get_span::{GetSpan, GetSpanBase, GetSpanInner};
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use core::fmt;
 use core::iter;
@@ -168,7 +168,7 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
 
 #[inline]
 pub fn get_span<T>(span: T) -> GetSpan<T> {
-    GetSpan(GetSpanInner(span))
+    GetSpan(GetSpanInner(GetSpanBase(span)))
 }
 
 mod get_span {
@@ -178,24 +178,42 @@ mod get_span {
 
     pub struct GetSpan<T>(pub(crate) GetSpanInner<T>);
 
-    pub struct GetSpanInner<T>(pub(crate) T);
+    pub struct GetSpanInner<T>(pub(crate) GetSpanBase<T>);
+
+    pub struct GetSpanBase<T>(pub(crate) T);
 
     impl GetSpan<Span> {
         #[inline]
         pub fn __into_span(self) -> Span {
-            (self.0).0
+            ((self.0).0).0
         }
     }
 
     impl GetSpanInner<DelimSpan> {
         #[inline]
         pub fn __into_span(&self) -> Span {
-            self.0.join()
+            (self.0).0.join()
         }
     }
 
-    impl Deref for GetSpan<DelimSpan> {
-        type Target = GetSpanInner<DelimSpan>;
+    impl<T> GetSpanBase<T> {
+        #[allow(clippy::unused_self)]
+        pub fn __into_span(&self) -> T {
+            unreachable!()
+        }
+    }
+
+    impl<T> Deref for GetSpan<T> {
+        type Target = GetSpanInner<T>;
+
+        #[inline]
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
+
+    impl<T> Deref for GetSpanInner<T> {
+        type Target = GetSpanBase<T>;
 
         #[inline]
         fn deref(&self) -> &Self::Target {
