@@ -1,9 +1,9 @@
-error[E0599]: no method named `__into_span` found for struct `GetSpan<&str>` in the current scope
+error[E0599]: no method named `__into_span` found for struct `__private::get_span::GetSpan<&str>` in the current scope
  --> tests/ui/wrong-type-span.rs:6:5
   |
 6 |     quote_spanned!(span=> #x);
   |     ^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `GetSpan<&str>`
   |
   = note: the method was found for
-          - `GetSpan<Span>`
+          - `__private::get_span::GetSpan<Span>`
   = note: this error originates in the macro `quote_spanned` (in Nightly builds, run with -Z macro-backtrace for more info)
