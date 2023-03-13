@@ -1,8 +1,8 @@
+use self::get_span::{GetSpanInner, GetSpan};
 use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use core::fmt;
 use core::iter;
 use core::ops::BitOr;
-use proc_macro2::extra::DelimSpan;
 use proc_macro2::{Group, Ident, Punct, Spacing, TokenTree};
 
 pub use core::option::Option;
@@ -166,21 +166,41 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
     }
 }
 
-pub trait IntoSpan {
-    fn into_span(self) -> Span;
+#[inline]
+pub fn get_span<T>(span: T) -> GetSpan<T> {
+    GetSpan(GetSpanInner(span))
 }
 
-impl IntoSpan for Span {
-    #[inline]
-    fn into_span(self) -> Span {
-        self
+mod get_span {
+    use core::ops::Deref;
+    use proc_macro2::extra::DelimSpan;
+    use proc_macro2::Span;
+
+    pub struct GetSpan<T>(pub(crate) GetSpanInner<T>);
+
+    pub struct GetSpanInner<T>(pub(crate) T);
+
+    impl GetSpan<Span> {
+        #[inline]
+        pub fn __into_span(self) -> Span {
+            (self.0).0
+        }
     }
-}
 
-impl IntoSpan for DelimSpan {
-    #[inline]
-    fn into_span(self) -> Span {
-        self.join()
+    impl GetSpanInner<DelimSpan> {
+        #[inline]
+        pub fn __into_span(&self) -> Span {
+            self.0.join()
+        }
+    }
+
+    impl Deref for GetSpan<DelimSpan> {
+        type Target = GetSpanInner<DelimSpan>;
+
+        #[inline]
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
     }
 }
 
