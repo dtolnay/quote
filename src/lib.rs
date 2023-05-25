@@ -102,10 +102,7 @@
     clippy::wrong_self_convention,
 )]
 
-#[cfg(all(
-    not(all(target_arch = "wasm32", target_os = "unknown")),
-    feature = "proc-macro"
-))]
+#[cfg(feature = "proc-macro")]
 extern crate proc_macro;
 
 mod ext;
