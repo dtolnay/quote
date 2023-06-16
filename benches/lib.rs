@@ -1,4 +1,8 @@
-#![allow(clippy::cast_lossless, clippy::let_underscore_untyped)]
+#![allow(
+    clippy::cast_lossless,
+    clippy::let_underscore_untyped,
+    clippy::uninlined_format_args
+)]
 
 use quote::quote;
 
