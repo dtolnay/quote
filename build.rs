@@ -1,5 +1,5 @@
 use std::env;
-use std::process::{self, Command};
+use std::process::Command;
 use std::str;
 
 fn main() {
@@ -9,11 +9,6 @@ fn main() {
         Some(version) => version,
         None => return,
     };
-
-    if version.minor < 31 {
-        eprintln!("Minimum supported rustc version is 1.31");
-        process::exit(1);
-    }
 
     if version.minor < 53 {
         // https://github.com/rust-lang/rust/issues/43081
