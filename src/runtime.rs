@@ -443,8 +443,8 @@ pub fn mk_ident(id: &str, span: Option<Span>) -> Ident {
 }
 
 fn ident_maybe_raw(id: &str, span: Span) -> Ident {
-    if id.starts_with("r#") {
-        Ident::new_raw(&id[2..], span)
+    if let Some(id) = id.strip_prefix("r#") {
+        Ident::new_raw(id, span)
     } else {
         Ident::new(id, span)
     }
