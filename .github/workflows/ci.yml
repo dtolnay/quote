@@ -38,19 +38,6 @@ jobs:
       - run: cargo test
       - run: cargo run --manifest-path benches/Cargo.toml
 
-  msrv:
-    name: Rust 1.31.0
-    needs: pre_ci
-    if: needs.pre_ci.outputs.continue
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/rust-toolchain@1.31.0
-        with:
-          components: rust-src
-      - run: cargo check
-
   minimal:
     name: Minimal versions
     needs: pre_ci
