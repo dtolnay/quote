@@ -5,15 +5,10 @@ use std::str;
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
-    let version = match rustc_version() {
+    let _version = match rustc_version() {
         Some(version) => version,
         None => return,
     };
-
-    if version.minor < 53 {
-        // https://github.com/rust-lang/rust/issues/43081
-        println!("cargo:rustc-cfg=needs_invalid_span_workaround");
-    }
 }
 
 struct RustcVersion {
