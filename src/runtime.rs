@@ -5,9 +5,9 @@ use core::iter;
 use core::ops::BitOr;
 use proc_macro2::{Group, Ident, Punct, Spacing, TokenTree};
 
+pub use alloc::format;
 pub use core::option::Option;
 pub use proc_macro2::{Delimiter, Span, TokenStream};
-pub use std::format;
 
 pub struct HasIterator; // True
 pub struct ThereIsNoIteratorInRepetition; // False
@@ -50,8 +50,8 @@ pub mod ext {
     use super::RepInterp;
     use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use crate::ToTokens;
+    use alloc::collections::btree_set::{self, BTreeSet};
     use core::slice;
-    use std::collections::btree_set::{self, BTreeSet};
 
     /// Extension trait providing the `quote_into_iter` method on iterators.
     pub trait RepIteratorExt: Iterator + Sized {

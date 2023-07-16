@@ -1,6 +1,6 @@
+use alloc::borrow::Cow;
 use core::fmt;
 use proc_macro2::{Ident, Span};
-use std::borrow::Cow;
 
 /// Specialized formatting trait used by `format_ident!`.
 ///

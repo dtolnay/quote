@@ -102,6 +102,8 @@
     clippy::wrong_self_convention,
 )]
 
+extern crate alloc;
+
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;
 
