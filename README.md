@@ -240,6 +240,18 @@ convenient for a human to read and debug.
 Be aware that no kind of hygiene or span information is retained when tokens are
 written to a file; the conversion from tokens to source code is lossy.
 
+Example usage in build.rs:
+
+```rust
+let input = quote! { ... };
+let syntax_tree = syn::parse2(input).unwrap();
+let formatted = prettyplease::unparse(&syntax_tree);
+
+let out_dir = env::var_os("OUT_DIR").unwrap();
+let dest_path = Path::new(&out_dir).join("out.rs");
+fs::write(dest_path, formatted).unwrap();
+```
+
 [prettyplease]: https://github.com/dtolnay/prettyplease
 
 <br>
