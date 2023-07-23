@@ -243,8 +243,8 @@ written to a file; the conversion from tokens to source code is lossy.
 Example usage in build.rs:
 
 ```rust
-let input = quote! { ... };
-let syntax_tree = syn::parse2(input).unwrap();
+let output = quote! { ... };
+let syntax_tree = syn::parse2(output).unwrap();
 let formatted = prettyplease::unparse(&syntax_tree);
 
 let out_dir = env::var_os("OUT_DIR").unwrap();
