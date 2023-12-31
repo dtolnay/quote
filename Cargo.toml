@@ -13,7 +13,7 @@ repository = "https://github.com/dtolnay/quote"
 rust-version = "1.56"
 
 [dependencies]
-proc-macro2 = { version = "1.0.66", default-features = false }
+proc-macro2 = { version = "1.0.72", default-features = false }
 
 [dev-dependencies]
 rustversion = "1.0"
