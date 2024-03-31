@@ -16,7 +16,7 @@ error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its
           which is required by `Ipv4Addr: ext::RepToTokensExt`
           `&mut Ipv4Addr: Iterator`
           which is required by `&mut Ipv4Addr: ext::RepIteratorExt`
-note: the traits `ToTokens` and `Iterator` must be implemented
+note: the traits `Iterator` and `ToTokens` must be implemented
  --> src/to_tokens.rs
   |
   | pub trait ToTokens {
@@ -28,7 +28,7 @@ note: the traits `ToTokens` and `Iterator` must be implemented
   | ^^^^^^^^^^^^^^^^^^
   = help: items from traits can only be used if the trait is implemented and in scope
   = note: the following traits define an item `quote_into_iter`, perhaps you need to implement one of them:
-          candidate #1: `ext::RepIteratorExt`
-          candidate #2: `ext::RepToTokensExt`
-          candidate #3: `ext::RepAsIteratorExt`
+          candidate #1: `ext::RepAsIteratorExt`
+          candidate #2: `ext::RepIteratorExt`
+          candidate #3: `ext::RepToTokensExt`
   = note: this error originates in the macro `$crate::quote_bind_into_iter` which comes from the expansion of the macro `quote` (in Nightly builds, run with -Z macro-backtrace for more info)
