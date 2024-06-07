@@ -953,6 +953,18 @@ macro_rules! quote_token_with_context {
     // ... and one step later.
     ($tokens:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
 
+    // a block interpolation
+    ($tokens:ident $b3:tt $b2:tt $b1:tt (#) @ { $($inner:tt)* } @) => {{
+        use $crate::ToTokens;
+        $crate::__private::BlockInterp({ $($inner)* }).to_tokens(&mut $tokens);
+    }};
+    // ... and one step later.
+    ($tokens:ident $b3:tt $b2:tt # (@) { $($inner:tt)* } @ $a3:tt) => {};
+    // ... and one step later.
+    ($tokens:ident $b3:tt # @ ({ $($inner:tt)* }) @ $a2:tt $a3:tt) => {};
+    // ... and one step later.
+    ($tokens:ident # @ { $($inner:tt)* } (@) $a1:tt $a2:tt $a3:tt) => {};
+
     // An ordinary token, not part of any interpolation.
     ($tokens:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
         $crate::quote_token!{$curr $tokens}
@@ -1006,6 +1018,14 @@ macro_rules! quote_token_with_context_spanned {
         $crate::ToTokens::to_tokens(&$var, &mut $tokens);
     };
     ($tokens:ident $span:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
+
+    ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) @ { $($inner:tt)* } @) => {{
+        use $crate::ToTokens;
+        $crate::__private::BlockInterp({ $($inner)* }).to_tokens(&mut $tokens);
+    }};
+    ($tokens:ident $span:ident $b3:tt $b2:tt # (@) { $($inner:tt)* } @ $a3:tt) => {};
+    ($tokens:ident $span:ident $b3:tt # @ ({ $($inner:tt)* }) @ $a2:tt $a3:tt) => {};
+    ($tokens:ident $span:ident # @ { $($inner:tt)* } (@) $a1:tt $a2:tt $a3:tt) => {};
 
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
         $crate::quote_token_spanned!{$curr $tokens $span}

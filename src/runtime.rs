@@ -181,6 +181,36 @@ impl<T: ToTokens> ToTokens for RepInterp<T> {
     }
 }
 
+impl<T> core::ops::Deref for RepInterp<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+// Helper type used within interpolations to allow output of
+// both one `ToTokens` and an iterator of `ToTokens`.
+#[derive(Copy, Clone)]
+#[doc(hidden)]
+pub struct BlockInterp<T>(pub T);
+
+impl<T: ToTokens, I: Iterator<Item = T>> BlockInterp<I> {
+    // This method shallows `ToTokens::to_tokens` when the output of
+    // the block to be interpolated is an iterator of `ToTokens`.
+    pub fn to_tokens(self, tokens: &mut TokenStream) {
+        for item in self.0 {
+            item.to_tokens(tokens);
+        }
+    }
+}
+
+impl<T: ToTokens> ToTokens for BlockInterp<T> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.0.to_tokens(tokens);
+    }
+}
+
 #[doc(hidden)]
 #[inline]
 pub fn get_span<T>(span: T) -> GetSpan<T> {
