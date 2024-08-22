@@ -153,12 +153,8 @@ primitive! {
 
     f32 => f32_suffixed
     f64 => f64_suffixed
-}
 
-impl ToTokens for char {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.append(Literal::character(*self));
-    }
+    char => character
 }
 
 impl ToTokens for bool {
