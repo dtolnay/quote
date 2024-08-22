@@ -3,6 +3,7 @@ use alloc::borrow::Cow;
 use alloc::rc::Rc;
 use core::iter;
 use proc_macro2::{Group, Ident, Literal, Punct, Span, TokenStream, TokenTree};
+use std::ffi::{CStr, CString};
 
 /// Types that can be interpolated inside a `quote!` invocation.
 ///
@@ -218,6 +219,18 @@ impl ToTokens for bool {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let word = if *self { "true" } else { "false" };
         tokens.append(Ident::new(word, Span::call_site()));
+    }
+}
+
+impl ToTokens for CStr {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::c_string(self));
+    }
+}
+
+impl ToTokens for CString {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::c_string(self));
     }
 }
 
