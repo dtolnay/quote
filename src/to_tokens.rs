@@ -107,7 +107,7 @@ impl<T: ?Sized + ToTokens> ToTokens for Rc<T> {
 
 impl<T: ToTokens> ToTokens for Option<T> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        if let Some(ref t) = *self {
+        if let Some(t) = self {
             t.to_tokens(tokens);
         }
     }
