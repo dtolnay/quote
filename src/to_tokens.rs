@@ -124,37 +124,94 @@ impl ToTokens for String {
     }
 }
 
-macro_rules! primitive {
-    ($($t:ident => $name:ident)*) => {
-        $(
-            impl ToTokens for $t {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
-                    tokens.append(Literal::$name(*self));
-                }
-            }
-        )*
-    };
+impl ToTokens for i8 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::i8_suffixed(*self));
+    }
 }
 
-primitive! {
-    i8 => i8_suffixed
-    i16 => i16_suffixed
-    i32 => i32_suffixed
-    i64 => i64_suffixed
-    i128 => i128_suffixed
-    isize => isize_suffixed
+impl ToTokens for i16 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::i16_suffixed(*self));
+    }
+}
 
-    u8 => u8_suffixed
-    u16 => u16_suffixed
-    u32 => u32_suffixed
-    u64 => u64_suffixed
-    u128 => u128_suffixed
-    usize => usize_suffixed
+impl ToTokens for i32 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::i32_suffixed(*self));
+    }
+}
 
-    f32 => f32_suffixed
-    f64 => f64_suffixed
+impl ToTokens for i64 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::i64_suffixed(*self));
+    }
+}
 
-    char => character
+impl ToTokens for i128 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::i128_suffixed(*self));
+    }
+}
+
+impl ToTokens for isize {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::isize_suffixed(*self));
+    }
+}
+
+impl ToTokens for u8 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::u8_suffixed(*self));
+    }
+}
+
+impl ToTokens for u16 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::u16_suffixed(*self));
+    }
+}
+
+impl ToTokens for u32 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::u32_suffixed(*self));
+    }
+}
+
+impl ToTokens for u64 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::u64_suffixed(*self));
+    }
+}
+
+impl ToTokens for u128 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::u128_suffixed(*self));
+    }
+}
+
+impl ToTokens for usize {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::usize_suffixed(*self));
+    }
+}
+
+impl ToTokens for f32 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::f32_suffixed(*self));
+    }
+}
+
+impl ToTokens for f64 {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::f64_suffixed(*self));
+    }
+}
+
+impl ToTokens for char {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Literal::character(*self));
+    }
 }
 
 impl ToTokens for bool {
