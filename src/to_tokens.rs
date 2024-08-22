@@ -189,14 +189,14 @@ impl ToTokens for Literal {
 }
 
 impl ToTokens for TokenTree {
-    fn to_tokens(&self, dst: &mut TokenStream) {
-        dst.append(self.clone());
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(self.clone());
     }
 }
 
 impl ToTokens for TokenStream {
-    fn to_tokens(&self, dst: &mut TokenStream) {
-        dst.extend(iter::once(self.clone()));
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.extend(iter::once(self.clone()));
     }
 
     fn into_token_stream(self) -> TokenStream {
