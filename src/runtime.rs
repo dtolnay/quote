@@ -126,6 +126,14 @@ pub mod ext {
         }
     }
 
+    impl<'q, T: 'q, const N: usize> RepAsIteratorExt<'q> for [T; N] {
+        type Iter = slice::Iter<'q, T>;
+
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+            (self.iter(), HasIter)
+        }
+    }
+
     impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T> {
         type Iter = slice::Iter<'q, T>;
 
