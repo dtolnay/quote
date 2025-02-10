@@ -25,9 +25,6 @@ default = ["proc-macro"]
 # libproc_macro in the rustc compiler.
 proc-macro = ["proc-macro2/proc-macro"]
 
-[lib]
-doc-scrape-examples = false
-
 [workspace]
 members = ["benches"]
 
