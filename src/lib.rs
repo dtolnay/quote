@@ -92,6 +92,7 @@
 #![doc(html_root_url = "https://docs.rs/quote/1.0.38")]
 #![allow(
     clippy::doc_markdown,
+    clippy::elidable_lifetime_names,
     clippy::missing_errors_doc,
     clippy::missing_panics_doc,
     clippy::module_name_repetitions,
