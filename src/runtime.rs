@@ -314,7 +314,11 @@ pub fn push_lifetime(tokens: &mut TokenStream, lifetime: &str) {
 #[doc(hidden)]
 pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &str) {
     tokens.extend([
-        TokenTree::Punct(Punct::new('\'', Spacing::Joint)),
+        TokenTree::Punct({
+            let mut tick = Punct::new('\'', Spacing::Joint);
+            tick.set_span(span);
+            tick
+        }),
         TokenTree::Ident(Ident::new(&lifetime[1..], span)),
     ]);
 }
