@@ -1508,7 +1508,7 @@ macro_rules! const_quote {
             $vis struct $NAME;
 
             impl $crate::ToTokens for $NAME {
-                fn to_tokens(&self, _s: &mut proc_macro2::TokenStream) {
+                fn to_tokens(&self, _s: &mut $crate::__private::TokenStream) {
                     // TODO: skip creating unnecessary `TokenStream`
                     ($crate::quote! { $($tt)* })
                         .to_tokens(_s)
