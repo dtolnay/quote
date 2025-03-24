@@ -1452,3 +1452,68 @@ macro_rules! quote_token_spanned {
         $crate::__private::parse_spanned(&mut $tokens, $span, stringify!($other));
     };
 }
+
+/// A helper macro integrated into the quote library that emulates constant-like behavior for token streams.
+///
+/// The standard quote macros do not allow storing token streams as constants.
+/// This macro provides a convenient utility that lets you define items that behave as if they were constant token streams,
+/// so that they can be seamlessly used with the `quote!` macro.
+///
+/// # Example
+///
+/// ```rust
+/// use quote::{quote, const_quote};
+///
+/// const_quote! {
+///     pub const PATH_TO_MOD = {
+///         ::my_crate::path::to::module
+///     };
+///
+///     pub const CALL_DEFAULT = {
+///         ::core::default::Default::default()
+///     };
+/// }
+///
+/// let tokens = quote! {
+///     #PATH_TO_MOD::SomeType {
+///         field: value,
+///         ..#CALL_DEFAULT
+///     }
+/// };
+///
+/// let expected = quote! {
+///     ::my_crate::path::to::module::SomeType {
+///         field: value,
+///         ..::core::default::Default::default()
+///     }
+/// };
+///
+/// assert_eq!(tokens.to_string(), expected.to_string());
+/// ```
+///
+/// In this example, `PATH_TO_MOD` and `CALL_DEFAULT` behave like constant token streams that can be
+/// directly used by `quote!`.
+
+#[macro_export]
+macro_rules! const_quote {
+    (
+        $(
+            $vis:vis const $NAME:ident = {
+                $($tt:tt)*
+            };
+        )*
+    ) => {
+        $(
+            #[allow(non_camel_case_types)]
+            $vis struct $NAME;
+
+            impl $crate::ToTokens for $NAME {
+                fn to_tokens(&self, _s: &mut proc_macro2::TokenStream) {
+                    // TODO: skip creating unnecessary `TokenStream`
+                    ($crate::quote! { $($tt)* })
+                        .to_tokens(_s)
+                }
+            }
+        )*
+    };
+}
