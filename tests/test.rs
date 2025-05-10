@@ -9,7 +9,7 @@
 extern crate proc_macro;
 
 use proc_macro2::{Delimiter, Group, Ident, Span, TokenStream};
-use quote::{format_ident, quote, quote_spanned, TokenStreamExt};
+use quote::{format_ident, quote, quote_spanned, ToTokens, TokenStreamExt};
 use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::ffi::{CStr, CString};
@@ -565,4 +565,12 @@ fn test_type_inference_for_span() {
         let proc_macro_span = proc_macro::Span::call_site();
         let _ = quote_spanned!(proc_macro_span.into()=> ...);
     }
+}
+
+#[test]
+fn advanced_expression_expansion() {
+    let a = 1i32;
+    let b = 1i32;
+
+    assert_eq!(quote!{ #{a + b} }.to_string(), quote!{ 2i32 }.to_string())
 }

@@ -507,6 +507,16 @@ __quote![
             $crate::ToTokens::to_tokens(&$var, &mut _s);
             _s
         }};
+
+        // Expression expansion such as #{object.field}
+        (# { $expr:expr }) => {{
+            let mut _s = $crate::__private::TokenStream::new();
+            #[doc(hidden)]
+            let __result = $expr;
+            $crate::ToTokens::to_tokens(&__result, &mut _s);
+            _s
+        }};
+
         ($tt1:tt $tt2:tt) => {{
             let mut _s = $crate::__private::TokenStream::new();
             $crate::quote_token!{$tt1 _s}
