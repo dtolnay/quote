@@ -17,7 +17,7 @@ proc-macro2 = { version = "1.0.80", default-features = false }
 
 [dev-dependencies]
 rustversion = "1.0"
-trybuild = { version = "1.0.66", features = ["diff"] }
+trybuild = { version = "1.0.108", features = ["diff"] }
 
 [features]
 default = ["proc-macro"]
