@@ -90,6 +90,7 @@
 
 // Quote types in rustdoc of other crates get linked to here.
 #![doc(html_root_url = "https://docs.rs/quote/1.0.40")]
+#![allow(unknown_lints, mismatched_lifetime_syntaxes)]
 #![allow(
     clippy::doc_markdown,
     clippy::elidable_lifetime_names,

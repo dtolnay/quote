@@ -58,11 +58,12 @@ impl BitOr<HasIterator> for HasIterator {
 /// the returned value should be idempotent.
 #[doc(hidden)]
 pub mod ext {
-    use super::RepInterp;
+    use super::{FnTokens, RepInterp};
     use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
     use crate::ToTokens;
     use alloc::collections::btree_set::{self, BTreeSet};
     use core::slice;
+    use proc_macro2::TokenStream;
 
     /// Extension trait providing the `quote_into_iter` method on iterators.
     #[doc(hidden)]
@@ -73,6 +74,19 @@ pub mod ext {
     }
 
     impl<T: Iterator> RepIteratorExt for T {}
+
+    #[doc(hidden)]
+    pub trait RepFnExt {
+        fn next(&self) -> Option<FnTokens<Self>> {
+            Some(FnTokens(self))
+        }
+
+        fn quote_into_iter(&self) -> (&Self, DoesNotHaveIter) {
+            (self, DoesNotHaveIter)
+        }
+    }
+
+    impl<T: Fn(&mut TokenStream) + ?Sized> RepFnExt for T {}
 
     /// Extension trait providing the `quote_into_iter` method for
     /// non-iterable types. These types interpolate the same value in each
@@ -186,6 +200,15 @@ impl<T: Iterator> Iterator for RepInterp<T> {
 impl<T: ToTokens> ToTokens for RepInterp<T> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.0.to_tokens(tokens);
+    }
+}
+
+#[doc(hidden)]
+pub struct FnTokens<'a, F: ?Sized>(&'a F);
+
+impl<'a, F: Fn(&mut TokenStream) + ?Sized> ToTokens for FnTokens<'a, F> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.0(tokens);
     }
 }
 

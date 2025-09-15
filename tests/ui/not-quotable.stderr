@@ -14,7 +14,7 @@ error[E0277]: the trait bound `Ipv4Addr: ToTokens` is not satisfied
             CStr
             CString
             Cow<'a, T>
+            FnTokens<'a, F>
             Option<T>
-            Rc<T>
           and $N others
   = note: this error originates in the macro `quote` (in Nightly builds, run with -Z macro-backtrace for more info)
