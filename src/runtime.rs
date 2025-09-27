@@ -62,6 +62,9 @@ pub trait CheckHasIterator<const B: bool>: Sized {
 
 impl CheckHasIterator<true> for HasIterator<true> {}
 
+#[doc(hidden)]
+pub struct GetQuoteKind<T>(pub T);
+
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
 ///
@@ -70,15 +73,64 @@ impl CheckHasIterator<true> for HasIterator<true> {}
 /// the returned value should be idempotent.
 #[doc(hidden)]
 pub mod ext {
-    use super::{HasIterator, RepInterp};
+    use super::{GetQuoteKind, HasIterator, RepInterp};
     use crate::ToTokens;
     use alloc::collections::btree_set::{self, BTreeSet};
+    use core::marker::PhantomData;
     use core::slice;
+
+    #[doc(hidden)]
+    pub struct IteratorKind;
+
+    #[doc(hidden)]
+    pub trait GetIteratorKind: Sized {
+        fn quote_kind(self) -> IteratorKind {
+            IteratorKind
+        }
+    }
+
+    impl<T: Iterator> GetIteratorKind for GetQuoteKind<&T> {}
+
+    #[doc(hidden)]
+    pub struct ToTokensKind;
+
+    #[doc(hidden)]
+    pub trait GetToTokensKind: Sized {
+        fn quote_kind(self) -> ToTokensKind {
+            ToTokensKind
+        }
+    }
+
+    impl<T: ToTokens + ?Sized> GetToTokensKind for GetQuoteKind<&T> {}
+
+    #[doc(hidden)]
+    pub struct AsIteratorKind;
+
+    #[doc(hidden)]
+    pub trait GetAsIteratorKind: Sized {
+        fn quote_kind(self) -> AsIteratorKind {
+            AsIteratorKind
+        }
+    }
+
+    impl<'q, T> GetAsIteratorKind for GetQuoteKind<&T> where T: RepAsIteratorExt<'q> {}
+
+    #[doc(hidden)]
+    pub struct FallbackKind<T: ?Sized>(PhantomData<T>);
+
+    #[doc(hidden)]
+    pub trait GetFallbackKind<T: ?Sized>: Sized {
+        fn quote_kind(self) -> FallbackKind<T> {
+            FallbackKind(PhantomData)
+        }
+    }
+
+    impl<T: ?Sized> GetFallbackKind<T> for &GetQuoteKind<&T> {}
 
     /// Extension trait providing the `quote_into_iter` method on iterators.
     #[doc(hidden)]
     pub trait RepIteratorExt: Iterator + Sized {
-        fn quote_into_iter(self) -> (Self, HasIterator<true>) {
+        fn quote_into_iter(self, _: IteratorKind) -> (Self, HasIterator<true>) {
             (self, HasIterator::<true>)
         }
     }
@@ -96,13 +148,83 @@ pub mod ext {
         fn next(&self) -> Option<&Self> {
             Some(self)
         }
+    }
 
-        fn quote_into_iter(&self) -> (&Self, HasIterator<false>) {
+    impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
+
+    #[doc(hidden)]
+    pub trait RepReferenceExt<'q, Kind> {
+        type Iter;
+        type HasIter;
+        fn quote_into_iter(&'q self, _: Kind) -> (Self::Iter, Self::HasIter);
+    }
+
+    impl<'q, T: ToTokens + ?Sized + 'q> RepReferenceExt<'q, ToTokensKind> for T {
+        type Iter = &'q T;
+        type HasIter = HasIterator<false>;
+        fn quote_into_iter(&'q self, _: ToTokensKind) -> (&'q Self, HasIterator<false>) {
             (self, HasIterator::<false>)
         }
     }
 
-    impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
+    impl<'q, T> RepReferenceExt<'q, AsIteratorKind> for T
+    where
+        T: ?Sized + RepAsIteratorExt<'q>,
+    {
+        type Iter = <T as RepAsIteratorExt<'q>>::Iter;
+        type HasIter = HasIterator<true>;
+        fn quote_into_iter(&'q self, _: AsIteratorKind) -> (Self::Iter, HasIterator<true>) {
+            <T as RepAsIteratorExt>::do_quote_into_iter(self)
+        }
+    }
+
+    impl<'q, T: ?Sized> RepReferenceExt<'q, FallbackKind<T>> for T {
+        type Iter = ZBlackHole<T>;
+        type HasIter = HasIterator<true>;
+        fn quote_into_iter(&'q self, _: FallbackKind<T>) -> (ZBlackHole<T>, HasIterator<true>) {
+            (ZBlackHole(PhantomData), HasIterator::<true>)
+        }
+    }
+
+    #[doc(hidden)]
+    pub struct ZBlackHole<T: ?Sized>(PhantomData<T>);
+
+    impl<T: ?Sized> ZBlackHole<T> {
+        #[doc(hidden)]
+        pub fn quote_into_iter(self, _: impl Sync) -> (Self, HasIterator<true>) {
+            (self, HasIterator::<true>)
+        }
+
+        #[doc(hidden)]
+        pub fn next(&self) -> Option<&Self> {
+            unreachable!()
+        }
+    }
+
+    impl<T: ?Sized> ToTokens for ZBlackHole<T> {
+        fn to_tokens(&self, _tokens: &mut proc_macro2::TokenStream) {
+            unreachable!()
+        }
+    }
+
+    #[cfg_attr(
+        not(no_diagnostic_namespace),
+        diagnostic::on_unimplemented(
+            message = "type {Self} cannot be interpolated inside a repetition",
+            label = ""
+        )
+    )]
+    pub trait Quote {}
+
+    #[doc(hidden)]
+    pub trait ValidQuoteKind {
+        fn check_quote(&self) {}
+    }
+
+    impl ValidQuoteKind for IteratorKind {}
+    impl ValidQuoteKind for ToTokensKind {}
+    impl ValidQuoteKind for AsIteratorKind {}
+    impl<T: Quote + ?Sized> ValidQuoteKind for FallbackKind<T> {}
 
     /// Extension trait providing the `quote_into_iter` method for types that
     /// can be referenced as an iterator.
@@ -110,29 +232,29 @@ pub mod ext {
     pub trait RepAsIteratorExt<'q> {
         type Iter: Iterator;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>);
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>);
     }
 
     impl<'q, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &T {
         type Iter = T::Iter;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
-            <T as RepAsIteratorExt>::quote_into_iter(*self)
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+            <T as RepAsIteratorExt>::do_quote_into_iter(*self)
         }
     }
 
     impl<'q, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &mut T {
         type Iter = T::Iter;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
-            <T as RepAsIteratorExt>::quote_into_iter(*self)
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+            <T as RepAsIteratorExt>::do_quote_into_iter(*self)
         }
     }
 
     impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
         type Iter = slice::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
             (self.iter(), HasIterator::<true>)
         }
     }
@@ -140,7 +262,7 @@ pub mod ext {
     impl<'q, T: 'q, const N: usize> RepAsIteratorExt<'q> for [T; N] {
         type Iter = slice::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
             (self.iter(), HasIterator::<true>)
         }
     }
@@ -148,7 +270,7 @@ pub mod ext {
     impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T> {
         type Iter = slice::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
             (self.iter(), HasIterator::<true>)
         }
     }
@@ -156,7 +278,7 @@ pub mod ext {
     impl<'q, T: 'q> RepAsIteratorExt<'q> for BTreeSet<T> {
         type Iter = btree_set::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
             (self.iter(), HasIterator::<true>)
         }
     }
@@ -164,8 +286,8 @@ pub mod ext {
     impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T> {
         type Iter = T::Iter;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
-            self.0.quote_into_iter()
+        fn do_quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+            self.0.do_quote_into_iter()
         }
     }
 }

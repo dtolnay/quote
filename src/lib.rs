@@ -96,6 +96,7 @@
     clippy::missing_errors_doc,
     clippy::missing_panics_doc,
     clippy::module_name_repetitions,
+    clippy::must_use_candidate,
     clippy::needless_lifetimes,
     // false positive https://github.com/rust-lang/rust-clippy/issues/6983
     clippy::wrong_self_convention,
@@ -728,9 +729,11 @@ macro_rules! pounded_var_with_context {
 #[doc(hidden)]
 macro_rules! quote_bind_into_iter {
     ($has_iter:ident $var:ident) => {
+        let kind = $crate::__private::GetQuoteKind(&$var).quote_kind();
+        $crate::__private::ext::ValidQuoteKind::check_quote(&kind);
         // `mut` may be unused if $var occurs multiple times in the list.
         #[allow(unused_mut)]
-        let (mut $var, i) = $var.quote_into_iter();
+        let (mut $var, i) = $var.quote_into_iter(kind);
         let $has_iter = $has_iter | i;
     };
 }
