@@ -18,35 +18,33 @@ pub type Span = proc_macro2::Span;
 pub type TokenStream = proc_macro2::TokenStream;
 
 #[doc(hidden)]
-pub struct HasIterator; // True
-#[doc(hidden)]
-pub struct ThereIsNoIteratorInRepetition; // False
+pub struct HasIterator<const B: bool>;
 
-impl BitOr<ThereIsNoIteratorInRepetition> for ThereIsNoIteratorInRepetition {
-    type Output = ThereIsNoIteratorInRepetition;
-    fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> ThereIsNoIteratorInRepetition {
-        ThereIsNoIteratorInRepetition
+impl BitOr<HasIterator<false>> for HasIterator<false> {
+    type Output = HasIterator<false>;
+    fn bitor(self, _rhs: HasIterator<false>) -> HasIterator<false> {
+        HasIterator::<false>
     }
 }
 
-impl BitOr<ThereIsNoIteratorInRepetition> for HasIterator {
-    type Output = HasIterator;
-    fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> HasIterator {
-        HasIterator
+impl BitOr<HasIterator<false>> for HasIterator<true> {
+    type Output = HasIterator<true>;
+    fn bitor(self, _rhs: HasIterator<false>) -> HasIterator<true> {
+        HasIterator::<true>
     }
 }
 
-impl BitOr<HasIterator> for ThereIsNoIteratorInRepetition {
-    type Output = HasIterator;
-    fn bitor(self, _rhs: HasIterator) -> HasIterator {
-        HasIterator
+impl BitOr<HasIterator<true>> for HasIterator<false> {
+    type Output = HasIterator<true>;
+    fn bitor(self, _rhs: HasIterator<true>) -> HasIterator<true> {
+        HasIterator::<true>
     }
 }
 
-impl BitOr<HasIterator> for HasIterator {
-    type Output = HasIterator;
-    fn bitor(self, _rhs: HasIterator) -> HasIterator {
-        HasIterator
+impl BitOr<HasIterator<true>> for HasIterator<true> {
+    type Output = HasIterator<true>;
+    fn bitor(self, _rhs: HasIterator<true>) -> HasIterator<true> {
+        HasIterator::<true>
     }
 }
 
@@ -55,7 +53,7 @@ pub trait CheckHasIterator: Sized {
     fn check(self) {}
 }
 
-impl CheckHasIterator for HasIterator {}
+impl CheckHasIterator for HasIterator<true> {}
 
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
@@ -65,8 +63,7 @@ impl CheckHasIterator for HasIterator {}
 /// the returned value should be idempotent.
 #[doc(hidden)]
 pub mod ext {
-    use super::RepInterp;
-    use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
+    use super::{HasIterator, RepInterp};
     use crate::ToTokens;
     use alloc::collections::btree_set::{self, BTreeSet};
     use core::slice;
@@ -74,8 +71,8 @@ pub mod ext {
     /// Extension trait providing the `quote_into_iter` method on iterators.
     #[doc(hidden)]
     pub trait RepIteratorExt: Iterator + Sized {
-        fn quote_into_iter(self) -> (Self, HasIter) {
-            (self, HasIter)
+        fn quote_into_iter(self) -> (Self, HasIterator<true>) {
+            (self, HasIterator::<true>)
         }
     }
 
@@ -88,13 +85,13 @@ pub mod ext {
     pub trait RepToTokensExt {
         /// Pretend to be an iterator for the purposes of `quote_into_iter`.
         /// This allows repeated calls to `quote_into_iter` to continue
-        /// correctly returning DoesNotHaveIter.
+        /// correctly returning HasIterator<false>.
         fn next(&self) -> Option<&Self> {
             Some(self)
         }
 
-        fn quote_into_iter(&self) -> (&Self, DoesNotHaveIter) {
-            (self, DoesNotHaveIter)
+        fn quote_into_iter(&self) -> (&Self, HasIterator<false>) {
+            (self, HasIterator::<false>)
         }
     }
 
@@ -106,13 +103,13 @@ pub mod ext {
     pub trait RepAsIteratorExt<'q> {
         type Iter: Iterator;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter);
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>);
     }
 
     impl<'q, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &T {
         type Iter = T::Iter;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
             <T as RepAsIteratorExt>::quote_into_iter(*self)
         }
     }
@@ -120,7 +117,7 @@ pub mod ext {
     impl<'q, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &mut T {
         type Iter = T::Iter;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
             <T as RepAsIteratorExt>::quote_into_iter(*self)
         }
     }
@@ -128,39 +125,39 @@ pub mod ext {
     impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
         type Iter = slice::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+            (self.iter(), HasIterator::<true>)
         }
     }
 
     impl<'q, T: 'q, const N: usize> RepAsIteratorExt<'q> for [T; N] {
         type Iter = slice::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+            (self.iter(), HasIterator::<true>)
         }
     }
 
     impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T> {
         type Iter = slice::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+            (self.iter(), HasIterator::<true>)
         }
     }
 
     impl<'q, T: 'q> RepAsIteratorExt<'q> for BTreeSet<T> {
         type Iter = btree_set::Iter<'q, T>;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-            (self.iter(), HasIter)
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
+            (self.iter(), HasIterator::<true>)
         }
     }
 
     impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T> {
         type Iter = T::Iter;
 
-        fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
+        fn quote_into_iter(&'q self) -> (Self::Iter, HasIterator<true>) {
             self.0.quote_into_iter()
         }
     }

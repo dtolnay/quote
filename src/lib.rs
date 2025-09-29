@@ -888,7 +888,7 @@ macro_rules! quote_token_with_context {
     // A repetition with no separator.
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
-        let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
+        let has_iter = $crate::__private::HasIterator::<false>;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
         <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         // This is `while true` instead of `loop` because if there are no
@@ -911,7 +911,7 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => {{
         use $crate::__private::ext::*;
         let mut _i = 0usize;
-        let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
+        let has_iter = $crate::__private::HasIterator::<false>;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
         <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         while true {
@@ -958,7 +958,7 @@ macro_rules! quote_token_with_context_spanned {
 
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
-        let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
+        let has_iter = $crate::__private::HasIterator::<false>;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
         <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         while true {
@@ -972,7 +972,7 @@ macro_rules! quote_token_with_context_spanned {
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => {{
         use $crate::__private::ext::*;
         let mut _i = 0usize;
-        let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
+        let has_iter = $crate::__private::HasIterator::<false>;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
         <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         while true {
