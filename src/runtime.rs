@@ -53,11 +53,11 @@ impl BitOr<HasIterator<true>> for HasIterator<true> {
     message = "repetition contains no interpolated value that is an iterator",
     label = "none of the values interpolated inside this repetition are iterable"
 )]
-pub trait CheckHasIterator: Sized {
+pub trait CheckHasIterator<const B: bool>: Sized {
     fn check(self) {}
 }
 
-impl CheckHasIterator for HasIterator<true> {}
+impl CheckHasIterator<true> for HasIterator<true> {}
 
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
