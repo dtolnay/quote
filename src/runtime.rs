@@ -49,6 +49,10 @@ impl BitOr<HasIterator<true>> for HasIterator<true> {
 }
 
 #[doc(hidden)]
+#[diagnostic::on_unimplemented(
+    message = "repetition contains no interpolated value that is an iterator",
+    label = "none of the values interpolated inside this repetition are iterable"
+)]
 pub trait CheckHasIterator: Sized {
     fn check(self) {}
 }
