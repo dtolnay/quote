@@ -50,6 +50,13 @@ impl BitOr<HasIterator> for HasIterator {
     }
 }
 
+#[doc(hidden)]
+pub trait CheckHasIterator: Sized {
+    fn check(self) {}
+}
+
+impl CheckHasIterator for HasIterator {}
+
 /// Extension traits used by the implementation of `quote!`. These are defined
 /// in separate traits, rather than as a single trait due to ambiguity issues.
 ///

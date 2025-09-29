@@ -890,7 +890,7 @@ macro_rules! quote_token_with_context {
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        let _: $crate::__private::HasIterator = has_iter;
+        <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         // This is `while true` instead of `loop` because if there are no
         // iterators used inside of this repetition then the body would not
         // contain any `break`, so the compiler would emit unreachable code
@@ -913,7 +913,7 @@ macro_rules! quote_token_with_context {
         let mut _i = 0usize;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        let _: $crate::__private::HasIterator = has_iter;
+        <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         while true {
             $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
             if _i > 0 {
@@ -960,7 +960,7 @@ macro_rules! quote_token_with_context_spanned {
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        let _: $crate::__private::HasIterator = has_iter;
+        <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         while true {
             $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
             $crate::quote_each_token_spanned!{$tokens $span $($inner)*}
@@ -974,7 +974,7 @@ macro_rules! quote_token_with_context_spanned {
         let mut _i = 0usize;
         let has_iter = $crate::__private::ThereIsNoIteratorInRepetition;
         $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        let _: $crate::__private::HasIterator = has_iter;
+        <_ as $crate::__private::CheckHasIterator>::check(has_iter);
         while true {
             $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
             if _i > 0 {
