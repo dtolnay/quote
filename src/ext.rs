@@ -72,9 +72,16 @@ impl TokenStreamExt for TokenStream {
         I: IntoIterator,
         I::Item: ToTokens,
     {
-        for token in iter {
-            token.to_tokens(self);
+        fn append_all_inner<I>(stream: &mut TokenStream, iter: I)
+        where
+            I: Iterator,
+            I::Item: ToTokens,
+        {
+            for token in iter {
+                token.to_tokens(stream);
+            }
         }
+        append_all_inner(self, iter.into_iter());
     }
 
     fn append_separated<I, U>(&mut self, iter: I, op: U)
