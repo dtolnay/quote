@@ -60,10 +60,11 @@ impl TokenStreamExt for TokenStream {
     where
         U: Into<TokenTree>,
     {
-        fn append_inner(stream: &mut TokenStream, tree: TokenTree) {
+        do_append(self, token.into());
+
+        fn do_append(stream: &mut TokenStream, tree: TokenTree) {
             stream.extend(Some(tree));
         }
-        append_inner(self, token.into());
     }
 
     fn append_all<I>(&mut self, iter: I)
