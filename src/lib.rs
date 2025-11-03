@@ -93,6 +93,7 @@
 #![allow(
     clippy::doc_markdown,
     clippy::elidable_lifetime_names,
+    clippy::items_after_statements,
     clippy::missing_errors_doc,
     clippy::missing_panics_doc,
     clippy::module_name_repetitions,
