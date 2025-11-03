@@ -1,5 +1,4 @@
 use super::ToTokens;
-use core::iter;
 use proc_macro2::{TokenStream, TokenTree};
 
 /// TokenStream extension trait with methods for appending tokens.
@@ -61,7 +60,10 @@ impl TokenStreamExt for TokenStream {
     where
         U: Into<TokenTree>,
     {
-        self.extend(iter::once(token.into()));
+        fn append_inner(stream: &mut TokenStream, tokens: TokenStream) {
+            stream.extend(tokens);
+        }
+        append_inner(self, TokenStream::from(token.into()));
     }
 
     fn append_all<I>(&mut self, iter: I)
