@@ -283,7 +283,7 @@ pub fn parse(tokens: &mut TokenStream, s: &str) {
 #[doc(hidden)]
 pub fn parse_spanned(tokens: &mut TokenStream, span: Span, s: &str) {
     let s: TokenStream = s.parse().expect("invalid token stream");
-    for token in s.into_iter() {
+    for token in s {
         tokens.append(respan_token_tree(token, span));
     }
 }
@@ -293,7 +293,7 @@ fn respan_token_tree(mut token: TokenTree, span: Span) -> TokenTree {
     match &mut token {
         TokenTree::Group(g) => {
             let mut tokens = TokenStream::new();
-            for token in g.stream().into_iter() {
+            for token in g.stream() {
                 tokens.append(respan_token_tree(token, span));
             }
             *g = Group::new(g.delimiter(), tokens);
