@@ -91,11 +91,20 @@ impl TokenStreamExt for TokenStream {
         I::Item: ToTokens,
         U: ToTokens,
     {
-        for (i, token) in iter.into_iter().enumerate() {
-            if i > 0 {
-                op.to_tokens(self);
+        do_append_separated(self, iter.into_iter(), op);
+
+        fn do_append_separated<I, U>(stream: &mut TokenStream, iter: I, op: U)
+        where
+            I: Iterator,
+            I::Item: ToTokens,
+            U: ToTokens,
+        {
+            for (i, token) in iter.into_iter().enumerate() {
+                if i > 0 {
+                    op.to_tokens(stream);
+                }
+                token.to_tokens(stream);
             }
-            token.to_tokens(self);
         }
     }
 
@@ -105,9 +114,18 @@ impl TokenStreamExt for TokenStream {
         I::Item: ToTokens,
         U: ToTokens,
     {
-        for token in iter {
-            token.to_tokens(self);
-            term.to_tokens(self);
+        do_append_terminated(self, iter.into_iter(), term);
+
+        fn do_append_terminated<I, U>(stream: &mut TokenStream, iter: I, term: U)
+        where
+            I: Iterator,
+            I::Item: ToTokens,
+            U: ToTokens,
+        {
+            for token in iter {
+                token.to_tokens(stream);
+                term.to_tokens(stream);
+            }
         }
     }
 }
