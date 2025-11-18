@@ -77,6 +77,9 @@ impl<T: ?Sized + ToTokens> ToTokens for &T {
     }
 }
 
+/// Implementation of `ToTokens` for mutable references.
+///
+/// This implementation simply delegates to the referenced value's `ToTokens` implementation.
 impl<T: ?Sized + ToTokens> ToTokens for &mut T {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         (**self).to_tokens(tokens);

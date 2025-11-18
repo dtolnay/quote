@@ -233,6 +233,7 @@ mod get_span {
 
     impl<T> GetSpanBase<T> {
         #[allow(clippy::unused_self)]
+        // This method is intentionally unreachable and should never be called.
         pub fn __into_span(&self) -> T {
             unreachable!()
         }
