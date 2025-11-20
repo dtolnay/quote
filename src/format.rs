@@ -166,3 +166,16 @@ macro_rules! format_ident_impl {
         }
     };
 }
+
+/// Specialized formatting trait used by `format_ident!`.
+///
+/// [`Ident`] arguments formatted using this trait will have their `r#` prefix
+/// stripped, if present.
+///
+/// See [`format_ident!`] for more information.
+///
+/// [`format_ident!`]: crate::format_ident
+/// [`Ident`]: proc_macro2::Ident
+pub trait IdentFragment {
+    /// Format this value as an identifier fragment.
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result;

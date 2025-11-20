@@ -71,7 +71,7 @@ where
 }
 
 // Limited set of types which this is implemented for, as we want to avoid types
-// which will often include non-identifier characters in their `Display` impl.
+// which will often include non-identifier characters in their `Display` implementation.
 macro_rules! ident_fragment_display {
     ($($T:ty),*) => {
         $(

@@ -39,6 +39,17 @@ pub trait TokenStreamExt: private::Sealed {
     ///
     /// Appends all of the items in the iterator `I`, separated by the tokens
     /// `U`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use quote::{quote, TokenStreamExt};
+    /// use proc_macro2::TokenStream;
+    ///
+    /// let mut tokens = TokenStream::new();
+    /// tokens.append_separated(&[1, 2, 3], quote!(,));
+    /// assert_eq!(tokens.to_string(), "1 , 2 , 3");
+    /// ```
     fn append_separated<I, U>(&mut self, iter: I, op: U)
     where
         I: IntoIterator,
