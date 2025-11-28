@@ -7,17 +7,6 @@ error[E0277]: the trait bound `Ipv4Addr: ToTokens` is not satisfied
   |             the trait `ToTokens` is not implemented for `Ipv4Addr`
   |             required by a bound introduced by this call
   |
-note: there are multiple different versions of crate `quote` in the dependency graph
- --> src/to_tokens.rs
-  |
-  | pub trait ToTokens {
-  | ^^^^^^^^^^^^^^^^^^ this is the expected trait
-  |
- ::: $RUST/proc_macro/src/to_tokens.rs
-  |
-  | pub trait ToTokens {
-  | ------------------ this is the trait that was imported
-  = help: you can use `cargo tree` to explore your dependency tree
   = help: the following other types implement trait `ToTokens`:
             &T
             &mut T
