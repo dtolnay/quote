@@ -294,6 +294,13 @@ fn test_underscore() {
 }
 
 #[test]
+fn test_spacing() {
+    let tokens = quote!(+++ ++ +);
+    let expected = "+ + + + + +"; // FIXME
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
 fn test_duplicate() {
     let ch = 'x';
 
