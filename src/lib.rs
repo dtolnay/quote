@@ -273,7 +273,7 @@ macro_rules! __quote {
         /// behavior of concatenating them. The underscore and the identifier will
         /// continue to be two separate tokens as if you had written `_ x`.
         ///
-        /// ```
+        /// ```edition2018
         /// # use proc_macro2::{self as syn, Span};
         /// # use quote::quote;
         /// #
