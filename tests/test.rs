@@ -35,7 +35,7 @@ fn test_quote_impl() {
     let expected = concat!(
         "impl < 'a , T : ToTokens > ToTokens for & 'a T { ",
         "fn to_tokens (& self , tokens : & mut TokenStream) { ",
-        "(* * self) . to_tokens (tokens) ",
+        "(** self) . to_tokens (tokens) ",
         "} ",
         "}"
     );
@@ -57,7 +57,7 @@ fn test_quote_spanned_impl() {
     let expected = concat!(
         "impl < 'a , T : ToTokens > ToTokens for & 'a T { ",
         "fn to_tokens (& self , tokens : & mut TokenStream) { ",
-        "(* * self) . to_tokens (tokens) ",
+        "(** self) . to_tokens (tokens) ",
         "} ",
         "}"
     );
@@ -147,7 +147,7 @@ fn test_advanced() {
     let expected = concat!(
         "struct SerializeWith < 'a , T > where T : Serialize { ",
         "value : & 'a String , ",
-        "phantom : :: std :: marker :: PhantomData < Cow < 'a , str > > , ",
+        "phantom : :: std :: marker :: PhantomData < Cow < 'a , str > >, ",
         "} ",
         "impl < 'a , T > :: serde :: Serialize for SerializeWith < 'a , T > where T : Serialize { ",
         "fn serialize < S > (& self , s : & mut S) -> Result < () , S :: Error > ",
@@ -158,7 +158,7 @@ fn test_advanced() {
         "} ",
         "SerializeWith { ",
         "value : self . x , ",
-        "phantom : :: std :: marker :: PhantomData :: < Cow < 'a , str > > , ",
+        "phantom : :: std :: marker :: PhantomData ::< Cow < 'a , str > >, ",
         "}"
     );
 
@@ -296,7 +296,7 @@ fn test_underscore() {
 #[test]
 fn test_spacing() {
     let tokens = quote!(+++ ++ +);
-    let expected = "+ + + + + +"; // FIXME
+    let expected = "+++ ++ +";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -487,7 +487,7 @@ fn test_inner_line_comment() {
     let tokens = quote! {
         //! doc
     };
-    let expected = "# ! [doc = r\" doc\"]";
+    let expected = "#! [doc = r\" doc\"]";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -505,7 +505,7 @@ fn test_inner_block_comment() {
     let tokens = quote! {
         /*! doc */
     };
-    let expected = "# ! [doc = r\" doc \"]";
+    let expected = "#! [doc = r\" doc \"]";
     assert_eq!(expected, tokens.to_string());
 }
 
@@ -523,7 +523,7 @@ fn test_inner_attr() {
     let tokens = quote! {
         #![no_std]
     };
-    let expected = "# ! [no_std]";
+    let expected = "#! [no_std]";
     assert_eq!(expected, tokens.to_string());
 }
 

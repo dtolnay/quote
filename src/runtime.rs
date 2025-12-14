@@ -3,7 +3,7 @@ use crate::{IdentFragment, ToTokens, TokenStreamExt};
 use core::fmt;
 use core::iter;
 use core::ops::BitOr;
-use proc_macro2::{Group, Ident, Punct, Spacing, TokenTree};
+use proc_macro2::{Group, Ident, Punct, TokenTree};
 
 #[doc(hidden)]
 pub use alloc::format;
@@ -14,6 +14,8 @@ pub use core::stringify;
 
 #[doc(hidden)]
 pub type Delimiter = proc_macro2::Delimiter;
+#[doc(hidden)]
+pub type Spacing = proc_macro2::Spacing;
 #[doc(hidden)]
 pub type Span = proc_macro2::Span;
 #[doc(hidden)]
@@ -339,48 +341,48 @@ pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &st
 macro_rules! push_punct {
     ($name:ident $spanned:ident $char1:tt) => {
         #[doc(hidden)]
-        pub fn $name(tokens: &mut TokenStream) {
-            tokens.append(Punct::new($char1, Spacing::Alone));
+        pub fn $name(tokens: &mut TokenStream, spacing: Spacing) {
+            tokens.append(Punct::new($char1, spacing));
         }
         #[doc(hidden)]
-        pub fn $spanned(tokens: &mut TokenStream, span: Span) {
-            let mut punct = Punct::new($char1, Spacing::Alone);
+        pub fn $spanned(tokens: &mut TokenStream, span: Span, spacing: Spacing) {
+            let mut punct = Punct::new($char1, spacing);
             punct.set_span(span);
             tokens.append(punct);
         }
     };
     ($name:ident $spanned:ident $char1:tt $char2:tt) => {
         #[doc(hidden)]
-        pub fn $name(tokens: &mut TokenStream) {
+        pub fn $name(tokens: &mut TokenStream, spacing: Spacing) {
             tokens.append(Punct::new($char1, Spacing::Joint));
-            tokens.append(Punct::new($char2, Spacing::Alone));
+            tokens.append(Punct::new($char2, spacing));
         }
         #[doc(hidden)]
-        pub fn $spanned(tokens: &mut TokenStream, span: Span) {
+        pub fn $spanned(tokens: &mut TokenStream, span: Span, spacing: Spacing) {
             let mut punct = Punct::new($char1, Spacing::Joint);
             punct.set_span(span);
             tokens.append(punct);
-            let mut punct = Punct::new($char2, Spacing::Alone);
+            let mut punct = Punct::new($char2, spacing);
             punct.set_span(span);
             tokens.append(punct);
         }
     };
     ($name:ident $spanned:ident $char1:tt $char2:tt $char3:tt) => {
         #[doc(hidden)]
-        pub fn $name(tokens: &mut TokenStream) {
+        pub fn $name(tokens: &mut TokenStream, spacing: Spacing) {
             tokens.append(Punct::new($char1, Spacing::Joint));
             tokens.append(Punct::new($char2, Spacing::Joint));
-            tokens.append(Punct::new($char3, Spacing::Alone));
+            tokens.append(Punct::new($char3, spacing));
         }
         #[doc(hidden)]
-        pub fn $spanned(tokens: &mut TokenStream, span: Span) {
+        pub fn $spanned(tokens: &mut TokenStream, span: Span, spacing: Spacing) {
             let mut punct = Punct::new($char1, Spacing::Joint);
             punct.set_span(span);
             tokens.append(punct);
             let mut punct = Punct::new($char2, Spacing::Joint);
             punct.set_span(span);
             tokens.append(punct);
-            let mut punct = Punct::new($char3, Spacing::Alone);
+            let mut punct = Punct::new($char3, spacing);
             punct.set_span(span);
             tokens.append(punct);
         }
