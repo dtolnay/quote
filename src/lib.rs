@@ -1014,7 +1014,10 @@ macro_rules! quote_token_with_context_spanned {
 #[doc(hidden)]
 macro_rules! quote_token {
     ($ident:ident $tokens:ident) => {
-        $crate::__private::push_ident(&mut $tokens, stringify!($ident));
+        $crate::__private::push_ident(
+            &mut $tokens,
+            $crate::__private::stringify!($ident),
+        );
     };
 
     (:: $tokens:ident) => {
@@ -1218,7 +1221,10 @@ macro_rules! quote_token {
     };
 
     ($lifetime:lifetime $tokens:ident) => {
-        $crate::__private::push_lifetime(&mut $tokens, stringify!($lifetime));
+        $crate::__private::push_lifetime(
+            &mut $tokens,
+            $crate::__private::stringify!($lifetime),
+        );
     };
 
     (_ $tokens:ident) => {
@@ -1226,7 +1232,10 @@ macro_rules! quote_token {
     };
 
     ($other:tt $tokens:ident) => {
-        $crate::__private::parse(&mut $tokens, stringify!($other));
+        $crate::__private::parse(
+            &mut $tokens,
+            $crate::__private::stringify!($other),
+        );
     };
 }
 
@@ -1235,7 +1244,11 @@ macro_rules! quote_token {
 #[doc(hidden)]
 macro_rules! quote_token_spanned {
     ($ident:ident $tokens:ident $span:ident) => {
-        $crate::__private::push_ident_spanned(&mut $tokens, $span, stringify!($ident));
+        $crate::__private::push_ident_spanned(
+            &mut $tokens,
+            $span,
+            $crate::__private::stringify!($ident),
+        );
     };
 
     (:: $tokens:ident $span:ident) => {
@@ -1442,7 +1455,11 @@ macro_rules! quote_token_spanned {
     };
 
     ($lifetime:lifetime $tokens:ident $span:ident) => {
-        $crate::__private::push_lifetime_spanned(&mut $tokens, $span, stringify!($lifetime));
+        $crate::__private::push_lifetime_spanned(
+            &mut $tokens,
+            $span,
+            $crate::__private::stringify!($lifetime),
+        );
     };
 
     (_ $tokens:ident $span:ident) => {
@@ -1450,6 +1467,10 @@ macro_rules! quote_token_spanned {
     };
 
     ($other:tt $tokens:ident $span:ident) => {
-        $crate::__private::parse_spanned(&mut $tokens, $span, stringify!($other));
+        $crate::__private::parse_spanned(
+            &mut $tokens,
+            $span,
+            $crate::__private::stringify!($other),
+        );
     };
 }
