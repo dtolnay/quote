@@ -88,6 +88,7 @@
 //!
 //! [prettyplease]: https://github.com/dtolnay/prettyplease
 
+#![no_std]
 #![doc(html_root_url = "https://docs.rs/quote/1.0.42")]
 #![allow(
     clippy::doc_markdown,
@@ -100,7 +101,6 @@
     // false positive https://github.com/rust-lang/rust-clippy/issues/6983
     clippy::wrong_self_convention,
 )]
-#![no_std]
 
 extern crate alloc;
 extern crate std;
