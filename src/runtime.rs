@@ -75,6 +75,7 @@ pub mod ext {
     use super::{HasIterator, RepInterp};
     use crate::ToTokens;
     use alloc::collections::btree_set::{self, BTreeSet};
+    use alloc::vec::Vec;
     use core::slice;
 
     /// Extension trait providing the `quote_into_iter` method on iterators.

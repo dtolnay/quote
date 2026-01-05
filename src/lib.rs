@@ -101,6 +101,7 @@
     // false positive https://github.com/rust-lang/rust-clippy/issues/6983
     clippy::wrong_self_convention,
 )]
+#![no_std]
 
 extern crate alloc;
 
