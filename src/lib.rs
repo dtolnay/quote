@@ -104,6 +104,7 @@
 #![no_std]
 
 extern crate alloc;
+extern crate std;
 
 #[cfg(feature = "proc-macro")]
 extern crate proc_macro;
