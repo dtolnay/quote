@@ -4,7 +4,7 @@
 ///
 /// # Syntax
 ///
-/// Syntax is copied from the [`format_args!`] macro, supporting both positional
+/// Syntax is copied from the [`alloc::format!`] macro, supporting both positional
 /// and named arguments.
 ///
 /// Only a limited set of formatting traits are supported. The current mapping
