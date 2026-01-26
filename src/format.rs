@@ -108,6 +108,7 @@
 /// assert_eq!(upper_hex, "Id_A");
 /// ```
 #[macro_export]
+#[clippy::format_args]
 macro_rules! format_ident {
     ($fmt:expr) => {
         $crate::format_ident_impl!([
