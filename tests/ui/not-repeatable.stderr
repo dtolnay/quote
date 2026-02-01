@@ -19,8 +19,8 @@ error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its
 note: the traits `Iterator` and `ToTokens` must be implemented
  --> $RUST/core/src/iter/traits/iterator.rs
   |
-  | pub trait Iterator {
-  | ^^^^^^^^^^^^^^^^^^
+  | pub const trait Iterator {
+  | ^^^^^^^^^^^^^^^^^^^^^^^^
   |
  ::: src/to_tokens.rs
   |
