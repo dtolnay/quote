@@ -10,7 +10,7 @@ edition = "2021"
 keywords = ["macros", "syn"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/quote"
-rust-version = "1.68"
+rust-version = "1.71"
 
 [dependencies]
 proc-macro2 = { version = "1.0.80", default-features = false }
