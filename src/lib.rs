@@ -646,8 +646,9 @@ __quote_spanned![
     }
 ];
 
-// We want to ensure that `get_span` only gets called for the actual user invocation and not
-// for recursive calls from groups, which will call this inner macro instead.
+// We want to ensure that `get_span` only gets called for the actual user
+// invocation and not for recursive calls from groups, which will call this
+// inner macro instead.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_spanned_with_expanded_span {
