@@ -665,7 +665,6 @@ macro_rules! quote_spanned_with_expanded_span {
     // Special case rules for two tts, for performance.
     ($span:ident=> # $var:ident) => {
         let mut _s = $crate::__private::TokenStream::new();
-        let _: $crate::__private::Span = $crate::__private::get_span($span).__into_span();
         $crate::ToTokens::to_tokens(&$var, &mut _s);
         _s
     };
