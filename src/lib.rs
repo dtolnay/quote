@@ -665,14 +665,6 @@ macro_rules! quote_spanned_with_expanded_span {
     };
 }
 
-#[macro_export]
-#[doc(hidden)]
-macro_rules! quote_spanned_with_expanded_span_as_expr {
-    ($($tt:tt)*) => {{
-        $crate::quote_spanned_with_expanded_span!{$($tt)*}
-    }};
-}
-
 // Extract the names of all #metavariables and pass them to the $call macro.
 //
 // in:   pounded_var_names!(then!(...) a #b c #( #d )* #e)
@@ -1257,7 +1249,9 @@ macro_rules! quote_token_spanned {
             &mut $tokens,
             $span,
             $crate::__private::Delimiter::Parenthesis,
-            $crate::quote_spanned_with_expanded_span_as_expr!($span=> $($inner)*),
+            {
+                $crate::quote_spanned_with_expanded_span!{$span=> $($inner)*}
+            },
         );
     };
 
@@ -1266,7 +1260,9 @@ macro_rules! quote_token_spanned {
             &mut $tokens,
             $span,
             $crate::__private::Delimiter::Bracket,
-            $crate::quote_spanned_with_expanded_span_as_expr!($span=> $($inner)*),
+            {
+                $crate::quote_spanned_with_expanded_span!{$span=> $($inner)*}
+            },
         );
     };
 
@@ -1275,7 +1271,9 @@ macro_rules! quote_token_spanned {
             &mut $tokens,
             $span,
             $crate::__private::Delimiter::Brace,
-            $crate::quote_spanned_with_expanded_span_as_expr!($span=> $($inner)*),
+            {
+                $crate::quote_spanned_with_expanded_span!{$span=> $($inner)*}
+            },
         );
     };
 
