@@ -625,17 +625,6 @@ macro_rules! __quote_spanned {
     };
 }
 
-#[cfg(doc)]
-__quote_spanned![
-    #[macro_export]
-    macro_rules! quote_spanned {
-        ($span:expr=> $($tt:tt)*) => {
-            ...
-        };
-    }
-];
-
-#[cfg(not(doc))]
 __quote_spanned![
     #[macro_export]
     macro_rules! quote_spanned {
