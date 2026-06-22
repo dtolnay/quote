@@ -639,9 +639,9 @@ __quote_spanned![
 __quote_spanned![
     #[macro_export]
     macro_rules! quote_spanned {
-        ($span:expr=>$($tt:tt)*) => {{
+        ($span:expr=> $($tt:tt)*) => {{
             let _span: $crate::__private::Span = $crate::__private::get_span($span).__into_span();
-            $crate::quote_spanned_with_expanded_span!{_span => $($tt)*}
+            $crate::quote_spanned_with_expanded_span!{_span=> $($tt)*}
         }};
     }
 ];
