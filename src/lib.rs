@@ -623,7 +623,7 @@ __quote![
 macro_rules! quote_spanned {
     ($span:expr=> $($tt:tt)*) => {{
         let _span: $crate::__private::Span = $crate::__private::get_span($span).__into_span();
-        $crate::quote_spanned_with_expanded_span!{_span=> $($tt)*}
+        $crate::quote_spanned_with_expanded_span!{_span $($tt)*}
     }};
 }
 
@@ -633,24 +633,24 @@ macro_rules! quote_spanned {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_spanned_with_expanded_span {
-    ($span:ident=>) => {
+    ($span:ident) => {
         $crate::__private::TokenStream::new()
     };
 
     // Special case rule for a single tt, for performance.
-    ($span:ident=> $tt:tt) => {
+    ($span:ident $tt:tt) => {
         let mut _s = $crate::__private::TokenStream::new();
         $crate::quote_token_spanned!{$tt _s $span}
         _s
     };
 
     // Special case rules for two tts, for performance.
-    ($span:ident=> # $var:ident) => {
+    ($span:ident # $var:ident) => {
         let mut _s = $crate::__private::TokenStream::new();
         $crate::ToTokens::to_tokens(&$var, &mut _s);
         _s
     };
-    ($span:ident=> $tt1:tt $tt2:tt) => {
+    ($span:ident $tt1:tt $tt2:tt) => {
         let mut _s = $crate::__private::TokenStream::new();
         $crate::quote_token_spanned!{$tt1 _s $span}
         $crate::quote_token_spanned!{$tt2 _s $span}
@@ -658,7 +658,7 @@ macro_rules! quote_spanned_with_expanded_span {
     };
 
     // Rule for any other number of tokens.
-    ($span:ident=> $($tt:tt)*) => {
+    ($span:ident $($tt:tt)*) => {
         let mut _s = $crate::__private::TokenStream::new();
         $crate::quote_each_token_spanned!{_s $span $($tt)*}
         _s
@@ -1250,7 +1250,7 @@ macro_rules! quote_token_spanned {
             $span,
             $crate::__private::Delimiter::Parenthesis,
             {
-                $crate::quote_spanned_with_expanded_span!{$span=> $($inner)*}
+                $crate::quote_spanned_with_expanded_span!{$span $($inner)*}
             },
         );
     };
@@ -1261,7 +1261,7 @@ macro_rules! quote_token_spanned {
             $span,
             $crate::__private::Delimiter::Bracket,
             {
-                $crate::quote_spanned_with_expanded_span!{$span=> $($inner)*}
+                $crate::quote_spanned_with_expanded_span!{$span $($inner)*}
             },
         );
     };
@@ -1272,7 +1272,7 @@ macro_rules! quote_token_spanned {
             $span,
             $crate::__private::Delimiter::Brace,
             {
-                $crate::quote_spanned_with_expanded_span!{$span=> $($inner)*}
+                $crate::quote_spanned_with_expanded_span!{$span $($inner)*}
             },
         );
     };
