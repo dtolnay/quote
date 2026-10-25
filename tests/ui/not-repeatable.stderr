@@ -1,4 +1,4 @@
-error[E0599]: the method `quote_into_iter` exists for struct `Ipv4Addr`, but its trait bounds were not satisfied
+error[E0599]: no method named `quote_into_iter` found for struct `Ipv4Addr` in the current scope
  --> tests/ui/not-repeatable.rs:7:13
   |
 3 | struct Ipv4Addr;
