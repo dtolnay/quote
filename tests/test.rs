@@ -393,6 +393,23 @@ fn test_nonrep_in_repetition() {
 }
 
 #[test]
+fn test_unit_struct_in_repetition() {
+    // Non-repetition interpolation of a unit struct works.
+    let tokens = quote!(... #X ...);
+    assert_eq!("... X ...", tokens.to_string());
+
+    // Repetition interpolation of a unit struct used to fail with E0530.
+    let iter = vec!['0', '1', '2'];
+
+    let tokens = quote! {
+        #(#X #iter)*
+    };
+
+    let expected = "X '0' X '1' X '2'";
+    assert_eq!(expected, tokens.to_string());
+}
+
+#[test]
 fn test_empty_quote() {
     let tokens = quote!();
     assert_eq!("", tokens.to_string());
