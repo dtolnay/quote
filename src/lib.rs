@@ -717,11 +717,92 @@ macro_rules! pounded_var_with_context {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! quote_bind_into_iter {
-    ($has_iter:ident $var:ident) => {
-        // `mut` may be unused if $var occurs multiple times in the list.
-        #[allow(unused_mut)]
-        let (mut $var, i) = $var.quote_into_iter();
+    // Bind every `#var` interpolated in a repetition to an iterator, then
+    // expand the tail (the `HasIterator` check and the `while` loop) inside
+    // the innermost block.
+    //
+    // Each variable is bound in its own nested block, following the expansion
+    // sketched in https://github.com/dtolnay/quote/issues/300: the value is
+    // first bound to a fresh variable, and only then is the original name
+    // re-bound inside a block where a `fn $var() {}` item shadows a unit
+    // struct or const of the same name, so the `let` binding no longer
+    // triggers E0530 ("let bindings cannot shadow unit structs"). A separate
+    // block per variable keeps a variable used twice in one repetition
+    // working, which a single shared block would not.
+    //
+    // The scan works through the tokens two at a time: it looks for a
+    // pounded variable or a group in the first two positions, and otherwise
+    // skips two ordinary tokens. Checking two positions before discarding
+    // keeps a long repetition body from running into the recursion limit.
+    // Groups are scanned for pounded variables too, for example the inner
+    // variable of a nested repetition. The comma between the group contents
+    // and the remaining tokens keeps a `#` at the end of the group from
+    // joining up with an identifier after the group and looking like a
+    // pounded variable.
+    ($has_iter:ident () ($($tail:tt)*)) => {
+        $($tail)*
+    };
+
+    ($has_iter:ident (# $var:ident $($rest:tt)*) ($($tail:tt)*)) => {
+        let (var, i) = $var.quote_into_iter();
         let $has_iter = $has_iter | i;
+        {
+            #[allow(dead_code, non_snake_case)]
+            fn $var() {}
+            // `mut` may be unused if $var occurs multiple times in the list.
+            #[allow(unused_mut)]
+            let mut $var = var;
+            $crate::quote_bind_into_iter!{$has_iter ($($rest)*) ($($tail)*)}
+        }
+    };
+
+    // A group in first position.
+    ($has_iter:ident (( $($group:tt)* ) $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($group)* , $($rest)*) ($($tail)*)}
+    };
+    ($has_iter:ident ([ $($group:tt)* ] $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($group)* , $($rest)*) ($($tail)*)}
+    };
+    ($has_iter:ident ({ $($group:tt)* } $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($group)* , $($rest)*) ($($tail)*)}
+    };
+
+    // A pounded variable in second position. The first token is an ordinary
+    // token: it is neither `#` followed by an identifier nor a group, or an
+    // earlier rule would have matched.
+    ($has_iter:ident ($t1:tt # $var:ident $($rest:tt)*) ($($tail:tt)*)) => {
+        let (var, i) = $var.quote_into_iter();
+        let $has_iter = $has_iter | i;
+        {
+            #[allow(dead_code, non_snake_case)]
+            fn $var() {}
+            // `mut` may be unused if $var occurs multiple times in the list.
+            #[allow(unused_mut)]
+            let mut $var = var;
+            $crate::quote_bind_into_iter!{$has_iter ($($rest)*) ($($tail)*)}
+        }
+    };
+
+    // A group in second position. The first token is an ordinary token.
+    ($has_iter:ident ($t1:tt ($($group:tt)*) $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($group)* , $($rest)*) ($($tail)*)}
+    };
+    ($has_iter:ident ($t1:tt [ $($group:tt)* ] $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($group)* , $($rest)*) ($($tail)*)}
+    };
+    ($has_iter:ident ($t1:tt { $($group:tt)* } $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($group)* , $($rest)*) ($($tail)*)}
+    };
+
+    // Two ordinary tokens: skip both. Neither is `#` followed by an
+    // identifier or a group, or an earlier rule would have matched.
+    ($has_iter:ident ($t1:tt $t2:tt $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($rest)*) ($($tail)*)}
+    };
+
+    // A single ordinary token left: skip it.
+    ($has_iter:ident ($t1:tt $($rest:tt)*) ($($tail:tt)*)) => {
+        $crate::quote_bind_into_iter!{$has_iter ($($rest)*) ($($tail)*)}
     };
 }
 
@@ -879,18 +960,19 @@ macro_rules! quote_token_with_context {
     ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::HasIterator::<false>;
-        $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
-        // This is `while true` instead of `loop` because if there are no
-        // iterators used inside of this repetition then the body would not
-        // contain any `break`, so the compiler would emit unreachable code
-        // warnings on anything below the loop. We use has_iter to detect and
-        // fail to compile when there are no iterators, so here we just work
-        // around the unneeded extra warning.
-        while true {
-            $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
-            $crate::quote_each_token!{$tokens $($inner)*}
-        }
+        $crate::quote_bind_into_iter!{has_iter ($($inner)*) (
+            <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
+            // This is `while true` instead of `loop` because if there are no
+            // iterators used inside of this repetition then the body would not
+            // contain any `break`, so the compiler would emit unreachable code
+            // warnings on anything below the loop. We use has_iter to detect and
+            // fail to compile when there are no iterators, so here we just work
+            // around the unneeded extra warning.
+            while true {
+                $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
+                $crate::quote_each_token!{$tokens $($inner)*}
+            }
+        )}
     }};
     // ... and one step later.
     ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
@@ -902,16 +984,17 @@ macro_rules! quote_token_with_context {
         use $crate::__private::ext::*;
         let mut _first = true;
         let has_iter = $crate::__private::HasIterator::<false>;
-        $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
-        while true {
-            $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
-            if !_first {
-                $crate::quote_token!{$sep $tokens}
+        $crate::quote_bind_into_iter!{has_iter ($($inner)*) (
+            <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
+            while true {
+                $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
+                if !_first {
+                    $crate::quote_token!{$sep $tokens}
+                }
+                _first = false;
+                $crate::quote_each_token!{$tokens $($inner)*}
             }
-            _first = false;
-            $crate::quote_each_token!{$tokens $($inner)*}
-        }
+        )}
     }};
     // ... and one step later.
     ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
@@ -949,12 +1032,13 @@ macro_rules! quote_token_with_context_spanned {
     ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
         use $crate::__private::ext::*;
         let has_iter = $crate::__private::HasIterator::<false>;
-        $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
-        while true {
-            $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
-            $crate::quote_each_token_spanned!{$tokens $span $($inner)*}
-        }
+        $crate::quote_bind_into_iter!{has_iter ($($inner)*) (
+            <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
+            while true {
+                $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
+                $crate::quote_each_token_spanned!{$tokens $span $($inner)*}
+            }
+        )}
     }};
     ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
     ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
@@ -963,16 +1047,17 @@ macro_rules! quote_token_with_context_spanned {
         use $crate::__private::ext::*;
         let mut _first = true;
         let has_iter = $crate::__private::HasIterator::<false>;
-        $crate::pounded_var_names!{quote_bind_into_iter!(has_iter) () $($inner)*}
-        <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
-        while true {
-            $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
-            if !_first {
-                $crate::quote_token_spanned!{$sep $tokens $span}
+        $crate::quote_bind_into_iter!{has_iter ($($inner)*) (
+            <_ as $crate::__private::CheckHasIterator<true>>::check(has_iter);
+            while true {
+                $crate::pounded_var_names!{quote_bind_next_or_break!() () $($inner)*}
+                if !_first {
+                    $crate::quote_token_spanned!{$sep $tokens $span}
+                }
+                _first = false;
+                $crate::quote_each_token_spanned!{$tokens $span $($inner)*}
             }
-            _first = false;
-            $crate::quote_each_token_spanned!{$tokens $span $($inner)*}
-        }
+        )}
     }};
     ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
     ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
