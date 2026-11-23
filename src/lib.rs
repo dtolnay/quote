@@ -421,7 +421,7 @@ macro_rules! __quote {
         /// ### Indexing into a tuple struct
         ///
         /// When interpolating indices of a tuple or tuple struct, we need them not to
-        /// appears suffixed as integer literals by interpolating them as [`syn::Index`]
+        /// appear suffixed as integer literals by interpolating them as [`syn::Index`]
         /// instead.
         ///
         /// [`syn::Index`]: https://docs.rs/syn/3/syn/struct.Index.html
